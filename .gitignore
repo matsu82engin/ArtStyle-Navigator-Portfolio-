@@ -1,2 +1,8 @@
 # Node.jsの依存関係のあるディレクトリ
 node_modules/
+
+# GitHub Actions の一時的除外
+.github/
+
+#その他
+id_rsa
