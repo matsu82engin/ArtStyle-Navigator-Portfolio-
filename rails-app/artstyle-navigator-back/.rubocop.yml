@@ -1,0 +1,13 @@
+inherit_from: .rubocop_todo.yml
+
+#初期で生成された=begin~ =end のコメントブロックを無視
+Style/BlockComments:
+  Exclude:
+    - 'spec/spec_helper.rb'
+
+# rubocop-rails,rubocop-rspec を有効にする場合
+require:
+  - rubocop-rails
+     Enabled: false #(コメントにすると有効になる)
+  - rubocop-rspec
+    Enabled: false #(コメントにすると有効になる)
