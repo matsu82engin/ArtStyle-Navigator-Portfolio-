@@ -88,5 +88,11 @@ export default {
       title: 'Vuetify.js',
     }
   },
+  head() {
+    return {
+      title: 'ArtStyle_Navigator', // title タグ
+      titleTemplate: '%s - Home'
+    }
+  }
 }
 </script>
