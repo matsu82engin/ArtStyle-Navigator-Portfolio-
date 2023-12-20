@@ -1,92 +1,140 @@
 <template>
-  <v-app dark>
-    <v-navigation-drawer
-      v-model="drawer"
-      :mini-variant="miniVariant"
-      :clipped="clipped"
-      fixed
-      app
-    >
-      <v-list>
-        <v-list-item
-          v-for="(item, i) in items"
-          :key="i"
-          :to="item.to"
-          router
-          exact
-        >
-          <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-action>
+ <v-app>
+  <v-navigation-drawer v-model="drawer" app clipped>
+  <!-- <v-navigation-drawer v-model="drawer" app clipped style="background-color: white;"> -->
+
+
+    <v-container>
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title class="title grey--text text--darken-2">
+            Navigation List
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+      <v-divider></v-divider>
+
+      <!-- <v-list dense nav>  エクスパンションリストなしの設定。
+        <v-list-item v-for="nav_list in nav_lists" :key="nav_list.name" class="title grey--text text--darken-2">
+          <v-list-item-icon>
+            <v-icon class="title grey--text text--darken-2">{{ nav_list.icon }}</v-icon>
+          </v-list-item-icon>
           <v-list-item-content>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
+            <v-list-item-title>{{ nav_list.name }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+      </v-list> -->
+
+      <!-- ナビゲーションメニュー -->
+      <v-list dense nav >
+        <v-list-group 
+        v-for="nav_list in nav_lists"
+        :key="nav_list.name"
+        :prepend-icon="nav_list.icon"
+        no-action
+        :append-icon="nav_list.lists ? undefined:''">
+         <template #activator>
+          <v-list-item-content class="title grey--text text--darken-2">
+            <v-list-item-title>{{ nav_list.name }}</v-list-item-title>
+          </v-list-item-content>
+         </template>
+         <!-- メニュー -->
+         <v-list-item v-for="list in nav_list.lists" :key="list.name" :to="list.link">
+          <v-list-item-content>
+            <v-list-item-title>{{ list.name }}</v-list-item-title>
+          </v-list-item-content>
+         </v-list-item>
+        </v-list-group>
       </v-list>
-    </v-navigation-drawer>
-    <v-app-bar :clipped-left="clipped" fixed app>
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-btn icon @click.stop="miniVariant = !miniVariant">
-        <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
-      </v-btn>
-      <v-btn icon @click.stop="clipped = !clipped">
-        <v-icon>mdi-application</v-icon>
-      </v-btn>
-      <v-btn icon @click.stop="fixed = !fixed">
-        <v-icon>mdi-minus</v-icon>
-      </v-btn>
-      <v-toolbar-title>{{ title }}</v-toolbar-title>
-      <v-spacer />
-      <v-btn icon @click.stop="rightDrawer = !rightDrawer">
-        <v-icon>mdi-menu</v-icon>
-      </v-btn>
-    </v-app-bar>
+
+    </v-container>
+  </v-navigation-drawer>
+
+  <!-- メインコンテンツ -->
     <v-main>
       <v-container>
         <Nuxt />
       </v-container>
     </v-main>
-    <v-navigation-drawer v-model="rightDrawer" :right="right" temporary fixed>
-      <v-list>
-        <v-list-item @click.native="right = !right">
-          <v-list-item-action>
-            <v-icon light> mdi-repeat </v-icon>
-          </v-list-item-action>
-          <v-list-item-title>Switch drawer (click me)</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
-    <v-footer :absolute="!fixed" app>
-      <span>&copy; {{ new Date().getFullYear() }}</span>
-    </v-footer>
-  </v-app>
+
+
+  <!-- ナビゲーションバー -->
+  <v-app-bar color="primary" dark app clipped-left> 
+    <v-app-bar-nav-icon @click="drawer =! drawer"></v-app-bar-nav-icon>
+    <v-toolbar-title>ArtStyle_Navigator</v-toolbar-title>
+    <v-spacer></v-spacer>
+    <v-toolbar-items>
+        <v-btn text href="../pages/signup.vue">Sign up</v-btn>
+
+        <v-btn text>Login</v-btn>
+        <v-btn text>ゲストログイン</v-btn>
+        <v-btn text>簡単ログイン</v-btn>
+      
+      <v-menu offset-y>
+        <template #activator="{ on }"> <!--  v-slot:activator から修正-->
+        <v-btn text v-on="on" >プロフィール<v-icon>mdi-menu-down</v-icon></v-btn>  <!-- 本当はここはログインしないと表示しない -->
+        </template>
+        <v-list>
+          <v-subheader>Setting</v-subheader>
+          <v-list-item v-for="profile in profiles" :key="profile.name">
+            <v-list-item-icon>
+            <v-icon>{{ profile.icon }}</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                {{ profile.name }}
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+
+    </v-toolbar-items>
+  </v-app-bar>
+  <v-footer color="primary" dark app>
+    ArtStyle_Navigator
+  </v-footer>
+ </v-app>
 </template>
 
+
+
+
+
 <script>
-export default {
-  name: 'DefaultLayout',
-  data() {
-    return {
-      clipped: false,
-      drawer: false,
-      fixed: false,
-      items: [
+export default{
+  data(){
+    return{
+      drawer: null,
+      profiles:[
+      {name: '名前',icon: 'mdi-vuetify'},
+      {name: '自分の作品',icon: 'mdi-account-circle'},
+      {name: 'サンプル1',icon: 'mdi-bug'},
+      {name: 'サンプル2',icon: 'mdi-github'},
+      {name: 'サンプル3',icon: 'mdi-stack-overflow'},
+        ],
+      nav_lists:[
         {
-          icon: 'mdi-apps',
-          title: 'Welcome',
-          to: '/',
+          // エクスパンションリストに Link を追加
+          name: 'Home', 
+          icon: 'mdi-home-account',
+          lists:[{
+            name: 'サンプル', link:'/'
+          },
+          {
+            // とりあえず設定
+           name:'サンプル２', link:'/about'
+          }
+        ] 
         },
-        {
-          icon: 'mdi-chart-bubble',
-          title: 'Inspire',
-          to: '/inspire',
-        },
+        {name: 'About', icon: 'mdi-information'},
+        {name: 'Help', icon: 'mdi-help'},
+        {name: 'サンプル', icon: 'mdi-bird'},
+        {name: 'サンプル', icon: 'mdi-bird'},
+        {name: 'サンプル', icon: 'mdi-bird'},
       ],
-      miniVariant: false,
-      right: true,
-      rightDrawer: false,
-      title: 'Vuetify.js',
-    }
+    };
   },
   head() {
     return {
@@ -96,3 +144,4 @@ export default {
   }
 }
 </script>
+
