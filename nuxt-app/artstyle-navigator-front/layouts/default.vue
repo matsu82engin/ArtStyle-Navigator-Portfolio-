@@ -28,24 +28,48 @@
 
       <!-- ナビゲーションメニュー -->
       <v-list dense nav >
-        <v-list-group 
-        v-for="nav_list in nav_lists"
-        :key="nav_list.name"
-        :prepend-icon="nav_list.icon"
-        no-action
-        :append-icon="nav_list.lists ? undefined:''">
+        <template v-for="nav_list in nav_lists">
+          <!-- nav_list.lists がなければ(下の階層がなければ) そのまま配列のリンクを使う -->
+          <v-list-item
+            v-if="!nav_list.lists"
+            :key="nav_list.name"
+            :to="nav_list.link"
+            @click="menu_close"
+          >
+           <v-list-item-icon>
+            <v-icon> {{ nav_list.icon }} </v-icon>
+           </v-list-item-icon>
+            <v-list-item-content>
+            <v-list-item-title>
+              {{ nav_list.name }}
+            </v-list-item-title>
+          </v-list-item-content>
+          </v-list-item>        
+
+         <v-list-group 
+         v-else
+         :key="nav_list.name"
+         v-model="nav_list.active"
+         no-action 
+         :prepend-icon="nav_list.icon"
+         >
          <template #activator>
-          <v-list-item-content class="title grey--text text--darken-2">
+          <v-list-item-content class="title grey--text text--darken-2"> <!-- もし下の階層があるなら -->
             <v-list-item-title>{{ nav_list.name }}</v-list-item-title>
           </v-list-item-content>
-         </template>
-         <!-- メニュー -->
-         <v-list-item v-for="list in nav_list.lists" :key="list.name" :to="list.link">
-          <v-list-item-content>
-            <v-list-item-title>{{ list.name }}</v-list-item-title>
-          </v-list-item-content>
+        </template>
+         <!-- メニュー --> <!--下の階層のリンク -->
+         <v-list-item 
+          v-for="list in nav_list.lists" 
+          :key="list.name" 
+          :to="list.link"
+          >  
+          <v-list-item-title>
+            {{ list.name }}
+          </v-list-item-title>         
          </v-list-item>
         </v-list-group>
+        </template>
       </v-list>
 
     </v-container>
@@ -58,18 +82,23 @@
       </v-container>
     </v-main>
 
-
   <!-- ナビゲーションバー -->
   <v-app-bar color="primary" dark app clipped-left> 
     <v-app-bar-nav-icon @click="drawer =! drawer"></v-app-bar-nav-icon>
     <v-toolbar-title>ArtStyle_Navigator</v-toolbar-title>
     <v-spacer></v-spacer>
     <v-toolbar-items>
-        <v-btn text href="../pages/signup.vue">Sign up</v-btn>
 
-        <v-btn text>Login</v-btn>
-        <v-btn text>ゲストログイン</v-btn>
-        <v-btn text>簡単ログイン</v-btn>
+      <!-- ボタンは ログインした後はv-ifで消して、プロフィールのみ v-else で表示する -->
+      <v-btn
+       v-for="nav_menu in nav_menus"
+       :key="nav_menu"
+       :to="nav_menu.path"
+       color="primary"
+       class="elevation-0"
+       >
+       {{ nav_menu.menu }}
+      </v-btn>
       
       <v-menu offset-y>
         <template #activator="{ on }"> <!--  v-slot:activator から修正-->
@@ -119,20 +148,28 @@ export default{
           // エクスパンションリストに Link を追加
           name: 'Home', 
           icon: 'mdi-home-account',
+          active: false,
+          link: '',
           lists:[{
-            name: 'サンプル', link:'/'
+            name: 'サンプル4', link:'/'
           },
           {
             // とりあえず設定
-           name:'サンプル２', link:'/about'
+           name:'サンプル5', link:'/about'
           }
         ] 
         },
-        {name: 'About', icon: 'mdi-information'},
-        {name: 'Help', icon: 'mdi-help'},
-        {name: 'サンプル', icon: 'mdi-bird'},
-        {name: 'サンプル', icon: 'mdi-bird'},
-        {name: 'サンプル', icon: 'mdi-bird'},
+        {name: 'About', icon: 'mdi-information', link: '/about'}, 
+        {name: 'Help', icon: 'mdi-help', link: '/help'},
+        {name: 'サンプル6', icon: 'mdi-bird', link: ''},
+        {name: 'サンプル7', icon: 'mdi-bird', link: ''},
+        {name: 'サンプル8', icon: 'mdi-bird', link: ''},
+      ],
+      nav_menus: [
+        { menu: 'Sign up', path: '/signup' },
+        { menu: 'Login', path: '' },
+        { menu: 'ゲストログイン', path: '' },
+        { menu: '簡単ログイン', path: '' },
       ],
     };
   },
@@ -140,6 +177,13 @@ export default{
     return {
       title: 'ArtStyle_Navigator', // title タグ
       titleTemplate: '%s - Home'
+    }
+  },
+  methods: {
+    menu_close(){
+      this.nav_lists.forEach(function(navList) {
+        navList.active = false;
+      });
     }
   }
 }
