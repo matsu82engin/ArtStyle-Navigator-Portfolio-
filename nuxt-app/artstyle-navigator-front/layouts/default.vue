@@ -32,7 +32,7 @@
           <!-- nav_list.lists がなければ(下の階層がなければ) そのまま配列のリンクを使う -->
           <v-list-item
             v-if="!nav_list.lists"
-            :key="nav_list.name"
+            :key="nav_list.id"         
             :to="nav_list.link"
             @click="menu_close"
           >
@@ -48,7 +48,7 @@
 
          <v-list-group 
          v-else
-         :key="nav_list.name"
+         :key="nav_list.id"
          v-model="nav_list.active"
          no-action 
          :prepend-icon="nav_list.icon"
@@ -61,7 +61,7 @@
          <!-- メニュー --> <!--下の階層のリンク -->
          <v-list-item 
           v-for="list in nav_list.lists" 
-          :key="list.name" 
+          :key="list.id" 
           :to="list.link"
           >  
           <v-list-item-title>
@@ -92,7 +92,7 @@
       <!-- ボタンは ログインした後はv-ifで消して、プロフィールのみ v-else で表示する -->
       <v-btn
        v-for="nav_menu in nav_menus"
-       :key="nav_menu"
+       :key="nav_menu.id"
        :to="nav_menu.path"
        color="primary"
        class="elevation-0"
@@ -137,39 +137,40 @@ export default{
     return{
       drawer: null,
       profiles:[
-      {name: '名前',icon: 'mdi-vuetify'},
-      {name: '自分の作品',icon: 'mdi-account-circle'},
-      {name: 'サンプル1',icon: 'mdi-bug'},
-      {name: 'サンプル2',icon: 'mdi-github'},
-      {name: 'サンプル3',icon: 'mdi-stack-overflow'},
+      {id: 1, name: '名前',icon: 'mdi-vuetify'},
+      {id: 2, name: '自分の作品',icon: 'mdi-account-circle'},
+      {id: 3, name: 'サンプル1',icon: 'mdi-bug'},
+      {id: 4, name: 'サンプル2',icon: 'mdi-github'},
+      {id: 5,name: 'サンプル3',icon: 'mdi-stack-overflow'},
         ],
       nav_lists:[
         {
           // エクスパンションリストに Link を追加
+          id: 1,
           name: 'Home', 
           icon: 'mdi-home-account',
           active: false,
           link: '',
           lists:[{
-            name: 'サンプル4', link:'/'
+            id: 1, name: 'サンプル4', link:'/'
           },
           {
             // とりあえず設定
-           name:'サンプル5', link:'/about'
+            id: 2, name:'サンプル5', link:'/about'
           }
         ] 
         },
-        {name: 'About', icon: 'mdi-information', link: '/about'}, 
-        {name: 'Help', icon: 'mdi-help', link: '/help'},
-        {name: 'サンプル6', icon: 'mdi-bird', link: ''},
-        {name: 'サンプル7', icon: 'mdi-bird', link: ''},
-        {name: 'サンプル8', icon: 'mdi-bird', link: ''},
+        {id: 2, name: 'About', icon: 'mdi-information', link: '/about'}, 
+        {id: 3, name: 'Help', icon: 'mdi-help', link: '/help'},
+        {id: 4, name: 'サンプル6', icon: 'mdi-bird', link: ''},
+        {id: 5, name: 'サンプル7', icon: 'mdi-bird', link: ''},
+        {id: 6, name: 'サンプル8', icon: 'mdi-bird', link: ''},
       ],
       nav_menus: [
-        { menu: 'Sign up', path: '/signup' },
-        { menu: 'Login', path: '' },
-        { menu: 'ゲストログイン', path: '' },
-        { menu: '簡単ログイン', path: '' },
+        { id: 1, menu: 'Sign up', path: '/signup' },
+        { id: 2, menu: 'Login', path: '' },
+        { id: 3, menu: 'ゲストログイン', path: '' },
+        { id: 4, menu: '簡単ログイン', path: '' },
       ],
     };
   },
