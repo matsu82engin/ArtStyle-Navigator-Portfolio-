@@ -1,4 +1,7 @@
-require: rubocop-rails
+require: 
+    - rubocop-rails
+    - rubocop-factory_bot
+    - rubocop-rspec
 
 AllCops:
   # 除外するディレクトリ（自動生成されるファイル）
