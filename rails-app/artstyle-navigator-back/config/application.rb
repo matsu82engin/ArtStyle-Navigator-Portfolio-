@@ -36,14 +36,15 @@ module ArtstyleNavigatorBack
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
-  end
+    
 
-  config.generators do |g|
-    g.assets false
-    g.test_framework :rspec, # RSpec で無駄な生成ファイルを作らない。
-      fixtures: false, # テストDBにレコードを作るfixtureの作成をスキップ(FactoryBotを使用するため)
-      view_specs: false, # ビューファイル用のスペックを作成しない(フロントエンドで行う)
-      helper_specs: false, # ヘルパーファイル用のスペックを作成しない
-      routing_specs: false # routes.rb用のスペックファイル作成しない(Railsフレームワーク自体がルーティングの正しさを保証してくれる)
+    config.generators do |g|
+      g.assets false
+      g.test_framework :rspec, # RSpec で無駄な生成ファイルを作らない。
+        fixtures: false, # テストDBにレコードを作るfixtureの作成をスキップ(FactoryBotを使用するため)
+        view_specs: false, # ビューファイル用のスペックを作成しない(フロントエンドで行う)
+        helper_specs: false, # ヘルパーファイル用のスペックを作成しない
+        routing_specs: false # routes.rb用のスペックファイル作成しない(Railsフレームワーク自体がルーティングの正しさを保証してくれる)
+    end
   end
 end

@@ -84,3 +84,8 @@ Style/FrozenStringLiteralComment:
 # メソッドパラメータ名の最小文字数を設定
 Naming/MethodParameterName:
   MinNameLength: 1
+
+# type: :model などの記述は指摘されないようにする
+# RSpec/Rails/InferredSpecType Cop を無効にする
+RSpec/Rails/InferredSpecType:
+  Enabled: false
