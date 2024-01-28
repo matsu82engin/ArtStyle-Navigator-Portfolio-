@@ -6,3 +6,5 @@ node_modules/
 
 #その他
 id_rsa
+.lsp
+deps.edn
