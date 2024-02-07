@@ -7,9 +7,8 @@ class User < ActiveRecord::Base
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
   include DeviseTokenAuth::Concerns::User
-
-  before_save { self.email = email.downcase }
+  # rubocop:enable Rails/ApplicationRecord
   validates :name, presence: true, length: { maximum: 50 }
+  # email の presence: true は devise ですでに設定されているため書かない
   validates :email, length: { maximum: 255 }
 end
-# rubocop:enable Rails/ApplicationRecord
