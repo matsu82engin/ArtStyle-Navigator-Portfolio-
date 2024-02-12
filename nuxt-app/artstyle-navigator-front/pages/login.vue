@@ -62,6 +62,7 @@ export default {
             localStorage.setItem('client', response.headers.client)
             localStorage.setItem('uid', response.headers.uid)
             localStorage.setItem('token-type', response.headers['token-type'])
+            window.location.href = '/profile'
             return response
           },
           (error) => {
