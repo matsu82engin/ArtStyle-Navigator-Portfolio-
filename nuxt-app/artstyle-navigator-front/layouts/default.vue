@@ -141,7 +141,7 @@ export default{
       {id: 2, name: '自分の作品',icon: 'mdi-account-circle'},
       {id: 3, name: 'サンプル1',icon: 'mdi-bug'},
       {id: 4, name: 'サンプル2',icon: 'mdi-github'},
-      {id: 5,name: 'サンプル3',icon: 'mdi-stack-overflow'},
+      {id: 5, name: 'サンプル3',icon: 'mdi-stack-overflow'},
         ],
       nav_lists:[
         {
@@ -168,7 +168,7 @@ export default{
       ],
       nav_menus: [
         { id: 1, menu: 'Sign up', path: '/signup' },
-        { id: 2, menu: 'Login', path: '' },
+        { id: 2, menu: 'Login', path: '/login' },
         { id: 3, menu: 'ゲストログイン', path: '' },
         { id: 4, menu: '簡単ログイン', path: '' },
       ],
