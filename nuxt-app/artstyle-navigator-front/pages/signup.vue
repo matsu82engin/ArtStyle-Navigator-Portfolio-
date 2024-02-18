@@ -62,7 +62,7 @@ export default {
   methods: {
     userRegister() {
       this.$axios.post('/api/v1/auth', this.user).then(() => {
-        window.location.href = '/'
+        this.$router.push(`/users/${this.$auth.user.id}`)
       })
       .catch((error) => {
         console.error('Registration failed:', error.response.data)

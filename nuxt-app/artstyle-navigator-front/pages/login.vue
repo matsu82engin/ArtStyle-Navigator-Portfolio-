@@ -57,12 +57,7 @@ export default {
         })
         .then(
           (response) => {
-            // レスポンスで返ってきた、認証に必要な情報をlocalStorageに保存
-            localStorage.setItem('access-token', response.headers['access-token'])
-            localStorage.setItem('client', response.headers.client)
-            localStorage.setItem('uid', response.headers.uid)
-            localStorage.setItem('token-type', response.headers['token-type'])
-            window.location.href = '/profile'
+            this.$router.push(`/users/${this.$auth.user.id}`)
             return response
           },
           (error) => {

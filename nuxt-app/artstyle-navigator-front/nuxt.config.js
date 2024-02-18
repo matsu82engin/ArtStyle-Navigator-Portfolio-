@@ -24,7 +24,9 @@ export default {
   css: [],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [],
+  plugins: [
+    { src: '~/plugins/axios.js', ssr: false }
+  ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
@@ -86,8 +88,21 @@ export default {
         endpoints: {
           login: { url: '/api/v1/auth/sign_in', method: 'post', propertyName: 'token' },
           logout: { url: '/api/v1/auth/sign_out', method: 'post' },
-          user: false,
+          // user エンドポイントを設定する
+          user: {url: '/api/v1/users/show', method: 'get', propertyName: false}
         },
+        // tokenRequired: true, // トークンが必要かどうか
+        // tokenType: 'Bearer' // トークンの種類
+      }
+    },
+    token: {
+      localStorage: true,
+      getter: (name) => {
+        const token = localStorage.getItem(name);
+        if (token) {
+          return `Bearer ${token}`;
+        }
+        return false;
       }
     }
   }
