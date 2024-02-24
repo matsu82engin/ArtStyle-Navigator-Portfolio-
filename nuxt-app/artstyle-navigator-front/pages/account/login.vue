@@ -36,7 +36,7 @@
 
 <script>
 export default {
-  name: 'App',
+  name: 'LoginForm',
   auth: false,
   data() {
     return {

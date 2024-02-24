@@ -47,7 +47,7 @@
 
 <script>
 export default {
-  name: 'App',
+  name: 'SignupForm',
   auth: false,
   data() {
     return {
