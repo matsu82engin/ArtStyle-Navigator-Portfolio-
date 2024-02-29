@@ -1,5 +1,8 @@
 <template>
   <v-container>
+    <!-- エラーメッセージを表示するためのコンポーネント -->
+    <ErrorMessage :errorMessage="errorMessage" />
+
     <v-card width="400px" class="mx-auto mt-5">
       <v-card-title>
         <h1 class="display-1">
@@ -46,28 +49,32 @@
 </template>
 
 <script>
+import ErrorMessage from '~/components/errorMessage.vue';
+
 export default {
-  name: 'SignupForm',
-  auth: false,
-  data() {
-    return {
-      user: {
-        name: '',
-        password: '',
-        email: '',
-        password_confirmation: '',
-      },
-    }
-  },
-  methods: {
-    userRegister() {
-      this.$axios.post('/api/v1/auth', this.user).then(() => {
-        this.$router.push(`/users/${this.$auth.user.id}`)
-      })
-      .catch((error) => {
-        console.error('Registration failed:', error.response.data)
-      })
+    name: 'SignupForm',
+    auth: false,
+    data() {
+        return {
+            user: {
+                name: '',
+                password: '',
+                email: '',
+                password_confirmation: '',
+            },
+            errorMessage: '',
+        };
     },
-  },
+    methods: {
+        userRegister() {
+            this.$axios.post('/api/v1/auth', this.user).then(() => {
+            this.$router.push(`/users/${this.$auth.user.id}`);
+            })
+              .catch((error) => {
+                ErrorMessage.methods.setErrorMessage.call(this, error);
+            });
+        },
+    },
+    components: { ErrorMessage }
 }
 </script>
