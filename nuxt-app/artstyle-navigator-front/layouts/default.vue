@@ -106,13 +106,26 @@
         </template>
         <v-list>
           <v-subheader>Setting</v-subheader>
-          <v-list-item v-for="profile in profiles" :key="profile.name">
+          <v-list-item v-for="profile in profiles" 
+          :key="profile.name"
+          :to="profile.link">
             <v-list-item-icon>
             <v-icon>{{ profile.icon }}</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>
                 {{ profile.name }}
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <!-- ログアウト追加 -->
+          <v-list-item :key="'logout'" @click="$auth.logout()">
+            <v-list-item-icon>
+              <v-icon>mdi-logout</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                ログアウト
               </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
@@ -140,8 +153,7 @@ export default{
       {id: 1, name: '名前',icon: 'mdi-vuetify'},
       {id: 2, name: '自分の作品',icon: 'mdi-account-circle'},
       {id: 3, name: 'サンプル1',icon: 'mdi-bug'},
-      {id: 4, name: 'サンプル2',icon: 'mdi-github'},
-      {id: 5, name: 'サンプル3',icon: 'mdi-stack-overflow'},
+      {id: 4, name: 'アカウントの設定',icon: 'mdi-account-cog-outline', link: '/account/deleteAccount'},
         ],
       nav_lists:[
         {
@@ -167,10 +179,9 @@ export default{
         {id: 6, name: 'サンプル8', icon: 'mdi-bird', link: ''},
       ],
       nav_menus: [
-        { id: 1, menu: 'Sign up', path: '/signup' },
-        { id: 2, menu: 'Login', path: '/login' },
+        { id: 1, menu: 'Sign up', path: '/account/signup' },
+        { id: 2, menu: 'Login', path: '/account/login' },
         { id: 3, menu: 'ゲストログイン', path: '' },
-        { id: 4, menu: '簡単ログイン', path: '' },
       ],
     };
   },

@@ -4,6 +4,10 @@ export default {
   server: {
     port: 8000,
   },
+  env: {
+    development: process.env.NODE_ENV === 'development',
+  },
+
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     titleTemplate: '%s - artstyle-navigator-front',
@@ -87,7 +91,7 @@ export default {
       local: {
         endpoints: {
           login: { url: '/api/v1/auth/sign_in', method: 'post', propertyName: 'token' },
-          logout: { url: '/api/v1/auth/sign_out', method: 'post' },
+          logout: { url: '/api/v1/auth/sign_out', method: 'delete' },
           // user エンドポイントを設定する
           user: {url: '/api/v1/users/show', method: 'get', propertyName: false}
         },
