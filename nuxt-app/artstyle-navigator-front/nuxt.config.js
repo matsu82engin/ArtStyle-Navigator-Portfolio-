@@ -4,6 +4,10 @@ export default {
   server: {
     port: 8000,
   },
+  env: {
+    development: process.env.NODE_ENV === 'development',
+  },
+
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     titleTemplate: '%s - artstyle-navigator-front',

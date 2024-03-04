@@ -1,5 +1,8 @@
 <template>
   <v-container>
+    <!-- エラーメッセージを表示するためのコンポーネント -->
+    <ErrorMessage :error-message="errorMessage" />
+
     <v-card width="400px" class="mx-auto mt-5">
       <v-card-title>
         <h1 class="display-1">
@@ -35,13 +38,19 @@
 </template>
 
 <script>
+import ErrorMessage from '~/components/ErrorMessage.vue';
+
 export default {
   name: 'LoginForm',
   auth: false,
+  components: {
+    ErrorMessage
+  },
   data() {
     return {
       password: '',
       email: '',
+      errorMessage: '',
     }
   },
   methods: {
@@ -61,7 +70,12 @@ export default {
             return response
           },
           (error) => {
-            return error
+          // エラーが発生した場合の処理
+          this.errorMessage = 'ログインに失敗しました。正しいメールアドレスとパスワードを入力してください。';
+          if(process.env.NODE_ENV === 'development'){
+            console.error('Login failed:', error);
+            return error;
+          }
           }
         )
     },

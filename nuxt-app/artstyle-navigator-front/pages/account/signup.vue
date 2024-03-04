@@ -49,11 +49,14 @@
 </template>
 
 <script>
-import ErrorMessage from '~/components/errorMessage.vue';
+import ErrorMessage from '~/components/ErrorMessage.vue';
 
 export default {
     name: 'SignupForm',
     auth: false,
+    components: {
+      ErrorMessage
+    },
     data() {
         return {
             user: {
@@ -80,14 +83,25 @@ export default {
           // ログイン後の処理
           this.$router.push(`/users/${response.data.data.id}`);
         }).catch(error => {
-          ErrorMessage.methods.setErrorMessage.call(this, error);
+          this.setErrorMessage(error);
         });
       })
       .catch(error => {
-        ErrorMessage.methods.setErrorMessage.call(this, error);
+        this.setErrorMessage(error);
       });
       },
+
+      setErrorMessage(error){
+        // エラーレスポンスがある場合、エラーメッセージを変数に設定
+        if (error.response && error.response.data && error.response.data.errors) {
+          this.errorMessage = '登録に失敗しました。入力した情報を確認してください';
+        } else {
+          this.errorMessage = '登録に失敗しました。もう一度お試しください'; 
+        }
+        if(process.env.NODE_ENV === 'development'){
+          console.log('Registration failed:', error.response.data);
+        }
+      }
     },
-    components: { ErrorMessage }
 }
 </script>
