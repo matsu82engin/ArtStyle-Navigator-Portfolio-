@@ -66,4 +66,12 @@ RSpec.configure do |config|
 
   # モジュール名(FactoryBot) を省略できるようにしておく
   config.include FactoryBot::Syntax::Methods
+
+  # Request Spec でRack::Testドライバーを使用
+  RSpec.configure do |config|
+    config.before(:each, type: :request) do
+      Capybara.default_driver = :rack_test
+    end
+  end
+
 end
