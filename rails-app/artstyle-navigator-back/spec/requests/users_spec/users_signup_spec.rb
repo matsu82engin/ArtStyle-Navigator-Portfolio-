@@ -1,8 +1,8 @@
 require 'rails_helper'
 
-RSpec.describe 'Users API', type: :request do
+RSpec.describe 'Signup API', type: :request do
   describe 'POST api_v1_auth_user_registration_path' do
-    context 'with invalid parameters signup' do # User API が失敗のステータスコードを返すかテスト
+    context 'when signing up with invalid parameters' do # User API が失敗のステータスコードを返すかテスト
       it 'signup returns a 422 status code' do
         # ファクトリーの user で作られたデータを使って無効な情報を POST
         user_params = { name: '', email: '', password: 'foo', password_confirmation: 'bar' } 
@@ -14,7 +14,7 @@ RSpec.describe 'Users API', type: :request do
       end
     end
 
-    context 'with valid parameters signup' do # User API が成功のステータスコードを返すかテスト
+    context 'when signing up with valid parameters' do # User API が成功のステータスコードを返すかテスト
       let(:user) { build(:user) }
       it 'signup returns a 200 status code' do
         post api_v1_auth_user_registration_path, params: { name: user.name, email: user.email, password: user.password, password_confirmation: user.password_confirmation } 

@@ -74,4 +74,8 @@ RSpec.configure do |config|
     end
   end
 
+  # supportディレクトリを読み込むように設定
+  Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f }
+  # ヘルパーモジュールをRspecで使える様にする
+  config.include AuthorizationHelper, type: :request
 end
