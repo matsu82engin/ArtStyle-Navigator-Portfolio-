@@ -58,3 +58,6 @@ gem 'devise_token_auth'
 
 # pry 導入
 gem 'pry'
+
+# Capybara 導入
+gem 'capybara', '~> 3.35'
