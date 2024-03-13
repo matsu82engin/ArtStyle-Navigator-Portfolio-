@@ -68,14 +68,14 @@ RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
 
   # Request Spec でRack::Testドライバーを使用
-  RSpec.configure do |config|
-    config.before(:each, type: :request) do
-      Capybara.default_driver = :rack_test
-    end
+  config.before(:each, type: :request) do
+    Capybara.default_driver = :rack_test
   end
 
   # supportディレクトリを読み込むように設定
-  Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f }
+  # rubocop:disable Rails/FilePath
+  Dir[Rails.root.join('spec', 'support', '**', '*.rb')].each { |f| require f }
+  # rubocop:enable Rails/FilePath
   # ヘルパーモジュールをRspecで使える様にする
   config.include AuthorizationHelper, type: :request
 end

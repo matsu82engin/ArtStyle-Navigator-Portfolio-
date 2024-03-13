@@ -2,6 +2,7 @@ require:
     - rubocop-rails
     - rubocop-factory_bot
     - rubocop-rspec
+    - rubocop-capybara
 
 AllCops:
   # 除外するディレクトリ（自動生成されるファイル）
@@ -88,4 +89,8 @@ Naming/MethodParameterName:
 # type: :model などの記述は指摘されないようにする
 # RSpec/Rails/InferredSpecType Cop を無効にする
 RSpec/Rails/InferredSpecType:
+  Enabled: false
+
+# RSpec の example の中の 複数の expect を許可
+RSpec/MultipleExpectations:
   Enabled: false
