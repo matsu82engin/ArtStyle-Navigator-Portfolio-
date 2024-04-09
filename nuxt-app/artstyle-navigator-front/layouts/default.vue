@@ -108,7 +108,7 @@
             </v-list-item-content>
           </v-list-item>
           <!-- ログアウト追加 -->
-          <v-list-item :key="'logout'" @click="$auth.logout()">
+          <v-list-item :key="'logout'" @click="logoutUser">
             <v-list-item-icon>
               <v-icon>mdi-logout</v-icon>
             </v-list-item-icon>
@@ -185,7 +185,21 @@ export default{
       this.nav_lists.forEach(function(navList) {
         navList.active = false;
       });
-    }
+    },
+    logoutUser(){
+      // ログアウト
+      this.$auth.logout()
+        .then(() => {
+          // ログアウト成功時の処理
+          localStorage.removeItem('access-token');
+          localStorage.removeItem('uid');
+          localStorage.removeItem('client');
+        })
+        .catch((error) => {
+          // ログアウト失敗時の処理
+          console.error('ログアウトエラー:', error);
+        })
+    },
   }
 }
 </script>
