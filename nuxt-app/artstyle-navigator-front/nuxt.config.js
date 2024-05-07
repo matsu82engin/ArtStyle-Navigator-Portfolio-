@@ -47,7 +47,8 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
-    '@nuxtjs/auth'
+    '@nuxtjs/auth',
+    // 'nuxt-client-init-module',
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -89,25 +90,18 @@ export default {
     },
     strategies: {
       local: {
+        token: {
+          localStorage: true,
+          property: 'auth._token.local',
+          type: 'Bearer'
+        },
         endpoints: {
-          login: { url: '/api/v1/auth/sign_in', method: 'post', propertyName: 'token' },
+          login: { url: '/api/v1/auth/sign_in', method: 'post' },
           logout: { url: '/api/v1/auth/sign_out', method: 'delete' },
           // user エンドポイントを設定する
           user: {url: '/api/v1/users/show', method: 'get', propertyName: false}
         },
-        // tokenRequired: true, // トークンが必要かどうか
-        // tokenType: 'Bearer' // トークンの種類
       }
     },
-    token: {
-      localStorage: true,
-      getter: (name) => {
-        const token = localStorage.getItem(name);
-        if (token) {
-          return `Bearer ${token}`;
-        }
-        return false;
-      }
-    }
   }
 }

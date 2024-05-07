@@ -3,7 +3,6 @@
   <v-navigation-drawer v-model="drawer" app clipped>
   <!-- <v-navigation-drawer v-model="drawer" app clipped style="background-color: white;"> -->
 
-
     <v-container>
       <v-list-item>
         <v-list-item-content>
@@ -14,17 +13,6 @@
       </v-list-item>
 
       <v-divider></v-divider>
-
-      <!-- <v-list dense nav>  エクスパンションリストなしの設定。
-        <v-list-item v-for="nav_list in nav_lists" :key="nav_list.name" class="title grey--text text--darken-2">
-          <v-list-item-icon>
-            <v-icon class="title grey--text text--darken-2">{{ nav_list.icon }}</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>{{ nav_list.name }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list> -->
 
       <!-- ナビゲーションメニュー -->
       <v-list dense nav >
@@ -96,13 +84,14 @@
        :to="nav_menu.path"
        color="primary"
        class="elevation-0"
+       v-if="!$auth.loggedIn"
        >
        {{ nav_menu.menu }}
       </v-btn>
       
-      <v-menu offset-y>
-        <template #activator="{ on }"> <!--  v-slot:activator から修正-->
-        <v-btn text v-on="on" >プロフィール<v-icon>mdi-menu-down</v-icon></v-btn>  <!-- 本当はここはログインしないと表示しない -->
+      <v-menu offset-y v-if="$auth.loggedIn"> <!-- ログインしてたらプロフィール表示 -->
+        <template #activator="{ on }">
+        <v-btn text v-on="on">プロフィール<v-icon>mdi-menu-down</v-icon></v-btn>
         </template>
         <v-list>
           <v-subheader>Setting</v-subheader>
@@ -119,7 +108,7 @@
             </v-list-item-content>
           </v-list-item>
           <!-- ログアウト追加 -->
-          <v-list-item :key="'logout'" @click="$auth.logout()">
+          <v-list-item :key="'logout'" @click="logoutUser">
             <v-list-item-icon>
               <v-icon>mdi-logout</v-icon>
             </v-list-item-icon>
@@ -196,7 +185,21 @@ export default{
       this.nav_lists.forEach(function(navList) {
         navList.active = false;
       });
-    }
+    },
+    logoutUser(){
+      // ログアウト
+      this.$auth.logout()
+        .then(() => {
+          // ログアウト成功時の処理
+          localStorage.removeItem('access-token');
+          localStorage.removeItem('uid');
+          localStorage.removeItem('client');
+        })
+        .catch((error) => {
+          // ログアウト失敗時の処理
+          console.error('ログアウトエラー:', error);
+        })
+    },
   }
 }
 </script>
