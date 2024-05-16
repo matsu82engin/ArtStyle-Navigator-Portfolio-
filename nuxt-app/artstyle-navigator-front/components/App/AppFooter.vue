@@ -1,7 +1,7 @@
 <template>
   <div>
+    <!-- v-footer 内に absolute があると 最後のコンポーネントが表示されないので一時的削除 -->
     <v-footer
-      absolute
       dark
       color="black"
     >

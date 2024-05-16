@@ -73,6 +73,7 @@
   <!-- ナビゲーションバー -->
   <v-app-bar color="primary" dark app clipped-left> 
     <v-app-bar-nav-icon @click="drawer =! drawer"></v-app-bar-nav-icon>
+    <app-logo />
     <v-toolbar-title>ArtStyle_Navigator</v-toolbar-title>
     <v-spacer></v-spacer>
     <v-toolbar-items>

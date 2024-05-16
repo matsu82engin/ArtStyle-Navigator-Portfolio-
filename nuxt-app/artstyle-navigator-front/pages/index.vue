@@ -1,25 +1,55 @@
 <template>
   <v-app>
-    <v-sheet>
-      <v-container
-        fluid
-        :style="{ maxWidth: '1280px' }"
+
+    <v-img
+      dark
+      src="https://picsum.photos/id/20/1920/1080?blur=5"
+      gradient="to top right, rgba(19,84,122,.6), rgba(128,208,199,.9)"
+      :height="imgHeight"
+    >
+      <v-row
+        align="center"
+        justify="center"
+        :style="{ height: `${imgHeight}px` }"
       >
-        <v-row
-          v-for="(menu, i) in menus"
-          :key="`menu-${i}`"
+        <v-col
+          cols="12"
+          class="text-center"
         >
-          <v-col 
-            cols="12"
+          <h1 class="display-1 mb-4">
+            自分の描きたい絵柄を探しにいこう。
+          </h1>
+          <h4
+            class="subheading"
+            :style="{ letterSpacing: '5px' }"
           >
-            <div
-              :is="`home-${menu.title}`" 
-            />
+            貴方の絵柄探しツール
+          </h4>
+        </v-col>
+      </v-row>
+    </v-img>
+
+    <v-sheet>
+      <v-container fluid :style="{ maxWidth: '1280px' }" :menus="menus">
+        <v-row v-for="(menu, i) in menus" :key="`menu-${i}`">
+          <v-col cols="12">
+            <v-card flat>
+              <v-card-title class="justify-center display-1">
+                {{ (`${menu.content}`) }}
+              </v-card-title>
+              <v-card-text class="text-center">
+                {{ menu.subtitle }}
+              </v-card-text>
+            </v-card>
+          </v-col>
+
+          <v-col cols="12">
+             <div :is="`home-${menu.title}`" />  <!-- ここがコンポーネント -->
           </v-col>
         </v-row>
       </v-container>
     </v-sheet>
-    <app-footer />
+    <app-footer /> <!-- footer コンポーネント -->
   </v-app>
 </template>
 
@@ -38,11 +68,12 @@ export default {
   },
   data () {
     return {
+      imgHeight: 500,
       menus: [
-        { title: 'about'},
-        { title: 'another-art-style'},
-        { title: 'find-my-art-style-button'},
-        { title: 'many-art-style'}
+        { title: 'about', content: 'このアプリについて', subtitle: 'このサイトは貴方の描きたい絵柄を見つけるアプリケーションです'},
+        { title: 'another-art-style', content: 'いろいろな絵柄', subtitle: '貴方の好きな絵柄は？'},
+        { title: 'find-my-art-style-button', content: 'さぁ、自分のなりたい絵柄を探しにいこう！', subtitle: 'Push Button!!'},
+        { title: 'many-art-style', content: 'みんなの絵柄', subtitle: '他の人の絵柄の書き方・コツを紹介'}
       ]
     }
   }
