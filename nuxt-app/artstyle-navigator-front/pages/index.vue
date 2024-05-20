@@ -1,6 +1,8 @@
 <template>
   <v-app>
-
+    <home-app-bar
+      :img-height="imgHeight"
+    />
     <v-img
       dark
       src="https://picsum.photos/id/20/1920/1080?blur=5"
