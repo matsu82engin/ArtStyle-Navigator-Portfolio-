@@ -10,19 +10,31 @@
       app
       clipped-left
       > 
-      <app-logo />
+      <app-logo
+        @click.native="$vuetify.goTo(0)"
+      />
       <v-toolbar-title>ArtStyle_Navigator</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-toolbar-items>
- 
+      <!-- ナビゲーションメニューボタン -->
+      <v-toolbar-items class="ml-2">
+        <v-btn
+        v-for="(menu, i) in menus"
+        :key="`menu-btn-${i}`"
+        text
+        @click="$vuetify.goTo(`#${menu.title}`)"
+        >
+        {{ (`${menu.value}`) }}
+      </v-btn>
+
        <!-- ボタンは ログインした後はv-ifで消して、プロフィールのみ v-else で表示する -->
         <template v-if="!$auth.loggedIn" >
           <v-btn
             v-for="nav_menu in nav_menus"
             :key="nav_menu.id"
             :to="nav_menu.path"
-            color="primary"
             class="elevation-0"
+            :elevation="navigationbarStyle.elevation"
+            :style="{ backgroundColor: navigationbarStyle.color }"
             >
             {{ nav_menu.menu }}
           </v-btn>
@@ -74,7 +86,11 @@
       imgHeight: {
         type: Number,
         default: 0
-      }
+      },
+      menus: {
+        type: Array,
+        default: () => []
+      },
     },
     data({ $store }){
       return {

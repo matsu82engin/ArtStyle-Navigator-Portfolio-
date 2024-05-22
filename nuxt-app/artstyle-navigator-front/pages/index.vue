@@ -1,6 +1,7 @@
 <template>
   <v-app>
     <home-app-bar
+      :menus="menus"
       :img-height="imgHeight"
     />
     <v-img
@@ -32,9 +33,19 @@
     </v-img>
 
     <v-sheet>
-      <v-container fluid :style="{ maxWidth: '1280px' }" :menus="menus">
-        <v-row v-for="(menu, i) in menus" :key="`menu-${i}`">
-          <v-col cols="12">
+      <v-container
+        fluid 
+        :style="{ maxWidth: '1280px' }"
+        :menus="menus"
+      >
+        <v-row 
+          v-for="(menu, i) in menus" 
+          :key="`menu-${i}`"
+        >
+          <v-col
+            :id="menu.title" 
+            cols="12"
+          >
             <v-card flat>
               <v-card-title class="justify-center display-1">
                 {{ (`${menu.content}`) }}
@@ -72,11 +83,31 @@ export default {
     return {
       imgHeight: 500,
       menus: [
-        { title: 'about', content: 'このアプリについて', subtitle: 'このサイトは貴方の描きたい絵柄を見つけるアプリケーションです'},
-        { title: 'another-art-style', content: 'いろいろな絵柄', subtitle: '貴方の好きな絵柄は？'},
-        { title: 'find-my-art-style-button', content: 'さぁ、自分のなりたい絵柄を探しにいこう！', subtitle: 'Push Button!!'},
-        { title: 'many-art-style', content: 'みんなの絵柄', subtitle: '他の人の絵柄の書き方・コツを紹介'}
-      ]
+        {
+          title: 'about', 
+          value: 'About',
+          content: 'このアプリについて',
+          subtitle: 'このサイトは貴方の描きたい絵柄を見つけるアプリケーションです'
+        },
+        {
+          title: 'another-art-style',
+          value: 'SomeStyle',
+          content: 'いろいろな絵柄',
+          subtitle: '貴方の好きな絵柄は？'
+        },
+        {
+          title: 'find-my-art-style-button',
+          value: 'YourStyle',
+          content: 'さぁ、自分のなりたい絵柄を探しにいこう！',
+          subtitle: 'Push Button!!'
+        },
+        {
+          title: 'many-art-style',
+          value: 'Tips',
+          content: 'みんなの絵柄',
+          subtitle: '他の人の絵柄の書き方・コツを紹介'
+        }
+      ],
     }
   }
 }
