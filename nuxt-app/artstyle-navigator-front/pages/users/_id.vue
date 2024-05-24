@@ -1,8 +1,11 @@
 <template>
-  <div>
-    <h1>User Profile</h1>
-    <p>User Name: {{ user.name }}</p>
-  </div>
+  <v-app>
+    <home-app-bar />
+    <div>
+      <h1>User Profile</h1>
+      <p>User Name: {{ user.name }}</p>
+    </div>
+  </v-app>
 </template>
 
 <script>
