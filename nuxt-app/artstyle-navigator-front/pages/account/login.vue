@@ -34,6 +34,28 @@
         </v-form>
       </v-card-text>
     </v-card>
+
+    <v-card width="400px" class="mx-auto mt-5">
+      <v-card-title>
+        <h1 class="display-1">
+          ゲストログイン
+        </h1>
+      </v-card-title>
+      <v-card-text>
+        <v-form ref="form" lazy-validation>
+          <v-card-actions>
+            <v-btn
+              color="light-green darken-1"
+              class="white--text"
+              @click="loginWithAuthModule"
+            >
+              ログイン
+            </v-btn>
+          </v-card-actions>
+        </v-form>
+      </v-card-text>
+    </v-card>
+
   </v-container>
 </template>
 

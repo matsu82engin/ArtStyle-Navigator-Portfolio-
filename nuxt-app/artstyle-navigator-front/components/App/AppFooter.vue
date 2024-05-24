@@ -1,16 +1,42 @@
 <template>
-  <div>
-    <!-- v-footer 内に absolute があると 最後のコンポーネントが表示されないので一時的削除 -->
+  <div
+    :style="{ marginTop: `${height}px`}"
+  >
     <v-footer
+      absolute
       dark
       color="black"
+      :height="height"
     >
-      AppFooter.vue
+      <v-col
+        cols="12"
+        class="py-0"
+      >
+        <div
+          class="text-center text-body-2"
+        >
+          &copy;{{ copyRightYear }}
+          <strong>{{ 'ArtStyleNavigator' }}</strong>
+        </div>
+      </v-col>
     </v-footer>
   </div>
 </template>
 
 <script>
 export default {
+  data () {
+    return {
+      height: 32
+    }
+  },
+  computed: {
+    copyRightYear () {
+      const beginningYear = 2024
+      const thisYear = new Date().getFullYear()
+      return (beginningYear < thisYear)
+        ? `${beginningYear} - ${thisYear}` : beginningYear
+    }
+  }
 }
 </script>
