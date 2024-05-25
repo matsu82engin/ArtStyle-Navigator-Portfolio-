@@ -53,10 +53,11 @@ import ErrorMessage from '~/components/ErrorMessage.vue';
 
 export default {
     name: 'SignupForm',
-    auth: false,
     components: {
       ErrorMessage
     },
+    layout: 'before-login',
+    auth: false,
     data() {
         return {
             user: {

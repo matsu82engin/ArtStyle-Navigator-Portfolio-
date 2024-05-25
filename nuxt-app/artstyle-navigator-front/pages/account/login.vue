@@ -64,10 +64,11 @@ import ErrorMessage from '~/components/ErrorMessage.vue';
 
 export default {
   name: 'LoginForm',
-  auth: false,
   components: {
     ErrorMessage
   },
+  layout: 'before-login',
+  auth: false,
   data() {
     return {
       password: '',

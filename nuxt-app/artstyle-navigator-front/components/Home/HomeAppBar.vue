@@ -12,11 +12,9 @@
       <app-logo
         @click.native="$vuetify.goTo(0)"
       />
-      <v-toolbar-title
+      <app-title
         class="hidden-mobile-and-down"
-      >
-        ArtStyle_Navigator
-      </v-toolbar-title>
+      />
       <v-spacer></v-spacer>
 
       <!-- ナビゲーションメニューボタン -->
@@ -26,6 +24,7 @@
         :key="`menu-btn-${i}`"
         text
         :class="{ 'hidden-sm-and-down': (menu.title === 'about') }"
+        :style="{ color: '#000000' }" 
         @click="$vuetify.goTo(`#${menu.title}`)"
         >
         {{ (`${menu.value}`) }}
@@ -97,9 +96,7 @@
       },
       navigationbarStyle () {
         let color;
-        if (this.scrollY < this.homeAppBarHeight) {
-          color = 'primary';
-        } else if (this.scrollY >= this.homeAppBarHeight && this.scrollY <= 500) {
+        if (this.scrollY >= this.homeAppBarHeight && this.scrollY <= 500) {
           color = 'transparent';
         } else {
           color = 'white'
