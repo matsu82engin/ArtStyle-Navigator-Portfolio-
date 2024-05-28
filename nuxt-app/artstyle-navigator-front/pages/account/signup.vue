@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <!-- エラーメッセージを表示するためのコンポーネント -->
-    <ErrorMessage :errorMessage="errorMessage" />
+    <ErrorMessage :error-message="errorMessage" />
 
     <v-card width="400px" class="mx-auto mt-5">
       <v-card-title>
@@ -10,22 +10,34 @@
         </h1>
       </v-card-title>
       <v-card-text>
-        <v-form ref="form" lazy-validation>
+        <v-form
+          ref="form"
+          v-model="isValid"
+          lazy-validation
+        >
           <v-text-field
             v-model="user.name"
+            :rules="nameRules"
+            :counter="max"
             prepend-icon="mdi-account"
             label="名前"
           />
           <v-text-field
             v-model="user.email"
+            :rules="signupEmailRules"
             prepend-icon="mdi-email"
             label="メールアドレス"
+            placeholder="your@email.com"
           />
           <v-text-field
             v-model="user.password"
+            :rules="form.signupPasswordRules"
+            :hint="form.hint"
             prepend-icon="mdi-lock"
             append-icon="mdi-eye-off"
             label="パスワード"
+            :placeholder="form.min"
+            :counter="''"
           />
           <v-text-field
             v-model="user.password_confirmation"
@@ -37,6 +49,8 @@
             <v-btn
               color="light-green darken-1"
               class="white--text"
+              :disabled="!isValid"
+              block
               @click="userRegister"
             >
               新規登録
@@ -59,19 +73,39 @@ export default {
     layout: 'before-login',
     auth: false,
     data() {
-        return {
-            user: {
-                name: '',
-                password: '',
-                email: '',
-                password_confirmation: '',
-            },
-            errorMessage: '',
-        };
+      const max = 50
+      return {
+          max,
+          user: {
+              name: '',
+              password: '',
+              email: '',
+              password_confirmation: '',
+          },
+          isValid: false,
+          nameRules: [
+            v => (v && v.trim().length > 0) || '名前を入力してください',
+            v => (!!v && max >= v.length) || `${max}文字以内で入力してください`
+          ],
+          signupEmailRules: [
+            v => !!v || '',
+            v => /.+@.+\..+/.test(v) || ''
+          ],
+          errorMessage: '',
+      };
+    },
+    computed: {
+      form() {
+        const min = '6文字以上'
+        const msg = `${min}必須。空白不可。半角英数字・ﾊｲﾌﾝ・ｱﾝﾀﾞｰﾊﾞｰが使えます`
+        const rules = v => /^[\w-]{6,72}$/.test(v) || msg
+        const hint = msg
+        const signupPasswordRules = [rules]
+        return {min, msg, signupPasswordRules, hint}
+      }
     },
     methods: {
       userRegister() {
-      // thenメソッドを使ってレスポンスを処理する
         this.$axios.post('/api/v1/auth', this.user)
           .then(response => {
         // ログイン処理

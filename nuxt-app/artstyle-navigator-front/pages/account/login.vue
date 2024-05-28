@@ -10,14 +10,20 @@
         </h1>
       </v-card-title>
       <v-card-text>
-        <v-form ref="form" lazy-validation>
+        <v-form
+          ref="form"
+          v-model="isValid"
+          lazy-validation
+        >
           <v-text-field
             v-model="email"
+            :rules="loginEmailRules"
             prepend-icon="mdi-email"
             label="メールアドレス"
           />
           <v-text-field
             v-model="password"
+            :rules="loginPasswordRules"
             prepend-icon="mdi-lock"
             append-icon="mdi-eye-off"
             label="パスワード"
@@ -26,6 +32,8 @@
             <v-btn
               color="light-green darken-1"
               class="white--text"
+              :disabled="!isValid"
+              block
               @click="loginWithAuthModule"
             >
               ログイン
@@ -74,6 +82,14 @@ export default {
       password: '',
       email: '',
       errorMessage: '',
+      isValid: false,
+      loginEmailRules: [
+        v => !!v || '',
+        v => /.+@.+\..+/.test(v) || ''
+      ],
+      loginPasswordRules: [
+        v => !!v || '',
+      ],
     }
   },
   methods: {
