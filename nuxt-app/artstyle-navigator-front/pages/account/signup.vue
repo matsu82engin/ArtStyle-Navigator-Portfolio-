@@ -34,24 +34,29 @@
             :rules="form.signupPasswordRules"
             :hint="form.hint"
             prepend-icon="mdi-lock"
-            append-icon="mdi-eye-off"
+            :append-icon="toggle.icon"
+            :type="toggle.type"
             label="パスワード"
             :placeholder="form.min"
             :counter="''"
+            @click:append="show = !show"
           />
           <v-text-field
             v-model="user.password_confirmation"
             prepend-icon="mdi-lock"
-            append-icon="mdi-eye-off"
+            :append-icon="toggle.icon"
+            :type="toggle.type"
             label="パスワード確認"
+            @click:append="show = !show"
           />
           <v-card-actions>
             <v-btn
               color="light-green darken-1"
               class="white--text"
-              :disabled="!isValid"
+              :disabled="!isValid || loading"
+              :loading="loading"
               block
-              @click="userRegister"
+              @click="userForm"
             >
               新規登録
             </v-btn>
@@ -78,11 +83,12 @@ export default {
           max,
           user: {
               name: '',
-              password: '',
               email: '',
+              password: '',
               password_confirmation: '',
           },
           isValid: false,
+          loading: false,
           nameRules: [
             v => (v && v.trim().length > 0) || '名前を入力してください',
             v => (!!v && max >= v.length) || `${max}文字以内で入力してください`
@@ -91,6 +97,7 @@ export default {
             v => !!v || '',
             v => /.+@.+\..+/.test(v) || ''
           ],
+          show: false,
           errorMessage: '',
       };
     },
@@ -102,9 +109,34 @@ export default {
         const hint = msg
         const signupPasswordRules = [rules]
         return {min, msg, signupPasswordRules, hint}
+      },
+      toggle() {
+        const icon = this.show ? 'mdi-eye' : 'mdi-eye-off'
+        const type = this.show ? 'text' : 'password'
+        return { icon, type }
       }
     },
     methods: {
+      userForm() {
+        this.registerLoading();
+        this.userRegister();
+      },
+      registerLoading(){
+        this.loading = true
+        setTimeout(() => {
+          this.formReset()
+          this.loading = false
+        }, 1500)
+      },
+      formReset(){
+        this.$refs.form.reset();
+        this.user = {
+          name: '',
+          email: '',
+          password: '',
+          password_confirmation: ''
+        };
+      },
       userRegister() {
         this.$axios.post('/api/v1/auth', this.user)
           .then(response => {

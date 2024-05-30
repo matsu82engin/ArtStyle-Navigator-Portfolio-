@@ -25,20 +25,31 @@
             v-model="password"
             :rules="loginPasswordRules"
             prepend-icon="mdi-lock"
-            append-icon="mdi-eye-off"
+            :append-icon="toggle.icon"
+            :type="toggle.type"
             label="パスワード"
+            @click:append="show = !show"
           />
           <v-card-actions>
+            <nuxt-link
+	            to="#"
+              class="body-2 text-decoration-none"
+            >
+            パスワードを忘れた方はこちら
+            </nuxt-link>
+          </v-card-actions>
+          <v-card-text class="px-0">
             <v-btn
               color="light-green darken-1"
               class="white--text"
-              :disabled="!isValid"
+              :disabled="!isValid || loading"
+              :loading="loading"
               block
-              @click="loginWithAuthModule"
+              @click="loginForm"
             >
               ログイン
             </v-btn>
-          </v-card-actions>
+          </v-card-text>
         </v-form>
       </v-card-text>
     </v-card>
@@ -83,6 +94,8 @@ export default {
       email: '',
       errorMessage: '',
       isValid: false,
+      loading: false,
+      show: false,
       loginEmailRules: [
         v => !!v || '',
         v => /.+@.+\..+/.test(v) || ''
@@ -92,7 +105,22 @@ export default {
       ],
     }
   },
+  computed: {
+    toggle() {
+        const icon = this.show ? 'mdi-eye' : 'mdi-eye-off'
+        const type = this.show ? 'text' : 'password'
+        return { icon, type }
+      }
+  },
   methods: {
+    loginForm() {
+      this.loginLoading();
+      this.loginWithAuthModule();
+    },
+    loginLoading(){
+      this.loading = true
+      setTimeout(() => (this.loading = false), 1500)
+    },
     // loginメソッドの呼び出し
     async loginWithAuthModule() {
       await this.$auth
