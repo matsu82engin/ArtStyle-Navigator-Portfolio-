@@ -10,27 +10,46 @@
         </h1>
       </v-card-title>
       <v-card-text>
-        <v-form ref="form" lazy-validation>
+        <v-form
+          ref="form"
+          v-model="isValid"
+          lazy-validation
+        >
           <v-text-field
             v-model="email"
+            :rules="loginEmailRules"
             prepend-icon="mdi-email"
             label="メールアドレス"
           />
           <v-text-field
             v-model="password"
+            :rules="loginPasswordRules"
             prepend-icon="mdi-lock"
-            append-icon="mdi-eye-off"
+            :append-icon="toggle.icon"
+            :type="toggle.type"
             label="パスワード"
+            @click:append="show = !show"
           />
           <v-card-actions>
+            <nuxt-link
+	            to="#"
+              class="body-2 text-decoration-none"
+            >
+            パスワードを忘れた方はこちら
+            </nuxt-link>
+          </v-card-actions>
+          <v-card-text class="px-0">
             <v-btn
               color="light-green darken-1"
               class="white--text"
-              @click="loginWithAuthModule"
+              :disabled="!isValid || loading"
+              :loading="loading"
+              block
+              @click="loginForm"
             >
               ログイン
             </v-btn>
-          </v-card-actions>
+          </v-card-text>
         </v-form>
       </v-card-text>
     </v-card>
@@ -64,18 +83,44 @@ import ErrorMessage from '~/components/ErrorMessage.vue';
 
 export default {
   name: 'LoginForm',
-  auth: false,
   components: {
     ErrorMessage
   },
+  layout: 'before-login',
+  auth: false,
   data() {
     return {
       password: '',
       email: '',
       errorMessage: '',
+      isValid: false,
+      loading: false,
+      show: false,
+      loginEmailRules: [
+        v => !!v || '',
+        v => /.+@.+\..+/.test(v) || ''
+      ],
+      loginPasswordRules: [
+        v => !!v || '',
+      ],
     }
   },
+  computed: {
+    toggle() {
+        const icon = this.show ? 'mdi-eye' : 'mdi-eye-off'
+        const type = this.show ? 'text' : 'password'
+        return { icon, type }
+      }
+  },
   methods: {
+    loginForm() {
+      this.loginLoading();
+      this.loginWithAuthModule();
+    },
+    loginLoading(){
+      this.loading = true
+      setTimeout(() => (this.loading = false), 1500)
+    },
     // loginメソッドの呼び出し
     async loginWithAuthModule() {
       await this.$auth

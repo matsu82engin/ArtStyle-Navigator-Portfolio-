@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <!-- エラーメッセージを表示するためのコンポーネント -->
-    <ErrorMessage :errorMessage="errorMessage" />
+    <ErrorMessage :error-message="errorMessage" />
 
     <v-card width="400px" class="mx-auto mt-5">
       <v-card-title>
@@ -10,34 +10,53 @@
         </h1>
       </v-card-title>
       <v-card-text>
-        <v-form ref="form" lazy-validation>
+        <v-form
+          ref="form"
+          v-model="isValid"
+          lazy-validation
+        >
           <v-text-field
             v-model="user.name"
+            :rules="nameRules"
+            :counter="max"
             prepend-icon="mdi-account"
             label="名前"
           />
           <v-text-field
             v-model="user.email"
+            :rules="signupEmailRules"
             prepend-icon="mdi-email"
             label="メールアドレス"
+            placeholder="your@email.com"
           />
           <v-text-field
             v-model="user.password"
+            :rules="form.signupPasswordRules"
+            :hint="form.hint"
             prepend-icon="mdi-lock"
-            append-icon="mdi-eye-off"
+            :append-icon="toggle.icon"
+            :type="toggle.type"
             label="パスワード"
+            :placeholder="form.min"
+            :counter="''"
+            @click:append="show = !show"
           />
           <v-text-field
             v-model="user.password_confirmation"
             prepend-icon="mdi-lock"
-            append-icon="mdi-eye-off"
+            :append-icon="toggle.icon"
+            :type="toggle.type"
             label="パスワード確認"
+            @click:append="show = !show"
           />
           <v-card-actions>
             <v-btn
               color="light-green darken-1"
               class="white--text"
-              @click="userRegister"
+              :disabled="!isValid || loading"
+              :loading="loading"
+              block
+              @click="userForm"
             >
               新規登録
             </v-btn>
@@ -53,24 +72,72 @@ import ErrorMessage from '~/components/ErrorMessage.vue';
 
 export default {
     name: 'SignupForm',
-    auth: false,
     components: {
       ErrorMessage
     },
+    layout: 'before-login',
+    auth: false,
     data() {
-        return {
-            user: {
-                name: '',
-                password: '',
-                email: '',
-                password_confirmation: '',
-            },
-            errorMessage: '',
-        };
+      const max = 50
+      return {
+          max,
+          user: {
+              name: '',
+              email: '',
+              password: '',
+              password_confirmation: '',
+          },
+          isValid: false,
+          loading: false,
+          nameRules: [
+            v => (v && v.trim().length > 0) || '名前を入力してください',
+            v => (!!v && max >= v.length) || `${max}文字以内で入力してください`
+          ],
+          signupEmailRules: [
+            v => !!v || '',
+            v => /.+@.+\..+/.test(v) || ''
+          ],
+          show: false,
+          errorMessage: '',
+      };
+    },
+    computed: {
+      form() {
+        const min = '6文字以上'
+        const msg = `${min}必須。空白不可。半角英数字・ﾊｲﾌﾝ・ｱﾝﾀﾞｰﾊﾞｰが使えます`
+        const rules = v => /^[\w-]{6,72}$/.test(v) || msg
+        const hint = msg
+        const signupPasswordRules = [rules]
+        return {min, msg, signupPasswordRules, hint}
+      },
+      toggle() {
+        const icon = this.show ? 'mdi-eye' : 'mdi-eye-off'
+        const type = this.show ? 'text' : 'password'
+        return { icon, type }
+      }
     },
     methods: {
+      userForm() {
+        this.registerLoading();
+        this.userRegister();
+      },
+      registerLoading(){
+        this.loading = true
+        setTimeout(() => {
+          this.formReset()
+          this.loading = false
+        }, 1500)
+      },
+      formReset(){
+        this.$refs.form.reset();
+        this.user = {
+          name: '',
+          email: '',
+          password: '',
+          password_confirmation: ''
+        };
+      },
       userRegister() {
-      // thenメソッドを使ってレスポンスを処理する
         this.$axios.post('/api/v1/auth', this.user)
           .then(response => {
         // ログイン処理

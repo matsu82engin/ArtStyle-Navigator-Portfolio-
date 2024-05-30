@@ -1,5 +1,5 @@
 <template>
-  <v-toolbar-items>
+  <div>
     <!-- ログイン前のボタン -->
     <template v-if="!$auth.loggedIn" >
       <v-btn
@@ -7,7 +7,8 @@
         :key="nav_menu.id"
         :to="nav_menu.path"
         class="elevation-0"
-        text
+        :style="{ color: '#0800FF' }" 
+        outlined
         >
         {{ nav_menu.menu }}
       </v-btn>
@@ -46,7 +47,7 @@
          </v-list>
     </v-menu>
 
-  </v-toolbar-items>
+  </div>
 </template>
 
 <script>
