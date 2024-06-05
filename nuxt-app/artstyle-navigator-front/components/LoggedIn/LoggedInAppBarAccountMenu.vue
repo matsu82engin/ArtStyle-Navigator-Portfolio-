@@ -64,6 +64,7 @@
         <!-- ログアウトボタン -->
         <v-list-item
           v-else
+          :key="`menu-list-else-${i}`"
           @click="logoutUser"
         >
           <v-list-item-icon class="mr-2">
@@ -86,8 +87,8 @@ export default {
   data () {
     return {
       menus: [
-        { name: 'アカウント設定', icon: 'mdi-account-cog', link: '/account/deleteAccount' },
-        { name: 'パスワード変更', icon: 'mdi-lock-outline', link: '#'},
+        { name: 'アカウント設定', icon: 'mdi-account-cog', link: '/account/settings' },
+        { name: 'パスワード変更', icon: 'mdi-lock-outline', link: '/account/password'},
         { name: 'ログアウト', icon: 'mdi-logout-variant', divider: true }
       ]
     }
@@ -101,7 +102,7 @@ export default {
           localStorage.removeItem('uid');
           localStorage.removeItem('client');
         })
-        .catch(() => {
+        .catch((error) => {
           // ログアウト失敗時の処理
           console.error('ログアウトエラー:', error);
         })

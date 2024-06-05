@@ -88,7 +88,7 @@ export default {
   },
   layout: 'before-login',
   auth: false,
-  data() {
+  data({ $store }) {
     return {
       password: '',
       email: '',
@@ -96,6 +96,7 @@ export default {
       isValid: false,
       loading: false,
       show: false,
+      redirectPath: $store.state.loggedIn.redirectPath,
       loginEmailRules: [
         v => !!v || '',
         v => /.+@.+\..+/.test(v) || ''
@@ -119,7 +120,6 @@ export default {
     },
     loginLoading(){
       this.loading = true
-      setTimeout(() => (this.loading = false), 1500)
     },
     // loginメソッドの呼び出し
     async loginWithAuthModule() {
@@ -133,7 +133,7 @@ export default {
         })
         .then(
           (response) => {
-            this.$router.push(`/users/${this.$auth.user.id}`)
+            this.$router.push(this.redirectPath)
             return response
           },
           (error) => {
