@@ -96,7 +96,7 @@ export default {
       isValid: false,
       loading: false,
       show: false,
-      redirectPath: $store.state.loggedIn.redirectPath,
+      redirectPath: $store.state.loggedIn.homePath,
       loginEmailRules: [
         v => !!v || '',
         v => /.+@.+\..+/.test(v) || ''

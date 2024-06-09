@@ -32,7 +32,7 @@ export default {
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     { src: '~/plugins/axios.js', ssr: false },
-    { src: '~/plugins/my-inject.js', ssr: false},
+    { src: '~/plugins/my-inject.js', ssr: true},
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
