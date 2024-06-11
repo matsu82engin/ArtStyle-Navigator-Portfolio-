@@ -108,7 +108,7 @@
           :md="container.md"
         >
           <v-card-title>
-            全てのプロジェクトa
+            全てのプロジェクト
           </v-card-title>
 
           <v-divider
