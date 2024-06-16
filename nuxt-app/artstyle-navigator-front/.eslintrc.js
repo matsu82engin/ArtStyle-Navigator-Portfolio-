@@ -14,5 +14,6 @@ module.exports = {
   // add your custom rules here
   rules: {
     'no-console': 'off',
+    'vue/valid-v-slot': 'off', // valid-v-slot ルールを無効化
   },
 }
