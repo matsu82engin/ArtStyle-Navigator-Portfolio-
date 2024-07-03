@@ -1,18 +1,33 @@
 <template>
   <v-container>
-    <!-- この nuxt-child コンポーネントの位置に password.vue, settings.vue が表示される -->
+    <v-btn
+      v-if="!!currentProject"
+      small
+      plain
+      color="primary"
+      :to="$my.projectLinkTo(currentProject.id, 'project-id-dashboard')"
+    >
+      <v-icon
+        left
+      >
+        mdi-chevron-double-left
+      </v-icon>
+      ダッシュボードに戻る
+    </v-btn>
     <nuxt-child />
   </v-container>
 </template>
 
 <script>
   export default {
-    // 共通レイアウト
     layout: 'logged-in',
-    // false を返すページのアクセスを制限する
-    // (ルート名 === 'account') => バリデーション: false => ページアクセス不可
     validate ({ route }) {
       return route.name !== 'account'
+    },
+    computed: {
+      currentProject (){
+        return this.$store.state.project.current
+      }
     }
   }
 </script>
