@@ -1,7 +1,9 @@
 <template>
   <v-container>
     <!-- エラーメッセージを表示するためのコンポーネント -->
-    <ErrorMessage :error-message="errorMessage" />
+    <ErrorMessage
+      :error-message="errorMessage"
+    />
 
     <v-card width="400px" class="mx-auto mt-5">
       <v-card-title>
@@ -14,6 +16,7 @@
           ref="form"
           v-model="isValid"
           lazy-validation
+          @submit.prevent="userForm"
         >
           <v-text-field
             v-model="user.name"
@@ -51,12 +54,12 @@
           />
           <v-card-actions>
             <v-btn
+              type="submit"
               color="light-green darken-1"
               class="white--text"
               :disabled="!isValid || loading"
               :loading="loading"
               block
-              @click="userForm"
             >
               新規登録
             </v-btn>
@@ -124,9 +127,8 @@ export default {
       registerLoading(){
         this.loading = true
         setTimeout(() => {
-          this.formReset()
           this.loading = false
-        }, 1500)
+        }, 3000)
       },
       formReset(){
         this.$refs.form.reset();
@@ -148,6 +150,7 @@ export default {
           }
         }).then(() => {
           // ログイン後の処理
+          this.formReset();
           this.$router.push(`/users/${response.data.data.id}`);
         }).catch(error => {
           this.setErrorMessage(error);
@@ -157,7 +160,6 @@ export default {
         this.setErrorMessage(error);
       });
       },
-
       setErrorMessage(error){
         // エラーレスポンスがある場合、エラーメッセージを変数に設定
         if (error.response && error.response.data && error.response.data.errors) {

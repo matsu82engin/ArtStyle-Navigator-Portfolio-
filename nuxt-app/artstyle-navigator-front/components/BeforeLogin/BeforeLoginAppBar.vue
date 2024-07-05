@@ -17,7 +17,7 @@
 
     <v-spacer />
 
-    <app-user-buttons />
+    <before-login-app-bar-user-buttons />
 
   </v-app-bar>
 </template>

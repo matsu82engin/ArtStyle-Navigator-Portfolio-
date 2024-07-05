@@ -31,7 +31,7 @@
         </v-btn>
 
       </v-toolbar-items>
-      <app-user-buttons />
+      <before-login-app-bar-user-buttons />
 
       <!-- 見えなくなったナビゲーションメニューをハンバーガーメニューにして対応 -->
       <v-menu

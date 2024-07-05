@@ -1,7 +1,9 @@
 <template>
   <v-container>
     <!-- エラーメッセージを表示するためのコンポーネント -->
-    <ErrorMessage :error-message="errorMessage" />
+    <ErrorMessage
+      :error-message="errorMessage"
+    />
 
     <v-card width="400px" class="mx-auto mt-5">
       <v-card-title>
@@ -14,6 +16,7 @@
           ref="form"
           v-model="isValid"
           lazy-validation
+          @submit.prevent="loginForm"
         >
           <v-text-field
             v-model="email"
@@ -40,12 +43,12 @@
           </v-card-actions>
           <v-card-text class="px-0">
             <v-btn
+              type="submit"
               color="light-green darken-1"
               class="white--text"
               :disabled="!isValid || loading"
               :loading="loading"
               block
-              @click="loginForm"
             >
               ログイン
             </v-btn>
@@ -88,7 +91,7 @@ export default {
   },
   layout: 'before-login',
   auth: false,
-  data() {
+  data({ $store }) {
     return {
       password: '',
       email: '',
@@ -96,6 +99,7 @@ export default {
       isValid: false,
       loading: false,
       show: false,
+      redirectPath: $store.state.loggedIn.homePath,
       loginEmailRules: [
         v => !!v || '',
         v => /.+@.+\..+/.test(v) || ''
@@ -114,37 +118,40 @@ export default {
   },
   methods: {
     loginForm() {
-      this.loginLoading();
+      this.loading = true;  // ローディングを開始
       this.loginWithAuthModule();
     },
-    loginLoading(){
-      this.loading = true
-      setTimeout(() => (this.loading = false), 1500)
+    formReset(){
+      this.$refs.form.reset();
+      this.user = {
+        email: '',
+        password: '',
+      };
     },
-    // loginメソッドの呼び出し
     async loginWithAuthModule() {
-      await this.$auth
-        .loginWith('local', {
-         // emailとpasswordの情報を送信
+      try {
+        const response = await this.$auth.loginWith('local', {
           data: {
             email: this.email,
             password: this.password,
           },
-        })
-        .then(
-          (response) => {
-            this.$router.push(`/users/${this.$auth.user.id}`)
-            return response
-          },
-          (error) => {
-          // エラーが発生した場合の処理
+        });
+        this.formReset();
+        this.$router.push(this.redirectPath);
+        return response;
+      } catch (error) {
+        if (error.response) {
+          // バックエンドからのエラーレスポンスがある場合
           this.errorMessage = 'ログインに失敗しました。正しいメールアドレスとパスワードを入力してください。';
-          if(process.env.NODE_ENV === 'development'){
-            console.error('Login failed:', error);
-            return error;
-          }
-          }
-        )
+        } else {
+          // ネットワークエラーやその他のエラーの場合
+          this.errorMessage = 'ネットワークエラーが発生しました。後でもう一度お試しください。';
+        }
+        this.loading = false;  // ローディングを解除
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Login failed:', error);
+        }
+      }
     },
   },
 }
