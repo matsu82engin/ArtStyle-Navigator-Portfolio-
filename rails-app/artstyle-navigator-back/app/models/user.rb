@@ -16,7 +16,7 @@ class User < ActiveRecord::Base
   def remember(jti)
     update!(refresh_jti: jti)
   end
-  
+
   # リフレッシュトークンのJWT IDを削除
   def forget
     update!(refresh_jti: nil)

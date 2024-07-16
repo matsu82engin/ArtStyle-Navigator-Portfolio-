@@ -1,6 +1,5 @@
 module UserAuth
   module TokenCommons
-
     # エンコードキー
     def secret_key
       UserAuth.token_secret_signature_key
@@ -27,7 +26,7 @@ module UserAuth
     end
 
     def crypt
-      salt = "signed user id"
+      salt = 'signed user id'
       key_length = ActiveSupport::MessageEncryptor.key_len
       secret = Rails.application.key_generator.generate_key(salt, key_length)
       ActiveSupport::MessageEncryptor.new(secret)
@@ -36,14 +35,16 @@ module UserAuth
     # user_id暗号化
     def encrypt_for(user_id)
       return unless user_id
+
       crypt.encrypt_and_sign(user_id.to_s, purpose: :authorization)
     end
 
     # user_id複合化(複合エラーの場合はnilを返す)
     def decrypt_for(user_id)
       return unless user_id
+
       crypt.decrypt_and_verify(user_id.to_s, purpose: :authorization)
-    rescue
+    rescue StandardError
       nil
     end
 
@@ -51,10 +52,9 @@ module UserAuth
     # Doc: https://openid-foundation-japan.github.io/draft-ietf-oauth-json-web-token-11.ja.html#typHdrDef
     def header_fields
       {
-        typ: "JWT",
+        typ: 'JWT',
         alg: algorithm
       }
     end
-
   end
 end
