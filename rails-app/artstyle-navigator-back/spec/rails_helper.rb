@@ -78,4 +78,6 @@ RSpec.configure do |config|
   # rubocop:enable Rails/FilePath
   # ヘルパーモジュールをRspecで使える様にする
   config.include AuthorizationHelper, type: :request
+  # 時間操作ヘルパーの追加
+  config.include ActiveSupport::Testing::TimeHelpers
 end

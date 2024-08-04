@@ -2,10 +2,12 @@
 
 # rubocop:disable Rails/ApplicationRecord
 class User < ActiveRecord::Base
-  # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
+  # token (refresh_token)生成モジュール
+  include TokenGenerateService
+
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
+
   include DeviseTokenAuth::Concerns::User
   # rubocop:enable Rails/ApplicationRecord
   validates :name, presence: true, length: { maximum: 50 }
@@ -16,7 +18,7 @@ class User < ActiveRecord::Base
   def remember(jti)
     update!(refresh_jti: jti)
   end
-  
+
   # リフレッシュトークンのJWT IDを削除
   def forget
     update!(refresh_jti: nil)
