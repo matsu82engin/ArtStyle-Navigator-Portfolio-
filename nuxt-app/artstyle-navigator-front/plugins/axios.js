@@ -17,8 +17,9 @@ export default function({ $axios }) {
     }
   })
 
-  $axios.onError(error => {
-    // ネットワークエラーやタイムアウトエラーを含むすべてのエラーを処理
-    console.error('リクエストエラー:', error);
+  $axios.onError((error) => {
+    if (error.response && error.response.status === 401) {
+      console.error('認証エラー:', error.response);
+    }
   });
 }

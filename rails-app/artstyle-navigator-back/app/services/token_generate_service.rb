@@ -6,25 +6,22 @@ module TokenGenerateService
   module ClassMethods
     # devise_token_auth で access-token のインスタンスから ユーザー情報を取得する
     def find_user_by_token(access_token, client_id, uid)
-      user = User.find_by(uid: uid)
-      
-      if user && user.valid_token?(access_token, client_id)
-        return user
-      else
-        return nil
-      end
+      user = User.find_by(uid:)
+
+      return user if user&.valid_token?(access_token, client_id)
+
+      nil
     end
 
     # リフレッシュトークンのインスタンス生成
     def decode_refresh_token(token)
-      UserAuth::RefreshToken.new(token: token)
+      UserAuth::RefreshToken.new(token:)
     end
 
     # リフレッシュトークンのuserを返す
     def from_refresh_token(token)
       decode_refresh_token(token).entity_for_user
     end
-
   end
 
   ## インスタンスメソッド
@@ -38,5 +35,4 @@ module TokenGenerateService
   def to_refresh_token
     encode_refresh_token.token
   end
-
 end

@@ -97,13 +97,14 @@ export default {
     logoutUser(){
       this.$auth.logout()
         .then(() => {
+          console.log('ログアウト成功');
           // ログアウト成功時の処理
           localStorage.removeItem('access-token');
           localStorage.removeItem('uid');
           localStorage.removeItem('client');
         })
         .catch((error) => {
-          // ログアウト失敗時の処理
+          // ネットワークによるログアウト失敗時の処理
           console.error('ログアウトエラー:', error);
         })
     },

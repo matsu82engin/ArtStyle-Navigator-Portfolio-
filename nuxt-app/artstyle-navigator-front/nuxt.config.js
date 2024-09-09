@@ -60,6 +60,11 @@ export default {
     // baseURL: '/', を変更
     baseURL: 'http://localhost:3000',
     credentials: true,
+    headers: {
+      common: {
+      'X-Requested-With': 'XMLHttpRequest',
+      },
+    }
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
