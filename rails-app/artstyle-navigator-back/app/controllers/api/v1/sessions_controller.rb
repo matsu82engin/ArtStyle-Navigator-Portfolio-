@@ -6,10 +6,12 @@ module Api
       rescue_from UserAuth.not_found_exception_class, with: :not_found
       # refresh_tokenのInvalidJitErrorが発生した場合はカスタムエラーを返す
       rescue_from JWT::InvalidJtiError, with: :invalid_jti
+      # refresh_tokenのExpiredSignatureが発生した場合はカスタムエラーを返す
+      rescue_from JWT::ExpiredSignature, with: :expired_signature_jti
       # 処理前にsessionを削除する
       before_action :delete_session, only: [:create]
       # ログアウトしたらリフレッシュトークンを削除する + 認証情報がきちんと確認できたらログアウトする
-      before_action :authenticate_api_v1_auth_user!, :destroy_refresh, only: [:destroy]
+      before_action :authenticate_api_v1_user!, :destroy_refresh, only: [:destroy]
       # session_userを取得、存在しない場合は401を返す
       before_action :sessionize_user, only: [:refresh]
 
@@ -30,6 +32,8 @@ module Api
       # ログアウト
       def destroy_refresh
         if session_user.nil?
+          # Rails.logger.error "Session user is nil. Cannot proceed with logout."
+          @resource.forget
           not_found
           return
         end
@@ -80,6 +84,11 @@ module Api
       # decode jti != user.refresh_jti のエラー処理
       def invalid_jti
         msg = 'Invalid jti for refresh token'
+        render status: :unauthorized, json: { status: 401, error: msg }
+      end
+
+      def expired_signature_jti
+        msg = 'refresh token has expired.'
         render status: :unauthorized, json: { status: 401, error: msg }
       end
     end

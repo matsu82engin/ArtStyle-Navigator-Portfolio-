@@ -49,7 +49,7 @@ RSpec.describe 'Authentication', type: :request do
     context 'when logout the token' do
       # ログアウトしたら headers から情報が消えているか
       it 'when you log out the token is gone' do
-        delete destroy_api_v1_auth_user_session_path, headers: header, xhr: true
+        delete destroy_api_v1_user_session_path, headers: header, xhr: true
 
         expect(response.headers['access-token']).to be_nil
         expect(response.headers['client']).to be_nil

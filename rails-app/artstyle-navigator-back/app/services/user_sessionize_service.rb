@@ -27,7 +27,11 @@ module UserSessionizeService
   rescue JWT::InvalidJtiError
     # jtiエラーの場合はcontrollerに処理を委任
     catch_invalid_jti
+  rescue JWT::ExpiredSignature
+    # リフレッシュトークンの有効期限切れを処理
+    handle_expired_token
   rescue UserAuth.not_found_exception_class,
+         # デコード、エンコードエラーの時は nil を返す
          JWT::DecodeError, JWT::EncodeError
     nil
   end
@@ -44,7 +48,13 @@ module UserSessionizeService
   # jtiエラーの処理
   def catch_invalid_jti
     delete_session
-    raise JWT::InvalidJtiError
+    raise JWT::InvalidJtiError, '無効なJTIです'
+  end
+
+  # リフレッシュトークンの有効期限切れの処理
+  def handle_expired_token
+    delete_session
+    raise JWT::ExpiredSignature, 'リフレッシュトークンの有効期限が切れています'
   end
 
   # 認証エラー

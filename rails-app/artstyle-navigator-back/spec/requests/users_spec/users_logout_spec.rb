@@ -6,7 +6,7 @@ RSpec.describe 'Logout API', type: :request do
 
     context 'when attempting to log out without being logged in' do # ログインせずにログアウトすると失敗
       it 'returns 401 unauthorized' do
-        delete destroy_api_v1_auth_user_session_path, xhr: true
+        delete destroy_api_v1_user_session_path, xhr: true
         expect(response).to have_http_status(:unauthorized)
       end
     end
@@ -15,7 +15,7 @@ RSpec.describe 'Logout API', type: :request do
       it 'return a 200 status code' do
         user = create(:user)
         header = sign_in_user user
-        delete destroy_api_v1_auth_user_session_path, headers: header, xhr: true
+        delete destroy_api_v1_user_session_path, headers: header, xhr: true
         expect(response).to have_http_status(:ok)
       end
     end
@@ -25,7 +25,7 @@ RSpec.describe 'Logout API', type: :request do
         user = create(:user)
         header = sign_in_user user
         header.delete('access-token')
-        delete destroy_api_v1_auth_user_session_path, headers: header, xhr: true
+        delete destroy_api_v1_user_session_path, headers: header, xhr: true
         expect(response).to have_http_status(:unauthorized)
       end
     end
@@ -35,7 +35,7 @@ RSpec.describe 'Logout API', type: :request do
         user = create(:user)
         header = sign_in_user user
         header['access-token'] = 'invalid-token' # トークンの変更
-        delete destroy_api_v1_auth_user_session_path, headers: header, xhr: true
+        delete destroy_api_v1_user_session_path, headers: header, xhr: true
         expect(response).to have_http_status(:unauthorized)
       end
     end

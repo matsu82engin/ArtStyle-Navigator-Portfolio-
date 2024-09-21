@@ -8,7 +8,7 @@ RSpec.describe 'Signup API', type: :request do
         user_params = { name: '', email: '', password: 'foo', password_confirmation: 'bar' }
         # 無効な情報を送信できているか確認
         # puts user_params.inspect
-        post api_v1_auth_user_registration_path, params: user_params, xhr: true
+        post api_v1_user_registration_path, params: user_params, xhr: true
         # API から無効なレスポンスが返ってくる
         expect(response).to have_http_status(:unprocessable_entity) # status code 422
       end
@@ -27,7 +27,7 @@ RSpec.describe 'Signup API', type: :request do
       end
 
       it 'signup returns a 200 status code' do
-        post api_v1_auth_user_registration_path, params: user_params, xhr: true
+        post api_v1_user_registration_path, params: user_params, xhr: true
         # API から有効なレスポンスが返ってくる
         expect(response).to have_http_status(:ok)
       end
