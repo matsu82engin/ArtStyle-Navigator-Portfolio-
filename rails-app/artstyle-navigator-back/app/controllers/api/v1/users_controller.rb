@@ -1,5 +1,5 @@
 class Api::V1::UsersController < ApplicationController
-  before_action :authenticate_api_v1_auth_user!, except: [:index]
+  before_action :authenticate_api_v1_user!, except: [:index]
 
   # GET /api/v1/users
   def index
@@ -9,6 +9,6 @@ class Api::V1::UsersController < ApplicationController
 
   # GET /api/v1/users/:id
   def show
-    render json: current_api_v1_auth_user
+    render json: current_api_v1_user
   end
 end

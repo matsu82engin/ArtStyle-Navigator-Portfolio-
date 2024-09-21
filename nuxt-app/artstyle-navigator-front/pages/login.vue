@@ -93,8 +93,9 @@ export default {
   auth: false,
   data({ $store }) {
     return {
-      password: '',
-      email: '',
+      // 実装時は中身は削除する
+      password: 'password',
+      email: '1@example.com',
       errorMessage: '',
       isValid: false,
       loading: false,
