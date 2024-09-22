@@ -1,6 +1,7 @@
 export default function({ $axios }) {
   $axios.onRequest(config => {
     config.timeout = 5000;
+    config.headers.common['X-Requested-With'] = 'XMLHttpRequest'
     config.headers.client = window.localStorage.getItem("client")
     config.headers["access-token"] = window.localStorage.getItem("access-token")
     config.headers.uid = window.localStorage.getItem("uid")
