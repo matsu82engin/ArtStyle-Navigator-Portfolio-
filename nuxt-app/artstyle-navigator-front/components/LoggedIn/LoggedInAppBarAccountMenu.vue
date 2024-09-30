@@ -99,9 +99,11 @@ export default {
         .then(() => {
           console.log('ログアウト成功');
           // ログアウト成功時の処理
-          localStorage.removeItem('access-token');
-          localStorage.removeItem('uid');
-          localStorage.removeItem('client');
+          // Cookie からトークンなどを削除
+          this.$cookies.remove('access-token');
+          this.$cookies.remove('uid');
+          this.$cookies.remove('client');
+          this.$cookies.remove('token-type');
         })
         .catch((error) => {
           // ネットワークによるログアウト失敗時の処理

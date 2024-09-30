@@ -1,20 +1,24 @@
+import Cookies from 'js-cookie'
+
 export default function({ $axios }) {
   $axios.onRequest(config => {
     config.timeout = 5000;
     config.headers.common['X-Requested-With'] = 'XMLHttpRequest'
-    config.headers.client = window.localStorage.getItem("client")
-    config.headers["access-token"] = window.localStorage.getItem("access-token")
-    config.headers.uid = window.localStorage.getItem("uid")
-    config.headers["token-type"] = window.localStorage.getItem("token-type")
+    // クッキーからトークンを取得してリクエストヘッダーにセット
+    config.headers.client = Cookies.get('client');
+    config.headers['access-token'] = Cookies.get('access-token');
+    config.headers.uid = Cookies.get('uid');
+    config.headers['token-type'] = Cookies.get('token-type');
+
     return config;
   })
 
   $axios.onResponse(response => {
     if (response.headers.client) {
-      localStorage.setItem("access-token", response.headers["access-token"])
-      localStorage.setItem("client", response.headers.client)
-      localStorage.setItem("uid", response.headers.uid)
-      localStorage.setItem("token-type", response.headers["token-type"])
+      Cookies.set('access-token', response.headers['access-token'], { secure: true, sameSite: 'None' });
+      Cookies.set('client', response.headers.client, { secure: true, sameSite: 'None' });
+      Cookies.set('uid', response.headers.uid, { secure: true, sameSite: 'None' });
+      Cookies.set('token-type', response.headers['token-type'], { secure: true, sameSite: 'None' });
     }
   })
 

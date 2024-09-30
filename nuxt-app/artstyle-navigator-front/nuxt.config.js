@@ -31,8 +31,8 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    { src: '~/plugins/axios.js', ssr: false },
     { src: '~/plugins/my-inject.js', ssr: true},
+    { src: '~/plugins/axios.js', ssr: false },
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -51,6 +51,7 @@ export default {
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
     '@nuxtjs/auth',
+    'cookie-universal-nuxt',
     // 'nuxt-client-init-module',
   ],
 
@@ -60,11 +61,6 @@ export default {
     // baseURL: '/', を変更
     baseURL: 'http://localhost:3000',
     credentials: true,
-    // headers: {
-    //   common: {
-    //   'X-Requested-With': 'XMLHttpRequest',
-    //   },
-    // }
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
@@ -92,6 +88,7 @@ export default {
 
   // auth オプションを記載
   auth: {
+    // plugins: [ { src: '~/plugins/axios', ssr: false } ],
     redirect: {
       login: '/',
       logout: '/',
@@ -101,9 +98,7 @@ export default {
     strategies: {
       local: {
         token: {
-          localStorage: true,
-          property: 'auth._token.local',
-          type: 'Bearer'
+          property: 'access-token',
         },
         endpoints: {
           login: { url: '/api/v1/auth/sign_in', method: 'post' },
