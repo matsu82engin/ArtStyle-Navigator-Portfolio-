@@ -120,7 +120,7 @@ export default {
   methods: {
     loginForm() {
       if (this.isValid) {
-        this.loading = true;  // ローディングを開始
+        this.loading = true;
         this.loginWithAuthModule();
       } else {
         this.errorMessage = 'フォームの入力内容にエラーがあります。';
@@ -143,6 +143,7 @@ export default {
         });
         this.formReset();
         this.$router.push(this.redirectPath);
+        console.log(response.data);
         return response;
       } catch (error) {
         if (error.response) {
@@ -157,10 +158,10 @@ export default {
           this.errorMessage = 'ネットワークエラーが発生しました。後でもう一度お試しください。';
         }
         if (process.env.NODE_ENV === 'development') {
-          console.error('Login failed:', error);
+          console.error('Login failed (ログイン失敗):', error);
         }
       }
-      this.loading = false;  // ローディングを解除
+      this.loading = false;
     },
   },
 }
