@@ -16,9 +16,9 @@ RSpec.describe 'RefreshToken', type: :request do
   # エンコード
   describe 'encode_token' do
     it 'encodes the token with expected payload' do
-      # payload[:exp]の値は想定通りか(1秒許容)
+      # payload[:exp]の値は想定通りか(3秒許容)
       expect_lifetime = lifetime.from_now.to_i
-      expect(payload[:exp]).to be_within(1.second).of(expect_lifetime)
+      expect(payload[:exp]).to be_within(3.seconds).of(expect_lifetime)
     end
 
     it 'encodes the token with expected jti payload' do

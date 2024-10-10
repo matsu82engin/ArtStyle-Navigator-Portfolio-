@@ -83,6 +83,9 @@
 
 <script>
 export default {
+  middleware ( $authetication ) {
+
+  },
   data () {
     return {
       menus: [
@@ -96,6 +99,7 @@ export default {
     logoutUser(){
       this.$auth.logout()
         .then(() => {
+          this.$authentication.logoutAdd();
           console.log('ログアウト成功');
           // ログアウト成功時の処理
           // Cookie からトークンなどを削除

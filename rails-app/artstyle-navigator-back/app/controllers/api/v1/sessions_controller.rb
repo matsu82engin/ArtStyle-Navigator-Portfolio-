@@ -10,10 +10,10 @@ module Api
       rescue_from JWT::ExpiredSignature, with: :expired_signature_jti
       # 処理前にsessionを削除する
       before_action :delete_session, only: [:create]
+      # session_userを取得、存在しない場合は401を返す
+      before_action :sessionize_user, only: [:refresh, :destroy]
       # ログアウトしたらリフレッシュトークンを削除する + 認証情報がきちんと確認できたらログアウトする
       before_action :authenticate_api_v1_user!, :destroy_refresh, only: [:destroy]
-      # session_userを取得、存在しない場合は401を返す
-      before_action :sessionize_user, only: [:refresh]
 
       # create アクションのオーバーライド
       def create
@@ -22,6 +22,12 @@ module Api
           set_refresh_token_to_cookie if resource.persisted?
         end
       end
+
+      # rubocop:disable Lint/UselessMethodDefinition
+      def destroy
+        super
+      end
+      # rubocop:enable Lint/UselessMethodDefinition
 
       # リフレッシュ
       def refresh
@@ -32,6 +38,7 @@ module Api
       # ログアウト
       def destroy_refresh
         if session_user.nil?
+          # 下記コードはデバッグ用
           # Rails.logger.error "Session user is nil. Cannot proceed with logout."
           @resource.forget
           not_found
@@ -81,6 +88,7 @@ module Api
         head(:not_found)
       end
 
+      # リフレッシュアクション用
       # decode jti != user.refresh_jti のエラー処理
       def invalid_jti
         msg = 'Invalid jti for refresh token'

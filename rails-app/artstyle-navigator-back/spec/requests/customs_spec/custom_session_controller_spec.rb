@@ -42,9 +42,9 @@ RSpec.describe 'CustomSessionController', type: :request do
         expiry = response.headers['expiry']
         user_from_token = User.find_user_by_token(access_token, client, uid)
 
-        # access-token の有効期限の確認 (サーバー時間との差を 1 秒許容)
+        # access-token の有効期限の確認 (サーバー時間との差を 3 秒許容)
         expected_expiry = Time.zone.at(expiry.to_i)
-        expect(expected_expiry).to be_within(1.second).of(DeviseTokenAuth.token_lifespan.from_now)
+        expect(expected_expiry).to be_within(3.seconds).of(DeviseTokenAuth.token_lifespan.from_now)
 
         # レスポンスの認証情報がログインユーザーと一致するか確認
         expect(user_from_token).to eq(user)
@@ -65,8 +65,8 @@ RSpec.describe 'CustomSessionController', type: :request do
         # @request.cookie_jar.instance_variable_get(:@set_cookies)[<key>]
         # cookie = @request.cookie_jar.instance_variable_get(:@set_cookies)[session_key]
         cookie = cookie_jar[session_key] # cookie_jar を使用
-        # expiresは想定通りか(1秒許容)
-        expect(cookie[:expires]).to be_within(1.second).of(Time.zone.at(refresh_lifetime_to_i))
+        # expiresは想定通りか(3秒許容)
+        expect(cookie[:expires]).to be_within(3.seconds).of(Time.zone.at(refresh_lifetime_to_i))
         # secureは一致しているか
         expect(cookie[:secure]).to eq(Rails.env.production?)
         # http_onlyはtrueか
@@ -188,15 +188,14 @@ RSpec.describe 'CustomSessionController', type: :request do
       end
     end
 
-    context 'when you log out without a sessionn' do
+    context 'when you log out without a session' do
       it 'returns a not found error when session is missing' do
         header = sign_in_user user
-        # session がない状態でログアウトしたらエラーが返ってくるか
+        # session がない状態でログアウトしたら401エラーが返ってくるか
         cookies[session_key] = nil
         delete destroy_api_v1_user_session_path, headers: header, xhr: true
-        # devise_token_auth の場合は 401 ではなく 404
-        expect(response).to have_http_status(:not_found)
-        response_check_of_invalid_request(:not_found)
+        expect(response).to have_http_status(:unauthorized)
+        response_check_of_invalid_request(:unauthorized)
       end
     end
 

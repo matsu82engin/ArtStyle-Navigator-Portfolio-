@@ -31,6 +31,7 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
+    { src: '~/plugins/authentication.js', ssr: false},
     { src: '~/plugins/my-inject.js', ssr: true},
     { src: '~/plugins/axios.js', ssr: false },
   ],
