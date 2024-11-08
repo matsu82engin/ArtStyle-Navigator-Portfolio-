@@ -24,8 +24,7 @@
       <v-list-item>
         <v-list-item-content>
           <v-list-item-subtitle>
-            <!-- TODO -->
-            ユーザー名が表示されます
+            {{ $auth.user.name }}
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
@@ -97,11 +96,15 @@ export default {
     logoutUser(){
       this.$auth.logout()
         .then(() => {
+          this.$authentication.logoutAdd();
           console.log('ログアウト成功');
           // ログアウト成功時の処理
-          localStorage.removeItem('access-token');
-          localStorage.removeItem('uid');
-          localStorage.removeItem('client');
+          // Cookie からトークンなどを削除
+          this.$cookies.remove('access-token');
+          this.$cookies.remove('uid');
+          this.$cookies.remove('client');
+          this.$cookies.remove('token-type');
+          window.localStorage.removeItem('persisted-key');
         })
         .catch((error) => {
           // ネットワークによるログアウト失敗時の処理

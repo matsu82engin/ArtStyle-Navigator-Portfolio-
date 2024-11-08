@@ -7,6 +7,11 @@ export default {
   env: {
     development: process.env.NODE_ENV === 'development',
   },
+  ssr: false,
+
+  router: {
+    prefetchLinks: false
+  },
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -31,8 +36,10 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    { src: '~/plugins/axios.js', ssr: false },
+    { src: '~/plugins/vuex-persisted-state.js', ssr: false},
+    { src: '~/plugins/authentication.js', ssr: false},
     { src: '~/plugins/my-inject.js', ssr: true},
+    { src: '~/plugins/axios.js', ssr: false },
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -51,6 +58,7 @@ export default {
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
     '@nuxtjs/auth',
+    'cookie-universal-nuxt',
     // 'nuxt-client-init-module',
   ],
 
@@ -60,11 +68,6 @@ export default {
     // baseURL: '/', を変更
     baseURL: 'http://localhost:3000',
     credentials: true,
-    headers: {
-      common: {
-      'X-Requested-With': 'XMLHttpRequest',
-      },
-    }
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
@@ -92,6 +95,8 @@ export default {
 
   // auth オプションを記載
   auth: {
+    // plugins: [ { src: '~/plugins/axios', ssr: false } ],
+    localStorage: false,
     redirect: {
       login: '/',
       logout: '/',
@@ -101,15 +106,19 @@ export default {
     strategies: {
       local: {
         token: {
-          localStorage: true,
-          property: 'auth._token.local',
-          type: 'Bearer'
+          property: 'access-token',
+        },
+        user: {
+          property: 'user',
+          autoFetch: false
         },
         endpoints: {
           login: { url: '/api/v1/auth/sign_in', method: 'post' },
           logout: { url: '/api/v1/auth/sign_out', method: 'delete' },
+          refresh: { url: '/api/v1/sessions/refresh', method: 'post' },
           // user エンドポイントを設定する
-          user: {url: '/api/v1/users/show', method: 'get', propertyName: false}
+          // user: {url: '/api/v1/auth/validate_token', method: 'get', propertyName: false}
+          user: false
         },
       }
     },

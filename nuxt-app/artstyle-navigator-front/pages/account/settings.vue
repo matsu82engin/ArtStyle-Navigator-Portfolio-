@@ -28,7 +28,7 @@
             </a>
           </v-col>
           <v-col cols="12" lg="5" class="pa-2 text-right">
-            <font-awesome-icon icon="angle-right" />
+            <!-- <font-awesome-icon icon="angle-right" /> -->
           </v-col>
         </v-row>
       </v-col>
@@ -44,14 +44,9 @@ export default {
   methods: {
     deleteUser() {
       this.$axios.delete('api/v1/auth', {
-        headers: {
-          'access-token': localStorage.getItem('access-token'),
-          uid: localStorage.getItem('uid'),
-          client: localStorage.getItem('client'),
-        },
       })
       .then(() => {
-        this.$auth.logout()
+        // TODO 退会時にクッキーとVuex($auth)の状態をクリアする必要がある。
         this.$router.push('/') // ルーターを使ってリダイレクト
       })
       .catch((error) => {

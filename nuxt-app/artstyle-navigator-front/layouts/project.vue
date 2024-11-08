@@ -24,7 +24,7 @@
 
 <script>
 export default {
-  middleware: 'get-project-current',
+  middleware: ['get-picture-list', 'get-project-current'],
   data() {
     return {
       drawer: null

@@ -119,8 +119,12 @@ export default {
   },
   methods: {
     loginForm() {
-      this.loading = true;  // ローディングを開始
-      this.loginWithAuthModule();
+      if (this.isValid) {
+        this.loading = true;
+        this.loginWithAuthModule();
+      } else {
+        this.errorMessage = 'フォームの入力内容にエラーがあります。';
+      }
     },
     formReset(){
       this.$refs.form.reset();
@@ -139,20 +143,28 @@ export default {
         });
         this.formReset();
         this.$router.push(this.redirectPath);
+        console.log('Login response:', response);  // レスポンスデータの確認
+        console.log(response.data);
+        this.$authentication.loginAdd(response)
+        console.log('Login add was called');       // このログが出力されるか確認
         return response;
       } catch (error) {
         if (error.response) {
+          // ここのエラーステータスが 404 の時はトースター処理をする
+          // 初めて訪れたユーザーがサイレントリフレッシュを行うためのものだとは思うが、
+          // devise_token_auth で認証失敗時は 404 を返すことが多いので、少し考える必要があり。
+
           // バックエンドからのエラーレスポンスがある場合
           this.errorMessage = 'ログインに失敗しました。正しいメールアドレスとパスワードを入力してください。';
         } else {
           // ネットワークエラーやその他のエラーの場合
           this.errorMessage = 'ネットワークエラーが発生しました。後でもう一度お試しください。';
         }
-        this.loading = false;  // ローディングを解除
         if (process.env.NODE_ENV === 'development') {
-          console.error('Login failed:', error);
+          console.error('Login failed (ログイン失敗):', error);
         }
       }
+      this.loading = false;
     },
   },
 }

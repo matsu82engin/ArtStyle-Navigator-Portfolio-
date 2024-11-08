@@ -148,6 +148,7 @@
 import homeImg from '~/assets/images/logged-in/home.png'
 export default {
   layout: 'logged-in',
+  middleware:['get-picture-list'],
   data () {
     return {
       homeImg,
@@ -183,7 +184,10 @@ export default {
         return 0
       })
     }
-  }
+  },
+  // render: {
+  //   resourceHints: false
+  // },
 }
 </script>
 
