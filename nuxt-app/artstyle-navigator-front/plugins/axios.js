@@ -2,7 +2,7 @@ import Cookies from 'js-cookie'
 
 export default function({ $axios }) {
   $axios.onRequest(config => {
-    config.timeout = 5000;
+    config.timeout = 8000;
     config.headers.common['X-Requested-With'] = 'XMLHttpRequest'
     // クッキーからトークンを取得してリクエストヘッダーにセット
     config.headers.client = Cookies.get('client');

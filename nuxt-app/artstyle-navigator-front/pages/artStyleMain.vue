@@ -184,7 +184,10 @@ export default {
         return 0
       })
     }
-  }
+  },
+  // render: {
+  //   resourceHints: false
+  // },
 }
 </script>
 

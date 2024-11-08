@@ -143,7 +143,10 @@ export default {
         });
         this.formReset();
         this.$router.push(this.redirectPath);
+        console.log('Login response:', response);  // レスポンスデータの確認
         console.log(response.data);
+        this.$authentication.loginAdd(response)
+        console.log('Login add was called');       // このログが出力されるか確認
         return response;
       } catch (error) {
         if (error.response) {

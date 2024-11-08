@@ -83,9 +83,6 @@
 
 <script>
 export default {
-  middleware ( $authetication ) {
-
-  },
   data () {
     return {
       menus: [
@@ -107,6 +104,7 @@ export default {
           this.$cookies.remove('uid');
           this.$cookies.remove('client');
           this.$cookies.remove('token-type');
+          window.localStorage.removeItem('persisted-key');
         })
         .catch((error) => {
           // ネットワークによるログアウト失敗時の処理

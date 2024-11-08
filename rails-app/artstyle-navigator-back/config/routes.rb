@@ -13,7 +13,7 @@ Rails.application.routes.draw do
           sessions: "api/v1/sessions"
         }
         
-        devise_scope :user do
+        devise_scope :api_v1_user do
           post 'sessions/refresh', to: 'sessions#refresh'
         end
     end

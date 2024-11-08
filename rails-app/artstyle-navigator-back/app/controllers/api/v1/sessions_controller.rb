@@ -19,7 +19,22 @@ module Api
       def create
         super do |resource|
           # サインイン成功時にクッキーにリフレッシュトークンをセット
-          set_refresh_token_to_cookie if resource.persisted?
+          if resource.persisted?
+            set_refresh_token_to_cookie
+            # レスポンスにリフレッシュトークンを含める
+            token = resource.create_new_auth_token
+            response.headers.merge!(token)
+            # ここで必要な追加情報をレスポンスに含める
+            render json: {
+              # data: resource.as_json,
+              data: safe_user_data(resource),
+              token: refresh_token,
+              expires: refresh_token_expiration,
+              # user: @resource.id,
+              user: @resource.id,
+              message: 'Login and token refresh successful'
+            } and return
+          end
         end
       end
 
@@ -81,6 +96,11 @@ module Api
       # リフレッシュトークンの有効期限
       def refresh_token_expiration
         Time.zone.at(encode_refresh_token.payload[:exp])
+      end
+
+      # セキュリティ上、必要なデータのみを返すようにする
+      def safe_user_data(resource)
+        resource.as_json(only: [:id, :uid, :name]) # 不要なデータを除外
       end
 
       # 404ヘッダーのみの返却を行う
