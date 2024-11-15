@@ -21,6 +21,7 @@ module Api
           # サインイン成功時にクッキーにリフレッシュトークンをセット
           if resource.persisted?
             set_refresh_token_to_cookie
+           
             # レスポンスにリフレッシュトークンを含める
             token = resource.create_new_auth_token
             response.headers.merge!(token)
@@ -31,7 +32,7 @@ module Api
               token: refresh_token,
               expires: refresh_token_expiration,
               # user: @resource.id,
-              user: @resource.id,
+              user: @resource,
               message: 'Login and token refresh successful'
             } and return
           end
@@ -47,7 +48,20 @@ module Api
       # リフレッシュ
       def refresh
         @resource = session_user
+
+        # DeviseTokenAuthで新しいトークンを生成し、レスポンスヘッダーにセット
+        @resource.create_new_auth_token.each do |key, value|
+          response.headers[key] = value
+        end
+
+        # 新しいリフレッシュトークンを生成し、レスポンスヘッダー + レスポンスにセット
         set_refresh_token_to_cookie
+        render json: {
+          token: refresh_token,
+          expires: refresh_token_expiration,
+          user: @resource,
+          message: 'access-token refresh!'
+        }
       end
 
       # ログアウト

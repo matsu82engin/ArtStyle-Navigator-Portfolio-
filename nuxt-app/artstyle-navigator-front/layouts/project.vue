@@ -24,6 +24,7 @@
 
 <script>
 export default {
+  name: 'ProjectLayouts',
   middleware: ['get-picture-list', 'get-project-current'],
   data() {
     return {
