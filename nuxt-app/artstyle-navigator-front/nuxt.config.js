@@ -11,7 +11,7 @@ export default {
 
   // プリロードに関するエラー対策の設定。本番環境ではエラーは出ない可能性があるのでいらないかもしれない
   render: {
-    resourcehint: false // プリロードやプリフェッチを無効化
+    resourceHints: false // プリロードやプリフェッチを無効化
   },
 
   // Global page headers: https://go.nuxtjs.dev/config-head

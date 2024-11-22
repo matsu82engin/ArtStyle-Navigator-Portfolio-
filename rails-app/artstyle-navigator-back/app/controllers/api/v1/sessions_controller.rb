@@ -21,7 +21,7 @@ module Api
           # サインイン成功時にクッキーにリフレッシュトークンをセット
           if resource.persisted?
             set_refresh_token_to_cookie
-           
+
             # レスポンスにリフレッシュトークンを含める
             token = resource.create_new_auth_token
             response.headers.merge!(token)

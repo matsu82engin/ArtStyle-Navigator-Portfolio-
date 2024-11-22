@@ -69,20 +69,26 @@ class Authentication {
   }
 
   // 有効期限が一定の時間以内(1週間)なら true を返す
+  // plugins ファイルだと Vuex の値が取得できないため、vuex-persiistedstate で localStorage から取得
   checkRefreshTokenExpiry() {
+    // セッションストレージから特定のキー(persisted-key)で保存されたデータを取得する。ない場合は空の配列
+    const data = JSON.parse(localStorage.getItem('persisted-key')) || [];
     const currentTime = new Date().getTime()  // 現在の時刻をミリ秒で取得
-    console.log(currentTime);
-    const remainingTime = this.expires - currentTime; // 有効期限までの残り時間（ミリ秒)
-    console.log(remainingTime);
+    console.log(currentTime); // デバッグ用
+    const remainingTime = data.authentication.expires - currentTime; // 有効期限までの残り時間（ミリ秒)
+    console.log(remainingTime); // デバッグ用
     // return remainingTime <= 50 * 1000;  // 動作確認用。50秒未満ならtrue
     return remainingTime <= 7 * 24 * 60 * 60 * 1000;  // 1週間未満ならtrue
   }
 
   isExistUser() {
-    // this.user.current ではタイミングの問題か参照できなかったので Vuexから直接ユーザー情報を出力
-    const user1 = this.store.state.user.current;
-    console.log(user1)
-    return this.store.state.user.current
+    const data = JSON.parse(localStorage.getItem('persisted-key')) || [];
+    console.log(data); // デバッグ用
+    if (data.user && data.user.current) {
+      console.log(data.user.current); // デバッグ用
+      return true;
+    }
+    return false;
   }
 
   loggedIn () {
