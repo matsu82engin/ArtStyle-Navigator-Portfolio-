@@ -103,7 +103,7 @@ export default {
     // plugins: [ { src: '~/plugins/axios', ssr: false } ],
     localStorage: false,
     redirect: {
-      login: '/',
+      login: '/login',
       logout: '/',
       callback: false,
       home: '/'
@@ -122,7 +122,7 @@ export default {
           logout: { url: '/api/v1/auth/sign_out', method: 'delete' },
           refresh: { url: '/api/v1/sessions/refresh', method: 'post' },
           // user エンドポイントを設定する
-          // user: {url: '/api/v1/auth/validate_token', method: 'get', propertyName: false}
+          // user: {url: '/api/v1/auth/validate_token', method: 'get', propertyName: false},
           user: false
         },
       }

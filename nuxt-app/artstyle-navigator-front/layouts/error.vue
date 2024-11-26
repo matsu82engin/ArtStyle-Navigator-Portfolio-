@@ -6,6 +6,9 @@
     <h1 v-else>
       {{ otherError }}
     </h1>
+    <h1>Error: {{ error.statusCode || 'Unknown' }}</h1>
+    <p>{{ error.message }}</p>
+    <!-- <p>{{ 'ログイン :' $auth.loggedIn }}</p> -->
     <NuxtLink to="/"> Home page </NuxtLink>
   </v-app>
 </template>

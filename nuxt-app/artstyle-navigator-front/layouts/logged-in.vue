@@ -10,6 +10,7 @@
 
 <script>
 export default {
-  name: 'LoggedIn'
+  name: 'LoggedIn',
+  middleware: ['authenticate']
 }
 </script>
