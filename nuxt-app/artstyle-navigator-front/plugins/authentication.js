@@ -88,6 +88,7 @@ class Authentication {
       console.log(data.user.current); // デバッグ用
       return true;
     }
+    console.log('None');
     return false;
   }
 

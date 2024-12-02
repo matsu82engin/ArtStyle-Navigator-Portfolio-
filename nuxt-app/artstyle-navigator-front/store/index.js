@@ -21,6 +21,11 @@ export const state = () => ({
     current: null,
     // Rails から取得するプロジェクトに書き換える。
     list: []
+  },
+  toast: {
+    msg: null,
+    color: 'error',
+    timeout: 4000
   }
 })
 
@@ -49,6 +54,9 @@ export const mutations = {
   },
   setCurrentProject (state, payload) {
     state.project.current = payload
+  },
+  setToast (state, payload) {
+    state.toast = payload
   }
 }
 
@@ -87,5 +95,10 @@ export const actions = {
       currentProject = state.project.list.find(project => project.id === id) || null
     }
     commit('setCurrentProject', currentProject)
+  },
+  getToast({ commit }, { msg, color, timeout }) {
+    color = color || 'error'
+    timeout = timeout || 4000
+    commit('setToast', { msg, color, timeout })
   }
 }

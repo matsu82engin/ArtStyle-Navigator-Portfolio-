@@ -1,4 +1,4 @@
-export default ({ $auth, route, redirect }) => {
+export default ({ $auth, store, route, redirect }) => {
   // リダイレクトを必要としないパス
   const notRedirectPaths = ['account', 'project']
   if (notRedirectPaths.includes(route.name)) {
@@ -9,12 +9,12 @@ export default ({ $auth, route, redirect }) => {
   if (!$auth.loggedIn) {
     const msg = 'まずはログインしてください'
     const color = 'info'
-    // TODO test
     console.log(msg, color)
-    // TODO トースター出力
-    // store.dispatch('getToast', { msg, color })
+    // トースター出力
+    store.dispatch('getToast', { msg, color })
     // TODO アクセスルート記憶
     // store.dispatch('getRememberPath', route)
+    console.log('Authenticate middleware called'); //デバック用
     return redirect('/login')
   }
 }

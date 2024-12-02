@@ -2,6 +2,7 @@
   <v-app>
     <before-login-app-bar />
     <v-main>
+      <app-toaster />
       <Nuxt />
     </v-main>
     <app-footer />
