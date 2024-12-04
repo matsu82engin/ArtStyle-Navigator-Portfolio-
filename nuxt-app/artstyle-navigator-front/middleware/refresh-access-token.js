@@ -16,8 +16,8 @@ export default async ({ $auth, $authentication, $axios, store, route, redirect, 
         'もう一度ログインしてください'
         store.dispatch('getToast', { msg })
 
-        // TODO アクセスルート記憶
-        // store.dispatch('getRememberPath', route)
+        // アクセスルート記憶
+        store.dispatch('getRememberPath', route)
 
         // ログアウト + Vuexの初期化(セッションはサーバで削除済み)
         $auth.logout();

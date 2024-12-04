@@ -12,9 +12,9 @@ export default ({ $auth, store, route, redirect }) => {
     console.log(msg, color)
     // トースター出力
     store.dispatch('getToast', { msg, color })
-    // TODO アクセスルート記憶
-    // store.dispatch('getRememberPath', route)
-    console.log('Authenticate middleware called'); //デバック用
+    // アクセスルート記憶
+    store.dispatch('getRememberPath', route)
+    console.log('Authenticate middleware called'); // デバック用
     return redirect('/login')
   }
 }

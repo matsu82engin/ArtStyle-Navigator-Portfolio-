@@ -15,7 +15,18 @@ export const state = () => ({
   loggedIn: {
     homePath: {
       name: homePath
-    }
+    },
+    // ログイン前ユーザーがアクセスしようとしたルートを記憶(記憶ルート)
+    rememberPath: {
+      name: homePath,
+      params: {}
+    },
+    // ログイン後のアクセス不可ルート一覧(= ログイン前だけアクセスできるルート一覧)
+    redirectPaths: [
+      'index',  // ('/')
+      'signup', // (新規登録画面)
+      'login'   // (ログイン画面)
+    ]
   },
   project: {
     current: null,
@@ -57,6 +68,9 @@ export const mutations = {
   },
   setToast (state, payload) {
     state.toast = payload
+  },
+  setRemeberPath (state, payload) {
+    state.loggedIn.rememberPath = payload
   }
 }
 
@@ -100,5 +114,14 @@ export const actions = {
     color = color || 'error'
     timeout = timeout || 4000
     commit('setToast', { msg, color, timeout })
+  },
+  // ログイン前ユーザーがアクセスしたルートを記憶する
+  getRememberPath({ state, commit }, { name, params }) {
+    // ログイン前のパスが渡された場合は loggedIn.homepath に書き換える
+    if (state.loggedIn.redirectPaths.includes(name)){
+      name = state.loggedIn.homePath.name // artStyleMain
+    }
+      params = params || {}
+      commit('setRemeberPath', { name, params })
   }
 }

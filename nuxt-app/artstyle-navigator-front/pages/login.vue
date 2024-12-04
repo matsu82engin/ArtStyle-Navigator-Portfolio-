@@ -100,7 +100,8 @@ export default {
       isValid: false,
       loading: false,
       show: false,
-      redirectPath: $store.state.loggedIn.homePath,
+      redirectPath: $store.state.loggedIn.rememberPath,
+      loggedInHomePath: $store.state.loggedIn.homePath,
       loginEmailRules: [
         v => !!v || '',
         v => /.+@.+\..+/.test(v) || ''
@@ -143,6 +144,8 @@ export default {
         });
         this.formReset();
         this.$router.push(this.redirectPath);
+        // 記憶ルートを初期値に戻す
+        this.$store.dispatch('getRememberPath', this.loggedInHomePath) // loggedInHomePath = artStyleMain
         console.log('Login response:', response);  // レスポンスデータの確認
         console.log(response.data);
         this.$authentication.loginAdd(response)
