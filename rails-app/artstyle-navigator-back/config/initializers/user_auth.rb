@@ -5,7 +5,9 @@ module UserAuth
 
   # refresh tokenの有効期限
   mattr_accessor :refresh_token_lifetime
-  self.refresh_token_lifetime = 1.day
+  # 動作確認
+  # self.refresh_token_lifetime = 60.seconds
+  self.refresh_token_lifetime = 2.weeks
 
   # cookieからrefresh tokenを取得する際のキー
   mattr_accessor :session_key

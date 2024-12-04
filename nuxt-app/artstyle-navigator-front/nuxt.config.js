@@ -9,8 +9,9 @@ export default {
   },
   ssr: false,
 
-  router: {
-    prefetchLinks: false
+  // プリロードに関するエラー対策の設定。本番環境ではエラーは出ない可能性があるのでいらないかもしれない
+  render: {
+    resourceHints: false // プリロードやプリフェッチを無効化
   },
 
   // Global page headers: https://go.nuxtjs.dev/config-head
@@ -38,7 +39,7 @@ export default {
   plugins: [
     { src: '~/plugins/vuex-persisted-state.js', ssr: false},
     { src: '~/plugins/authentication.js', ssr: false},
-    { src: '~/plugins/my-inject.js', ssr: true},
+    { src: '~/plugins/my-inject.js', ssr: false},
     { src: '~/plugins/axios.js', ssr: false },
   ],
 
@@ -61,6 +62,10 @@ export default {
     'cookie-universal-nuxt',
     // 'nuxt-client-init-module',
   ],
+
+  router: {
+    middleware :['refresh-access-token'],
+  },
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
@@ -98,7 +103,7 @@ export default {
     // plugins: [ { src: '~/plugins/axios', ssr: false } ],
     localStorage: false,
     redirect: {
-      login: '/',
+      login: '/login',
       logout: '/',
       callback: false,
       home: '/'
@@ -117,7 +122,7 @@ export default {
           logout: { url: '/api/v1/auth/sign_out', method: 'delete' },
           refresh: { url: '/api/v1/sessions/refresh', method: 'post' },
           // user エンドポイントを設定する
-          // user: {url: '/api/v1/auth/validate_token', method: 'get', propertyName: false}
+          // user: {url: '/api/v1/auth/validate_token', method: 'get', propertyName: false},
           user: false
         },
       }

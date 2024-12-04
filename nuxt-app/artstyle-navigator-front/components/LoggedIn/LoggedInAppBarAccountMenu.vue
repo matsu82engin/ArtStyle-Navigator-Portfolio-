@@ -104,6 +104,7 @@ export default {
           this.$cookies.remove('uid');
           this.$cookies.remove('client');
           this.$cookies.remove('token-type');
+          this.$cookies.remove('refresh_token');
           window.localStorage.removeItem('persisted-key');
         })
         .catch((error) => {

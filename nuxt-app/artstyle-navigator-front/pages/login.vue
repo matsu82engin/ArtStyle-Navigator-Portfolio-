@@ -100,7 +100,8 @@ export default {
       isValid: false,
       loading: false,
       show: false,
-      redirectPath: $store.state.loggedIn.homePath,
+      redirectPath: $store.state.loggedIn.rememberPath,
+      loggedInHomePath: $store.state.loggedIn.homePath,
       loginEmailRules: [
         v => !!v || '',
         v => /.+@.+\..+/.test(v) || ''
@@ -143,19 +144,21 @@ export default {
         });
         this.formReset();
         this.$router.push(this.redirectPath);
+        // 記憶ルートを初期値に戻す
+        this.$store.dispatch('getRememberPath', this.loggedInHomePath) // loggedInHomePath = artStyleMain
         console.log('Login response:', response);  // レスポンスデータの確認
         console.log(response.data);
         this.$authentication.loginAdd(response)
-        console.log('Login add was called');       // このログが出力されるか確認
+        this.loading = false;      
         return response;
       } catch (error) {
         if (error.response) {
-          // ここのエラーステータスが 404 の時はトースター処理をする
-          // 初めて訪れたユーザーがサイレントリフレッシュを行うためのものだとは思うが、
-          // devise_token_auth で認証失敗時は 404 を返すことが多いので、少し考える必要があり。
-
           // バックエンドからのエラーレスポンスがある場合
           this.errorMessage = 'ログインに失敗しました。正しいメールアドレスとパスワードを入力してください。';
+          // トースターで出力する場合
+          // const msg = 'ログインに失敗しました。正しいメールアドレスとパスワードを入力してください。'
+          // this.loading = false;
+          // return this.$store.dispatch('getToast', { msg })
         } else {
           // ネットワークエラーやその他のエラーの場合
           this.errorMessage = 'ネットワークエラーが発生しました。後でもう一度お試しください。';

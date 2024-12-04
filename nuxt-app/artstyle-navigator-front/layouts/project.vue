@@ -24,7 +24,8 @@
 
 <script>
 export default {
-  middleware: ['get-picture-list', 'get-project-current'],
+  name: 'ProjectLayouts',
+  middleware: ['authenticate', 'get-picture-list', 'get-project-current'],
   data() {
     return {
       drawer: null
