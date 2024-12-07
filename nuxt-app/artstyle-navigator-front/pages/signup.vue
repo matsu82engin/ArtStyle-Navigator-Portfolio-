@@ -79,7 +79,6 @@ export default {
       ErrorMessage
     },
     layout: 'before-login',
-    auth: false,
     data() {
       const max = 50
       return {

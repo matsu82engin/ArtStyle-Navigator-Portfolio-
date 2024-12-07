@@ -104,7 +104,8 @@ export default {
     localStorage: false,
     redirect: {
       login: '/login',
-      logout: '/',
+      // logout: '/',
+      logout: false,
       callback: false,
       home: '/'
     },
