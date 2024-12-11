@@ -106,6 +106,7 @@ export default {
           this.$cookies.remove('token-type');
           this.$cookies.remove('refresh_token');
           window.localStorage.removeItem('persisted-key');
+          this.$router.push('/');
         })
         .catch((error) => {
           // ネットワークによるログアウト失敗時の処理
