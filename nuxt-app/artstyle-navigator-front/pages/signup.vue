@@ -133,10 +133,8 @@ export default {
       },
       userRegister() {
         // ユーザー登録
-        let lastError = null //エラーを保存する変数
-
         this.$axios.post('/api/v1/auth', this.user)
-          .then(response => {
+        .then(response => {
         // ログイン処理
         this.$auth.loginWith('local', {
           data: {
@@ -147,35 +145,26 @@ export default {
               // ログイン後の処理
               this.formReset();
               this.$router.push(`/users/${response.data.data.id}`);
-              }).catch(error => {
+              }).catch(() => {
               // ログイン処理をしたとき失敗した場合(理論的に失敗しないが念の為)
-              console.log(error.response)
               const msg = 'ログインに失敗しました。'
               const timeout = -1
-              this.loading = false;
-              lastError = error;
               return this.$store.dispatch('getToast', { msg, timeout })
             });
           })
           .catch(error => {
             if (error.response && error.response.status === 422) {
               const msg = 'フォームの入力内容にエラーがあります。'
+              // const msg = error.response.data.errors.full_messages
               const timeout = -1
-              this.loading = false;
-              return this.$store.dispatch('getToast', { msg, timeout })
+              this.$store.dispatch('getToast', { msg, timeout })
             } else {
               const apiError = this.$my.apiErrorHandler(error.response)
-              lastError = error;
               this.$nuxt.error({
                 statusCode: apiError?.statusCode || 500, // エラーハンドラが返すステータスコードまたは 500
                 message: apiError?.message || 'An unexpected error occurred', // ハンドラのメッセージまたはデフォルトメッセージ
               });
-            }
-          })
-          .finally(() => {
-            if (process.env.NODE_ENV === 'development' && lastError) {
-            console.error('Error during signup or login:', lastError);
-            }
+            } 
           })
       },
       // Vuexのtoast.msgの値を変更する

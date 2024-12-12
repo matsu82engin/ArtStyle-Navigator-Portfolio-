@@ -163,9 +163,6 @@ export default {
             message: apiError?.message || 'An unexpected error occurred', // ハンドラのメッセージまたはデフォルトメッセージ
           })
         }
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Login failed (ログイン失敗):', error);
-        }
       }
       this.loading = false;
     },

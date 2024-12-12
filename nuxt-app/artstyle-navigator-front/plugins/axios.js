@@ -30,8 +30,9 @@ export default function({ $axios, isDev }) {
   })
 
   $axios.onError((error) => {
-    if (error.response && error.response.status === 401) {
-      console.error('認証エラー:', error.response);
+    if (isDev) {
+      console.error('エラーが発生しました:', error);
+      console.error('エラーレスポンス:', error.response);
     }
   });
 }
