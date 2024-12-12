@@ -90,7 +90,7 @@ module Api
         cookies[session_key] = {
           value: refresh_token,
           expires: refresh_token_expiration,
-          secure: Rails.env.production?,  
+          secure: Rails.env.production?
         }
       end
 

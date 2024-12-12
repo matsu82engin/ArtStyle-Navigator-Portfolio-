@@ -11,6 +11,7 @@
 
 <script>
 export default {
-  name: 'BeforeLoginLayout'
+  name: 'BeforeLoginLayout',
+  middleware: ['logged-in-redirect']
 }
 </script>

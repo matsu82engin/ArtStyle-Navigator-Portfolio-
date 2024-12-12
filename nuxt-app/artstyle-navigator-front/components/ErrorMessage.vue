@@ -1,3 +1,5 @@
+<!-- TODO 使わない場合はコンポーネントごと削除 -->
+
 <template>
   <v-alert 
     v-if="errorMessage"

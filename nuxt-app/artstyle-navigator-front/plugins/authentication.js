@@ -83,9 +83,9 @@ class Authentication {
 
   isExistUser() {
     const data = JSON.parse(localStorage.getItem('persisted-key')) || [];
-    console.log(data); // デバッグ用
+    // console.log(data); // デバッグ用
     if (data.user && data.user.current) {
-      console.log(data.user.current); // デバッグ用
+      // console.log(data.user.current); // デバッグ用
       return true;
     }
     console.log('None');

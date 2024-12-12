@@ -1,10 +1,5 @@
 <template>
   <v-container>
-    <!-- エラーメッセージを表示するためのコンポーネント -->
-    <ErrorMessage
-      :error-message="errorMessage"
-    />
-
     <v-card width="400px" class="mx-auto mt-5">
       <v-card-title>
         <h1 class="display-1">
@@ -82,13 +77,8 @@
 </template>
 
 <script>
-import ErrorMessage from '~/components/ErrorMessage.vue';
-
 export default {
   name: 'LoginForm',
-  components: {
-    ErrorMessage
-  },
   layout: 'before-login',
   auth: false,
   data({ $store }) {
@@ -96,7 +86,7 @@ export default {
       // 実装時は中身は削除する
       password: 'password',
       email: '1@example.com',
-      errorMessage: '',
+      // errorMessage: '',
       isValid: false,
       loading: false,
       show: false,
@@ -118,13 +108,20 @@ export default {
         return { icon, type }
       }
   },
+  beforeDestroy () {
+    // Vueインスタンスが破棄される直前にVuexのtoast.msgを削除する(無期限toastに対応)
+    this.resetToast()
+  },
   methods: {
     loginForm() {
       if (this.isValid) {
         this.loading = true;
         this.loginWithAuthModule();
       } else {
-        this.errorMessage = 'フォームの入力内容にエラーがあります。';
+        const msg = 'フォームの入力内容にエラーがあります。'
+        const timeout = -1
+        this.loading = false;
+        return this.$store.dispatch('getToast', { msg, timeout })
       }
     },
     formReset(){
@@ -146,29 +143,33 @@ export default {
         this.$router.push(this.redirectPath);
         // 記憶ルートを初期値に戻す
         this.$store.dispatch('getRememberPath', this.loggedInHomePath) // loggedInHomePath = artStyleMain
-        console.log('Login response:', response);  // レスポンスデータの確認
-        console.log(response.data);
+        // console.log('Login response:', response);  // レスポンスデータの確認
+        // console.log(response.data);
         this.$authentication.loginAdd(response)
         this.loading = false;      
         return response;
       } catch (error) {
-        if (error.response) {
-          // バックエンドからのエラーレスポンスがある場合
-          this.errorMessage = 'ログインに失敗しました。正しいメールアドレスとパスワードを入力してください。';
-          // トースターで出力する場合
-          // const msg = 'ログインに失敗しました。正しいメールアドレスとパスワードを入力してください。'
-          // this.loading = false;
-          // return this.$store.dispatch('getToast', { msg })
+        if (error.response && error.response.status === 401) {
+          // バックエンドからのエラーレスポンスがある場合トースターで出力
+          const msg = 'ログインに失敗しました。正しいメールアドレスとパスワードを入力してください'
+          const timeout = -1
+          this.loading = false;
+          return this.$store.dispatch('getToast', { msg, timeout })
         } else {
           // ネットワークエラーやその他のエラーの場合
-          this.errorMessage = 'ネットワークエラーが発生しました。後でもう一度お試しください。';
-        }
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Login failed (ログイン失敗):', error);
+          const apiError = this.$my.apiErrorHandler(error.response)
+          this.$nuxt.error({
+            statusCode: apiError?.statusCode || 500, // エラーハンドラが返すステータスコードまたは 500
+            message: apiError?.message || 'An unexpected error occurred', // ハンドラのメッセージまたはデフォルトメッセージ
+          })
         }
       }
       this.loading = false;
     },
+    // Vuexのtoast.msgの値を変更する
+    resetToast () {
+        return this.$store.dispatch('getToast', { msg: null })
+    }
   },
 }
 </script>

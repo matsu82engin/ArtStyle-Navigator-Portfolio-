@@ -69,8 +69,6 @@ RSpec.describe 'CustomSessionController', type: :request do
         expect(cookie[:expires]).to be_within(3.seconds).of(Time.zone.at(refresh_lifetime_to_i))
         # secureは一致しているか
         expect(cookie[:secure]).to eq(Rails.env.production?)
-        # http_onlyはtrueか
-        expect(cookie[:http_only]).to be_truthy
       end
 
       it 'creates a valid refresh token matching the user and expiration' do

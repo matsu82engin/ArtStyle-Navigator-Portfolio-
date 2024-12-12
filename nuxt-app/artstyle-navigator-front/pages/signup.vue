@@ -1,10 +1,5 @@
 <template>
   <v-container>
-    <!-- エラーメッセージを表示するためのコンポーネント -->
-    <ErrorMessage
-      :error-message="errorMessage"
-    />
-
     <v-card width="400px" class="mx-auto mt-5">
       <v-card-title>
         <h1 class="display-1">
@@ -71,15 +66,9 @@
 </template>
 
 <script>
-import ErrorMessage from '~/components/ErrorMessage.vue';
-
 export default {
     name: 'SignupForm',
-    components: {
-      ErrorMessage
-    },
     layout: 'before-login',
-    auth: false,
     data() {
       const max = 50
       return {
@@ -101,7 +90,6 @@ export default {
             v => /.+@.+\..+/.test(v) || ''
           ],
           show: false,
-          errorMessage: '',
       };
     },
     computed: {
@@ -118,6 +106,10 @@ export default {
         const type = this.show ? 'text' : 'password'
         return { icon, type }
       }
+    },
+    beforeDestroy () {
+    // Vueインスタンスが破棄される直前にVuexのtoast.msgを削除する(無期限toastに対応)
+    this.resetToast()
     },
     methods: {
       userForm() {
@@ -140,37 +132,45 @@ export default {
         };
       },
       userRegister() {
+        // ユーザー登録
         this.$axios.post('/api/v1/auth', this.user)
-          .then(response => {
+        .then(response => {
         // ログイン処理
         this.$auth.loginWith('local', {
           data: {
             email: this.user.email,
             password: this.user.password
           }
-        }).then(() => {
-          // ログイン後の処理
-          this.formReset();
-          this.$router.push(`/users/${response.data.data.id}`);
-        }).catch(error => {
-          this.setErrorMessage(error);
-        });
-      })
-      .catch(error => {
-        this.setErrorMessage(error);
-      });
+            }).then(() => {
+              // ログイン後の処理
+              this.formReset();
+              this.$router.push(`/users/${response.data.data.id}`);
+              }).catch(() => {
+              // ログイン処理をしたとき失敗した場合(理論的に失敗しないが念の為)
+              const msg = 'ログインに失敗しました。'
+              const timeout = -1
+              return this.$store.dispatch('getToast', { msg, timeout })
+            });
+          })
+          .catch(error => {
+            if (error.response && error.response.status === 422) {
+              const msg = 'フォームの入力内容にエラーがあります。'
+              // const msg = error.response.data.errors.full_messages
+              const timeout = -1
+              this.$store.dispatch('getToast', { msg, timeout })
+            } else {
+              const apiError = this.$my.apiErrorHandler(error.response)
+              this.$nuxt.error({
+                statusCode: apiError?.statusCode || 500, // エラーハンドラが返すステータスコードまたは 500
+                message: apiError?.message || 'An unexpected error occurred', // ハンドラのメッセージまたはデフォルトメッセージ
+              });
+            } 
+          })
       },
-      setErrorMessage(error){
-        // エラーレスポンスがある場合、エラーメッセージを変数に設定
-        if (error.response && error.response.data && error.response.data.errors) {
-          this.errorMessage = '登録に失敗しました。入力した情報を確認してください';
-        } else {
-          this.errorMessage = '登録に失敗しました。もう一度お試しください'; 
-        }
-        if(process.env.NODE_ENV === 'development'){
-          console.log('Registration failed:', error.response.data);
-        }
+      // Vuexのtoast.msgの値を変更する
+      resetToast () {
+          return this.$store.dispatch('getToast', { msg: null })
       }
     },
-}
+};
 </script>
