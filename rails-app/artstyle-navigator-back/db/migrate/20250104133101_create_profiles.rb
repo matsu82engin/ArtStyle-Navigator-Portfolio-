@@ -3,7 +3,7 @@ class CreateProfiles < ActiveRecord::Migration[6.1]
     create_table :profiles do |t|
       t.references :user, null: false, foreign_key: true, index: { unique: true }
       t.string :pen_name
-      t.references :art_style, null: false, foreign_key: true, index: true
+      t.references :art_style, null: true, foreign_key: true, index: true
       t.string :art_supply
       t.text :introduction
 

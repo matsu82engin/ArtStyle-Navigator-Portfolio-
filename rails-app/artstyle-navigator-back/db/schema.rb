@@ -24,7 +24,7 @@ ActiveRecord::Schema.define(version: 2025_01_04_133101) do
   create_table "profiles", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "pen_name"
-    t.bigint "art_style_id", null: false
+    t.bigint "art_style_id"
     t.string "art_supply"
     t.text "introduction"
     t.datetime "created_at", precision: 6, null: false
