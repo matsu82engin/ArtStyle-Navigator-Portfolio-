@@ -2,6 +2,7 @@
 
 # rubocop:disable Rails/ApplicationRecord
 class User < ActiveRecord::Base
+  has_one :profile
   # token (refresh_token)生成モジュール
   include TokenGenerateService
 

@@ -14,6 +14,11 @@ class ApplicationController < ActionController::API
     devise_parameter_sanitizer.permit(:sign_up, keys: [:name])
   end
 
+  # ユーザーが見つからない場合に 404(not_found)とメッセージを返す
+  def render_not_found(message = "Not Found")
+    render json: { error: message }, status: :not_found
+  end
+
   private
 
   # XMLHttpRequestでない場合は403エラーを返す(CSRF 対策)
