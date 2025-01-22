@@ -6,6 +6,7 @@
 class ApplicationController < ActionController::API
   include DeviseTokenAuth::Concerns::SetUserByToken
   include ActionController::Cookies
+  rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
   before_action :configure_permitted_parameters, if: :devise_controller?
   # CSRF対策
   before_action :xhr_request?
@@ -15,7 +16,7 @@ class ApplicationController < ActionController::API
   end
 
   # ユーザーが見つからない場合に 404(not_found)とメッセージを返す
-  def render_not_found(message = "Not Found")
+  def render_not_found(message = 'Not Found')
     render json: { error: message }, status: :not_found
   end
 
@@ -33,5 +34,26 @@ class ApplicationController < ActionController::API
   # Internal Server Error
   def internal_server_error_response(msg = 'Internal Server Error')
     render status: :internal_server_error, json: { status: 500, error: msg }
+  end
+
+  # 認可チェック
+  def authorize_guest!
+    # userモデルに定義したメソッドを呼び出す
+    return if current_api_v1_user.guest? # guest であれば true を返して下のコードにはいかない
+
+    render json: { error: '閲覧のみ可能です' }, status: :forbidden
+  end
+
+  def authorize_owner!
+    return if current_api_v1_user.owner? # owner であれば true を返して下のコードにはいかない
+
+    render json: { error: '権限がありません' }, status: :forbidden
+  end
+
+  # 管理者権限チェック
+  def authorize_admin!
+    return if current_api_v1_user.admin?
+
+    render json: { error: '管理者権限が必要です' }, status: :forbidden
   end
 end

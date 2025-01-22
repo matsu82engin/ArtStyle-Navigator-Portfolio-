@@ -49,18 +49,18 @@ RSpec.describe 'Profiles', type: :request do
   end
 
   describe 'POST /profiles' do
-    let(:profile) { create(:profile, user: user) }
-    context 'ログインユーザーが正しいパラメータを送信したらプロフィールが作成されるか' do
-
-      let(:valid_params) do
-        {
-          profile: {
-            pen_name: 'New Pen Name',
-            art_supply: 'デジタルペン : ペンタブレット(ペンタブ)',
-            introduction: '新しい自己紹介文です。'
-          }
+    # let(:profile) { create(:profile, user: user) }
+    let(:valid_params) do
+      {
+        profile: {
+          pen_name: 'New Pen Name',
+          art_supply: 'デジタルペン : ペンタブレット(ペンタブ)',
+          introduction: '新しい自己紹介文です。'
         }
-      end
+      }
+    end
+
+    context 'ログインユーザーが正しいパラメータを送信したらプロフィールが作成されるか' do
 
       it 'プロフィールを作成' do
         post api_v1_profiles_path, params: valid_params, headers: headers, xhr: true
@@ -73,11 +73,16 @@ RSpec.describe 'Profiles', type: :request do
         expect(created_profile.art_supply).to eq('デジタルペン : ペンタブレット(ペンタブ)')
         expect(created_profile.introduction).to eq('新しい自己紹介文です。')
       end
+    end
+
+    context 'ログインユーザーが既にプロフィールが作成している場合' do
+      before do
+        create(:profile, user: user) # 事前にプロフィールを作成
+      end
 
       it '新しいプロフィールは作成できない' do
-        # 保留
-        # post api_v1_profiles_path, params: valid_params, headers: headers, xhr: true
-        # expect(response).to have_http_status(:unprocessable_entity)
+        post api_v1_profiles_path, params: valid_params, headers: headers, xhr: true
+        expect(response).to have_http_status(:unprocessable_entity)
       end
     end
 
@@ -174,7 +179,6 @@ RSpec.describe 'Profiles', type: :request do
       end
 
       it '他人のプロフィールを削除しようとすると403エラーが返るか' do
-        # このテストはエラー！！認可ができてない
         delete api_v1_profile_path(profile2.id), headers:headers, xhr: true
         expect(response).to have_http_status(:forbidden)
       end
