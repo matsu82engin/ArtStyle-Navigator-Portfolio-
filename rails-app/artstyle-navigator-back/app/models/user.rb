@@ -1,10 +1,10 @@
 # rubocop:disable Rails/ApplicationRecord
 class User < ActiveRecord::Base
-  has_one :profile
+  has_one :profile, dependent: :destroy
 
   devise  :database_authenticatable, :registerable,
           :recoverable, :rememberable, :validatable
-  
+
   # token (refresh_token)生成モジュール
   include TokenGenerateService
   include DeviseTokenAuth::Concerns::User
@@ -38,5 +38,4 @@ class User < ActiveRecord::Base
   def admin?
     role == 'admin'
   end
-
 end

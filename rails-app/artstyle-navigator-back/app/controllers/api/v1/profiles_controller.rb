@@ -6,9 +6,7 @@ module Api
 
       def show
         profile = Profile.find(params[:id])
-        if profile
-          render json: profile
-        end
+        render json: profile if profile
       end
 
       def create
