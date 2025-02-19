@@ -24,11 +24,6 @@ class User < ActiveRecord::Base
   end
 
   # 認可のヘルパーメソッド
-  # 一般ユーザーかどうか
-  def guest?
-    role == 'guest'
-  end
-
   # リソース所有者かどうか
   def owner?
     role == 'owner' || admin?

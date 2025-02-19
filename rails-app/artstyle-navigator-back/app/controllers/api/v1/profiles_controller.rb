@@ -2,30 +2,36 @@ module Api
   module V1
     class ProfilesController < ApplicationController
       before_action :authenticate_api_v1_user!
-      before_action :authorize_owner!, only: [:update, :destroy]
 
       def show
-        profile = Profile.find(params[:id])
-        render json: profile if profile
-      end
-
-      def create
-        if current_api_v1_user.profile.present?
-          render json: { error: 'プロフィールはすでに存在します' }, status: :unprocessable_entity
+        # profile = Profile.find(params[:id])
+        # profile = Profile.find_by(user_id: params[:id])
+        profile = current_api_v1_user.profile
+        # render json: profile if profile
+        if profile
+          render json: profile
         else
-          profile = current_api_v1_user.build_profile(profile_params)
-          if profile.save
-            render json: profile, status: :created
-          else
-            render json: { errors: profile.errors.full_messages }, status: :unprocessable_entity
-          end
+          render json: { error: 'Profile not found' }, status: :not_found # プロフィールが見つからない場合の処理
         end
       end
 
+      # def create
+      #   if current_api_v1_user.profile.present?
+      #     render json: { error: 'プロフィールはすでに存在します' }, status: :unprocessable_entity
+      #   else
+      #     profile = current_api_v1_user.build_profile(profile_params)
+      #     if profile.save
+      #       render json: profile, status: :created
+      #     else
+      #       render json: { errors: profile.errors.full_messages }, status: :unprocessable_entity
+      #     end
+      #   end
+      # end
+
       def update
-        # profile = current_api_v1_user.build_profile(profile_params)
-        profile = current_api_v1_user.profile
-        if profile.update(profile_params)
+        profile = current_api_v1_user.profile || current_api_v1_user.build_profile # 既存プロフィールを取得 or 新規作成
+
+        if profile.update(profile_params) # update で save も兼ねる
           render json: profile, status: :ok
         else
           render json: { errors: profile.errors.full_messages }, status: :unprocessable_entity

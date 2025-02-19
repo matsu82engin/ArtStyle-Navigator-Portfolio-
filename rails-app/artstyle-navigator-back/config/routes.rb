@@ -4,7 +4,7 @@ Rails.application.routes.draw do
       resources :users, only: [:index, :show]
       # pictures
       resources :pictures, only: [:index]
-      resources :profiles, only: [:show, :create, :update, :destroy]
+      resources :profiles, only: [:show, :update, :destroy]
 
       # devise_token_auth から２つのコントローラを継承してカスタムコントローラを作成
         mount_devise_token_auth_for 'User', at: 'auth', controllers: {

@@ -35,93 +35,55 @@ RSpec.describe 'Profiles', type: :request do
     end
   end
 
-  describe 'POST /profiles' do
-    # let(:profile) { create(:profile, user: user) }
+  describe 'PATCH /profiles/:id' do
     let(:valid_params) do
       {
         profile: {
-          pen_name: 'New Pen Name',
-          art_supply: 'デジタルペン : ペンタブレット(ペンタブ)',
-          introduction: '新しい自己紹介文です。'
+          pen_name: 'Updated Pen Name',
+          art_supply: 'デジタルペン : 液晶タブレット(液タブ)',
+          introduction: '更新された自己紹介文です。'
         }
       }
     end
 
-    context 'when a logged-in user submits valid parameters' do # ログインユーザーが正しいパラメータを送信したらプロフィールが作成されるか
-      it 'create your profile' do # プロフィールを作成
-        post api_v1_profiles_path, params: valid_params, headers:, xhr: true
-        expect(response).to have_http_status(:created)
-        # きちんとプロフィールが作成されているデータの中身を確認する
-        # created_profile = Profile.find(profile.id)
-        # created_profile = user.reload.profile
-        created_profile = user.profile # valid_params で作成したプロフィールを取得
-        expect(created_profile.pen_name).to eq('New Pen Name')
-        expect(created_profile.art_supply).to eq('デジタルペン : ペンタブレット(ペンタブ)')
-        expect(created_profile.introduction).to eq('新しい自己紹介文です。')
-      end
-    end
-
-    context 'when logged-in user already has a profile' do # ログインユーザーが既にプロフィールが作成している場合
-      before do
-        create(:profile, user:) # 事前にプロフィールを作成
-      end
-
-      it 'You cannot create a new profile' do # 新しいプロフィールは作成できない
-        post api_v1_profiles_path, params: valid_params, headers:, xhr: true
-        expect(response).to have_http_status(:unprocessable_entity)
-      end
-    end
-
-    context 'when a logged-in user sends an invalid parameter' do # ログインユーザーが不正なパラメータを送信した時
-      let(:invalid_params) do
-        {
-          profile: {
-            pen_name: '   ', # 空白のみは無効
-            art_supply: '', # 選択肢以外の値は無効(空白, nilも)
-            introduction: '   ' # 空白のみは無効
-          }
+    let(:invalid_params) do
+      {
+        profile: {
+          pen_name: '   ', # 空白のみは無効
+          art_supply: '', # 選択肢以外の値は無効(空白, nilも)
+          introduction: '   ' # 空白のみは無効
         }
-      end
+      }
+    end
 
-      it 'profile cannot be created with invalid parameters' do # 不正なパラメータを送信したらプロフィールが作成できない
-        post api_v1_profiles_path, params: invalid_params, headers:, xhr: true
-        expect(response).to have_http_status(:unprocessable_entity)
-        json_response = res_body
-        expect(json_response['errors']).to include("Pen name can't be blank")
-        expect(json_response['errors']).to include('Art supply is not included in the list')
-        expect(json_response['errors']).to include("Introduction can't be blank")
-      end
-
-      it 'unauthenticated user sends a creation request' do # 未認証のユーザーが作成リクエストを送った場合
-        post api_v1_profiles_path, params: invalid_params, xhr: true
-        expect(response).to have_http_status(:unauthorized)
+    context 'when a logged-in user submits valid parameters' do # 正しいパラメータを送信したらプロフィールが作成されるか
+      it 'create your profile' do # プロフィールを作成
+        expect(user.profile).to be_nil # 事前にプロフィールがないことを確認
+        profile = user.create_profile # IDを取得
+        patch api_v1_profile_path(profile), params: valid_params, headers:, xhr: true
+        expect(response).to have_http_status(:ok)
+        user.reload
+        # きちんとプロフィールが作成されているデータの中身を確認する(valid_params で作成したプロフィールを取得)
+        created_profile = user.profile
+        expect(created_profile.pen_name).to eq('Updated Pen Name')
+        expect(created_profile.art_supply).to eq('デジタルペン : 液晶タブレット(液タブ)')
+        expect(created_profile.introduction).to eq('更新された自己紹介文です。')
       end
     end
-  end
 
-  describe 'PATCH /profiles/:id' do
+    context 'when the profile already exists' do # プロフィールが既に存在する場合
+      let!(:existing_profile) { create(:profile, user:) } # 事前にプロフィールを作成
+
+      it 'does not create a new profile' do # 新しいプロフィールが作成されないことを確認(更新とやっていることは同じ)
+        expect { patch api_v1_profile_path(existing_profile), params: valid_params, headers:, xhr: true }
+          .not_to change(Profile, :count) # Profile モデルのレコード数が変化しないこと (新規作成されないこと) を検証
+
+        expect(response).to have_http_status(:ok) # または :ok (更新なので)
+      end
+    end
+
     context 'when update your profile' do # プロフィールの更新
       let(:profile) { create(:profile, user:) }
-
-      let(:valid_params) do
-        {
-          profile: {
-            pen_name: 'Updated Pen Name',
-            art_supply: 'デジタルペン : 液晶タブレット(液タブ)',
-            introduction: '更新された自己紹介文です。'
-          }
-        }
-      end
-
-      let(:invalid_params) do
-        {
-          profile: {
-            pen_name: '',
-            art_supply: '',
-            introduction: ''
-          }
-        }
-      end
 
       it 'logged in user submits correct parameters' do # ログインユーザーが正しいパラメータを送信するとプロフィールが更新されるか
         patch api_v1_profile_path(profile), params: valid_params, headers:, xhr: true # profiles ではなく profile
@@ -155,9 +117,6 @@ RSpec.describe 'Profiles', type: :request do
 
     context 'when destroy profile' do # プロフィールの削除
       it 'delete my profile' do # 自分のプロフィールを削除できるか
-        # expect do
-        #   delete api_v1_profile_path(profile), headers:, xhr: true
-        # end.to change { Profile.count }.by(-1)
         expect { delete api_v1_profile_path(profile), headers:, xhr: true }
           .to change(Profile, :count).by(-1)
         expect(response).to have_http_status(:ok)

@@ -36,15 +36,9 @@ class ApplicationController < ActionController::API
     render status: :internal_server_error, json: { status: 500, error: msg }
   end
 
-  # 認可チェック
-  def authorize_guest!
-    # userモデルに定義したメソッドを呼び出す
-    return if current_api_v1_user.guest? # guest であれば true を返して下のコードにはいかない
-
-    render json: { error: '閲覧のみ可能です' }, status: :forbidden
-  end
-
+  # 認可チェック(authorize_owner! は必要ないが拡張性を考えて書いておく)
   def authorize_owner!
+    # userモデルに定義したメソッドを呼び出す
     return if current_api_v1_user.owner? # owner であれば true を返して下のコードにはいかない
 
     render json: { error: '権限がありません' }, status: :forbidden
