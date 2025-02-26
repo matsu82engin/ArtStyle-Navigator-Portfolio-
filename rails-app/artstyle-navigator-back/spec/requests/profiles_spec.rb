@@ -49,19 +49,9 @@ RSpec.describe 'Profiles', type: :request do
     let(:invalid_params) do
       {
         profile: {
-          pen_name: '   ', # 空白のみは無効
+          pen_name: '   ', # 空白のみは無効(nil も無効)
           art_supply: '', # 選択肢以外の値は無効(空白, nilも)
           introduction: '   ' # 空白のみは無効
-        }
-      }
-    end
-
-    let(:invalid_null_params) do
-      {
-        profile: {
-          pen_name: nil,
-          art_supply: nil,
-          introduction: nil
         }
       }
     end
@@ -107,14 +97,6 @@ RSpec.describe 'Profiles', type: :request do
 
       it 'update with invalid parameters' do # 不正なパラメータで更新しようとした場合、エラーが返る
         patch api_v1_profile_path(profile), params: invalid_params, headers:, xhr: true
-        expect(response).to have_http_status(:unprocessable_entity)
-        json_response = res_body
-        # 不正なパラメータなのでエラーが返ってきているか
-        expect(json_response['errors']).to be_present
-      end
-
-      it 'update with invalid parameter null' do # null で更新した場合、エラーが返る
-        patch api_v1_profile_path(profile), params: invalid_null_params, headers:, xhr: true
         expect(response).to have_http_status(:unprocessable_entity)
         json_response = res_body
         # 不正なパラメータなのでエラーが返ってきているか

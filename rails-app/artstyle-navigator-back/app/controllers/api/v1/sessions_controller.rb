@@ -38,7 +38,7 @@ module Api
               expires: refresh_token_expiration,
               # user: @resource.id,
               user: @resource,
-              profile: profile,
+              profile:,
               message: 'Login and token refresh successful'
             } and return
           end
