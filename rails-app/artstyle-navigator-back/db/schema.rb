@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_01_19_075640) do
+ActiveRecord::Schema.define(version: 2025_02_23_091239) do
 
   create_table "art_styles", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
@@ -23,7 +23,7 @@ ActiveRecord::Schema.define(version: 2025_01_19_075640) do
 
   create_table "profiles", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.string "pen_name"
+    t.string "pen_name", null: false
     t.bigint "art_style_id"
     t.string "art_supply"
     t.text "introduction"

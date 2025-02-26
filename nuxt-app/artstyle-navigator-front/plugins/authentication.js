@@ -55,6 +55,7 @@ class Authentication {
     this.store.dispatch('getCurrentUser', null)
     this.store.dispatch('getAuthPayload', null)
     this.store.dispatch('getRole', null)
+    this.store.dispatch('getProfileUser', null)
   }
 
   // axios のレスポンス 401 を許容する

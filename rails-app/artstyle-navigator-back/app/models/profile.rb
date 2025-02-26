@@ -4,8 +4,8 @@ class Profile < ApplicationRecord
 
   validates :user, uniqueness: true
   validates :pen_name,
-            allow_nil: true,
-            format: { without: /\A\s*\z/, message: :blank },
+            presence: true,
+            # format: { without: /\A\s*\z/, message: :blank },
             length: { maximum: 20 }
 
   VALID_ART_SUPPLIES = [

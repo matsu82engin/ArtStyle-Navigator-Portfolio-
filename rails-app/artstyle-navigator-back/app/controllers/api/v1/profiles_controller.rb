@@ -15,19 +15,6 @@ module Api
         end
       end
 
-      # def create
-      #   if current_api_v1_user.profile.present?
-      #     render json: { error: 'プロフィールはすでに存在します' }, status: :unprocessable_entity
-      #   else
-      #     profile = current_api_v1_user.build_profile(profile_params)
-      #     if profile.save
-      #       render json: profile, status: :created
-      #     else
-      #       render json: { errors: profile.errors.full_messages }, status: :unprocessable_entity
-      #     end
-      #   end
-      # end
-
       def update
         profile = current_api_v1_user.profile || current_api_v1_user.build_profile # 既存プロフィールを取得 or 新規作成
 

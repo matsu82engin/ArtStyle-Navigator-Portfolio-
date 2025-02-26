@@ -24,14 +24,14 @@ RSpec.describe Profile, type: :model do
       expect(profile).not_to be_valid
     end
 
-    it 'is invalid when pen_name is blank' do # pen_name が空白のため無効(20文字まで)
-      profile = build(:profile, pen_name: '')
+    it 'is invalid when pen_name is blank' do # pen_name が空白のため無効
+      profile = build(:profile, pen_name: ' ')
       expect(profile).not_to be_valid
     end
 
-    it 'is valid when pen_name is nil' do # pen_name が nil は有効
+    it 'is invalid when pen_name is null' do # pen_name が null のため無効
       profile = build(:profile, pen_name: nil)
-      expect(profile).to be_valid
+      expect(profile).not_to be_valid
     end
   end
 

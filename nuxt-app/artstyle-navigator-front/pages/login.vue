@@ -146,6 +146,7 @@ export default {
         // console.log('Login response:', response);  // レスポンスデータの確認
         // console.log(response.data);
         this.$store.dispatch('getRole', response.data.user.role)
+        this.$store.dispatch('getProfileUser', response.data.profile)
         this.$authentication.loginAdd(response)
         this.loading = false;      
         return response;

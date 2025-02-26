@@ -26,13 +26,19 @@ module Api
             token = resource.create_new_auth_token
             response.headers.merge!(token)
             # ここで必要な追加情報をレスポンスに含める
+            # プロフィール情報を取得
+            # profile = resource.profile
+            # 現時点ではプロフィール情報の中の pen_name だけなのでそのカラムのみレスポンスするようにする
+            profile = resource.profile&.pen_name
             render json: {
               # data: resource.as_json,
               data: safe_user_data(resource),
+              # data: safe_user_data(resource, profile),
               token: refresh_token,
               expires: refresh_token_expiration,
               # user: @resource.id,
               user: @resource,
+              profile: profile,
               message: 'Login and token refresh successful'
             } and return
           end

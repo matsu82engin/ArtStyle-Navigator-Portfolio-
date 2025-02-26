@@ -3,6 +3,7 @@
     <v-row justify="center">
       <v-col cols="12" md="8">
         <!-- プロフィール表示部分 -->
+        <app-toaster />
         <v-card>
           <v-card-title>現在のプロフィール</v-card-title>
           <v-card-text>
@@ -68,8 +69,9 @@
             <!-- ユーザー名変更 -->
             <v-text-field
               v-model="username"
-              label="ペンネーム"
+              label="ペンネーム(必須)"
               :rules="usernameRules"
+              :counter="pennameMax"
               prepend-icon="mdi-account-circle-outline"
               required
             ></v-text-field>
@@ -78,22 +80,28 @@
             <v-select
               v-model="favoriteArtSupply"
               :items="favoriteArtSupplyOptions"
-              label="よく使うペン"
+              label="よく使うペン(任意)"
               :rules="favoriteArtSupplyRules"
               prepend-icon="mdi-fountain-pen"
-              required
             ></v-select>
 
             <!-- 自己紹介 -->
             <v-textarea
               v-model="bio"
-              label="自己紹介"
+              label="自己紹介(任意)"
               :rules="bioRules"
+              :counter="introductionMax"
               prepend-icon="mdi-text-account"
             ></v-textarea>
           </v-form>
         </v-card-text>
         <v-card-actions>
+          <v-btn
+            color="primary lighten-1"
+            @click="resetDialog"
+          >
+            クリア
+          </v-btn>
           <v-spacer></v-spacer>
           <v-btn color="grey lighten-2" @click="closeDialog">キャンセル</v-btn>
           <v-btn
@@ -113,10 +121,14 @@
 export default {
   layout: 'logged-in',
   data() {
+    const pennameMax = 20
+    const introductionMax = 200
       return {
       valid: true,
       dialog: false, // ダイアログの表示状態を管理
       // icon: null,
+      pennameMax,
+      introductionMax,
       username: "",
       usernameRules: [
         (v) => !!v || "ユーザー名は必須です",
@@ -131,15 +143,14 @@ export default {
         "つけペン : カブラペン",
         "その他"
       ],
-      favoriteArtSupplyRules: [
-        (v) => !!v || "よく使うペンを選択してください",
-      ],
+      favoriteArtSupplyRules: [],
       bio: "",
       bioRules: [
-        (v) => (v && v.length <= 200) || "自己紹介は200文字以内で入力してください",
+        (v) => !v || (v && v.length <= 200) || "自己紹介は200文字以内で入力してください",
       ],
       profile:{
-        username: '初期ユーザー名',
+        // username: '初期ユーザー名',
+        username: this.$store.state.user.current.name,
         ArtStyle: '未判定',
         favoriteArtSupply: '未設定',
         bio: 'プロフィールを編集して自己紹介を書こう！',
@@ -148,26 +159,10 @@ export default {
     };
   },
   mounted() {
-    console.log('myProfile.vue mounted フック実行'); // 追記
-    console.log('fetchProfile() 呼び出し前'); // 追記
     // リロード時にプロフィール情報を取得
-    this.watchUserCurrent();
-    console.log('fetchProfile() 呼び出し後'); // 追記
+    this.fetchProfile(); 
   },
   methods: {
-    watchUserCurrent() { // ウォッチャーメソッド
-    const unwatch = this.$watch( // `$watch` の戻り値（解除関数）を unwatch 変数に保存
-      () => this.$store.state.user.current, // 監視する値
-      (newValue, oldValue) => { // 値が変化した時の処理
-        console.log('user.current が変化しました:', newValue);
-        if (newValue) { // newValue が truthy (null, undefined でない) なら初期化完了とみなす
-          console.log('user.current が初期化されたので fetchProfile() を実行します');
-          this.fetchProfile(); // プロフィール情報取得
-          unwatch(); // 保存した解除関数を呼び出してウォッチャーを解除
-        }
-      }
-    );
-  },
     // プロフィール情報を取得
     async fetchProfile() {
       try {
@@ -182,6 +177,10 @@ export default {
             favoriteArtSupply: response.art_supply || "未設定",
             bio: response.introduction || "プロフィールを編集して自己紹介を書こう！",
           };
+          // ダイアログ内に現在のプロフィール情報を事前にセット( X でも同様の挙動)
+          this.username = response.pen_name;
+          this.favoriteArtSupply = response.art_supply;
+          this.bio = response.introduction;
         }
       } catch (error) {
         console.error("プロフィール情報の取得に失敗", error);
@@ -198,6 +197,10 @@ export default {
        if (this.$refs.form) {
         this.$refs.form.resetValidation();
       }
+      // this.$refs.form.reset();
+    },
+    resetDialog(){
+      this.$refs.form.reset();
     },
      saveProfile() {
       if (this.$refs.form.validate()) {
@@ -221,15 +224,23 @@ export default {
           console.log('プロフィール更新成功', response);
           // プロフィールデータの更新
           this.profile = {
-              username: this.username,
-              favoriteArtSupply: this.favoriteArtSupply,
-              bio: this.bio,
+            // 必須項目なので以下でもいい => username: this.username これは送信する値を入れている
+              username: response.pen_name,
+              ArtStyle: response.art_style ? response.art_style.name : "未判定",
+              favoriteArtSupply: response.art_supply || "未設定",
+              bio: response.introduction || "プロフィールを編集して自己紹介を書こう！",
            }
+          //  this.$refs.form.reset();
            this.closeDialog();
+           // this.$store.dispatch('getProfileUser', this.username) でも可
+           // ↑の場合は レスポンスからではなく、送信するデータの pen_name を Vuex に送っている
+           this.$store.dispatch('getProfileUser', response.pen_name)
         })
         .catch(error => {
           console.error('プロフィール更新失敗', error);
-          alert('プロフィールの更新に失敗しました。');
+          // alert('プロフィールの更新に失敗しました。');
+          const msg = 'プロフィールの更新に失敗しました。'
+          return this.$store.dispatch('getToast', { msg })
         });
       }
     },
