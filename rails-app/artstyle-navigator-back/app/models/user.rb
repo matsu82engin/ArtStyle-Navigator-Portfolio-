@@ -1,18 +1,17 @@
-# frozen_string_literal: true
-
 # rubocop:disable Rails/ApplicationRecord
 class User < ActiveRecord::Base
+  has_one :profile, dependent: :destroy
+
+  devise  :database_authenticatable, :registerable,
+          :recoverable, :rememberable, :validatable
+
   # token (refresh_token)生成モジュール
   include TokenGenerateService
-
-  devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
-
   include DeviseTokenAuth::Concerns::User
+  before_save { self.email = email.downcase }
   # rubocop:enable Rails/ApplicationRecord
   validates :name, presence: true, length: { maximum: 50 }
-  # email の presence: true は devise ですでに設定されているため書かない
-  validates :email, length: { maximum: 255 }
+  validates :email, uniqueness: true, length: { maximum: 255 }
 
   # リフレッシュトークンのJWT IDを保存
   def remember(jti)
@@ -22,5 +21,16 @@ class User < ActiveRecord::Base
   # リフレッシュトークンのJWT IDを削除
   def forget
     update!(refresh_jti: nil)
+  end
+
+  # 認可のヘルパーメソッド
+  # リソース所有者かどうか
+  def owner?
+    role == 'owner' || admin?
+  end
+
+  # 管理者かどうか
+  def admin?
+    role == 'admin'
   end
 end

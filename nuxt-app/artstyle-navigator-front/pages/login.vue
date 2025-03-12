@@ -144,7 +144,8 @@ export default {
         // 記憶ルートを初期値に戻す
         this.$store.dispatch('getRememberPath', this.loggedInHomePath) // loggedInHomePath = artStyleMain
         // console.log('Login response:', response);  // レスポンスデータの確認
-        // console.log(response.data);
+        console.log('レスポンスのデータ', response.data);
+        this.$store.dispatch('getProfileUser', response.data.profile)
         this.$authentication.loginAdd(response)
         this.loading = false;      
         return response;

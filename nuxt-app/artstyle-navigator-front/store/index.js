@@ -2,7 +2,10 @@ const homePath = 'artStyleMain'
 
 export const state = () => ({
   user: {
-    current: null
+    current: null,
+    profile: {
+      pen_name: null
+    },
   },
   authentication: {
     token: null,
@@ -48,6 +51,10 @@ export const mutations = {
   // SET_USER(state, payload) {
   //   state.user = payload
   // },
+  setProfileUser(state, payload) {
+    // state.user.profile.pen_name = payload
+    state.user.profile = payload
+  },
   setCurrentUser (state, payload) {
     state.user.current = payload
   },
@@ -75,17 +82,21 @@ export const mutations = {
 }
 
 export const actions = {
-  // async fetchUser({ commit }) {
-  //   try {
-  //     const response = await this.$axios.$get('/api/v1/auth/validate_token') // ユーザー情報の取得APIエンドポイント
-  //     commit('SET_USER', response.data)
-  //   } catch(error) {
-  //     console.error('Error fetch user', error)
-  //     commit('SET_USER', null)
-  //   }
-  // },
   getCurrentUser({ commit }, user) {
     commit('setCurrentUser', user)
+  },
+  getProfileUser({ commit }, profile) {
+    if (profile) {
+      // 必要な3つの値だけを取得
+      const profileData = {
+        id: profile.id,
+        pen_name: profile.pen_name,
+        user_id: profile.user_id,
+      };
+      commit('setProfileUser', profileData)
+    } else {
+      commit('setProfileUser', null);
+    }
   },
   getAuthToken({ commit }, token) {
     commit('setAuthToken', token)
