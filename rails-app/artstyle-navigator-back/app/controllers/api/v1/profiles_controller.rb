@@ -4,14 +4,14 @@ module Api
       before_action :authenticate_api_v1_user!
 
       def show
-        # profile = Profile.find(params[:id])
-        # profile = Profile.find_by(user_id: params[:id])
-        profile = current_api_v1_user.profile
-        # render json: profile if profile
+        # users/:user_id/profiles なので user_id に ユーザーオブジェクトの主キー(id)が入っている。よってそれで find をかける。
+        user = User.find(params[:user_id])
+        # ユーザーに紐づいているプロフィールを便利メソッドから取得
+        profile = user.profile
         if profile
           render json: profile
         else
-          render json: { error: 'Profile not found' }, status: :not_found # プロフィールが見つからない場合の処理
+          render json: { error: 'Profile not found' }, status: :not_found
         end
       end
 
@@ -26,18 +26,20 @@ module Api
       end
 
       def destroy
-        profile = Profile.find(params[:id])
+        user = User.find(params[:user_id])
+        profile = user.profile
+        return render json: { error: 'Profile not found' }, status: :not_found unless profile
 
-        # 自分のリソースかどうかをチェック
-        if profile.user_id != current_api_v1_user.id
-          render json: { error: '自分のプロフィールのみ削除可能です' }, status: :forbidden
-          return
+        if profile.user != current_api_v1_user # 認可処理: プロフィールの所有者と現在のログインユーザーが一致するか
+          render json: { error: 'Forbidden' }, status: :forbidden # 403 Forbidden を返す
+          return # 一致しなければ処理を中断
         end
 
-        if profile.destroy
-          render json: { message: 'プロフィールを削除しました' }
+        if profile
+          profile.destroy
+          render json: { message: 'Profile deleted successfully' }, status: :ok
         else
-          render json: { error: '削除に失敗しました' }, status: :unprocessable_entity
+          render json: { error: 'Profile not found' }, status: :not_found # 404 Not Found に修正
         end
       end
 

@@ -12,7 +12,6 @@ export const state = () => ({
     expires: 0,
     payload: {}
   },
-  role: null,
   styles: {
     homeAppBarHeight: 56
   },
@@ -52,11 +51,9 @@ export const mutations = {
   // SET_USER(state, payload) {
   //   state.user = payload
   // },
-  setRole(state, payload) {
-    state.role = payload    
-  },
   setProfileUser(state, payload) {
-    state.user.profile.pen_name = payload
+    // state.user.profile.pen_name = payload
+    state.user.profile = payload
   },
   setCurrentUser (state, payload) {
     state.user.current = payload
@@ -85,15 +82,21 @@ export const mutations = {
 }
 
 export const actions = {
-  getRole({ commit }, role) {
-    // console.log('getRole action received:', user);  // ログを確認
-    commit('setRole', role)
-  },
   getCurrentUser({ commit }, user) {
     commit('setCurrentUser', user)
   },
   getProfileUser({ commit }, profile) {
-    commit('setProfileUser', profile)
+    if (profile) {
+      // 必要な3つの値だけを取得
+      const profileData = {
+        id: profile.id,
+        pen_name: profile.pen_name,
+        user_id: profile.user_id,
+      };
+      commit('setProfileUser', profileData)
+    } else {
+      commit('setProfileUser', null);
+    }
   },
   getAuthToken({ commit }, token) {
     commit('setAuthToken', token)

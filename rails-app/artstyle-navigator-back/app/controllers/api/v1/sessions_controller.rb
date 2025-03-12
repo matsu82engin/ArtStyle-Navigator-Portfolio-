@@ -28,8 +28,10 @@ module Api
             # ここで必要な追加情報をレスポンスに含める
             # プロフィール情報を取得
             # profile = resource.profile
-            # 現時点ではプロフィール情報の中の pen_name だけなのでそのカラムのみレスポンスするようにする
-            profile = resource.profile&.pen_name
+            # 現時点ではプロフィール情報の中の必要な情報だけレスポンスするようにする
+            profile = resource.profile&.slice(:id, :user_id, :pen_name)
+            # 全てのプロフィール情報をレスポンスしたいならこちら
+            # profile = resource.profile
             render json: {
               # data: resource.as_json,
               data: safe_user_data(resource),

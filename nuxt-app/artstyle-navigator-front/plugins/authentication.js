@@ -54,7 +54,6 @@ class Authentication {
     this.store.dispatch('getAuthExpires', null)
     this.store.dispatch('getCurrentUser', null)
     this.store.dispatch('getAuthPayload', null)
-    this.store.dispatch('getRole', null)
     this.store.dispatch('getProfileUser', null)
   }
 

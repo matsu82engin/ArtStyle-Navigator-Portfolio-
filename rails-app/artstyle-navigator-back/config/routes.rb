@@ -1,10 +1,11 @@
 Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
-      resources :users, only: [:index, :show]
+      resources :users, only: [:index, :show] do
+        resource :profiles, only: [:show, :update, :destroy]
+      end
       # pictures
       resources :pictures, only: [:index]
-      resources :profiles, only: [:show, :update, :destroy]
 
       # devise_token_auth から２つのコントローラを継承してカスタムコントローラを作成
         mount_devise_token_auth_for 'User', at: 'auth', controllers: {

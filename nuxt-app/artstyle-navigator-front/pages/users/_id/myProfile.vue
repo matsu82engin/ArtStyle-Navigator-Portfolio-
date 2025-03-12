@@ -24,6 +24,7 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn
+              v-if="isOwnProfile"
               color="primary"
               @click="openDialog"
             >
@@ -36,6 +37,7 @@
 
     <!-- プロフィール編集ダイアログ -->
     <v-dialog
+    v-if="isOwnProfile"
       v-model="dialog"
       max-width="900"
     >
@@ -158,18 +160,33 @@ export default {
       }
     };
   },
+  computed: {
+    isOwnProfile() {
+    // 現在のログインユーザーとそのユーザーが所有しているプロフィールIDとルートパラメータの :user_id が一致しているか
+    const currentUserId = this.$store.state.user.current?.id;  // 現在のログインユーザーID
+    const paramsId = Number(this.$route.params.id);       // URLのuser_idを数値化
+    const profileUserId = this.$store.state.user.profile?.user_id;
+
+    console.log("ログイン中のユーザーID:", currentUserId);
+    console.log("プロフィールのID:", paramsId);
+    console.log("URLのID:", profileUserId);
+
+    return currentUserId === paramsId && paramsId === profileUserId;
+    }
+  },
   mounted() {
     // リロード時にプロフィール情報を取得
-    this.fetchProfile(); 
+    const userId = this.$route.params.id;
+    this.fetchProfile(userId);
   },
   methods: {
     // プロフィール情報を取得
-    async fetchProfile() {
+    async fetchProfile(userId) {
       try {
-        console.log("Vuex user state:", this.$store.state.user.current.id); 
-        const userId = this.$store.state.user.current; // Vuex からログイン中のユーザーID取得
+        // console.log("Fetching profile for userId:", userId); // ログ出力で確認
+        // console.log("Vuex user state:", this.$store.state.user.current.id);
         
-        const response = await this.$axios.$get(`api/v1/profiles/${userId.id}`);
+        const response = await this.$axios.$get(`api/v1/users/${userId}/profiles`);
         if (response) {
           this.profile = {
             username: response.pen_name,
@@ -212,7 +229,7 @@ export default {
         console.log(userId);
 
         // API にリクエストを送信
-        this.$axios.$patch(`api/v1/profiles/${userId}`, {
+        this.$axios.$patch(`api/v1/users/${userId}/profiles`, {
           profile: {
             pen_name: this.username,
             art_supply: this.favoriteArtSupply,
@@ -234,7 +251,7 @@ export default {
            this.closeDialog();
            // this.$store.dispatch('getProfileUser', this.username) でも可
            // ↑の場合は レスポンスからではなく、送信するデータの pen_name を Vuex に送っている
-           this.$store.dispatch('getProfileUser', response.pen_name)
+           this.$store.dispatch('getProfileUser', response)
         })
         .catch(error => {
           console.error('プロフィール更新失敗', error);
