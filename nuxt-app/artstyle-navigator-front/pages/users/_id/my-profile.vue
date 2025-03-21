@@ -70,7 +70,7 @@
 
             <!-- ユーザー名変更 -->
             <v-text-field
-              v-model="username"
+              v-model="profile.username"
               label="ペンネーム(必須)"
               :rules="usernameRules"
               :counter="pennameMax"
@@ -80,7 +80,7 @@
 
             <!-- よく使うペン -->
             <v-select
-              v-model="favoriteArtSupply"
+              v-model="profile.favoriteArtSupply"
               :items="favoriteArtSupplyOptions"
               label="よく使うペン(任意)"
               :rules="favoriteArtSupplyRules"
@@ -89,7 +89,7 @@
 
             <!-- 自己紹介 -->
             <v-textarea
-              v-model="bio"
+              v-model="profile.bio"
               label="自己紹介(任意)"
               :rules="bioRules"
               :counter="introductionMax"
@@ -131,12 +131,10 @@ export default {
       // icon: null,
       pennameMax,
       introductionMax,
-      username: "",
       usernameRules: [
         (v) => !!v || "ユーザー名は必須です",
         (v) => (v && v.length <= 20) || "ユーザー名は20文字以内で入力してください",
       ],
-      favoriteArtSupply: null,
       favoriteArtSupplyOptions: [
         "デジタルペン : ペンタブレット(ペンタブ)",
         "デジタルペン : 液晶タブレット(液タブ)",
@@ -146,7 +144,6 @@ export default {
         "その他"
       ],
       favoriteArtSupplyRules: [],
-      bio: "",
       bioRules: [
         (v) => !v || (v && v.length <= 200) || "自己紹介は200文字以内で入力してください",
       ],
@@ -183,9 +180,6 @@ export default {
     // プロフィール情報を取得
     async fetchProfile(userId) {
       try {
-        // console.log("Fetching profile for userId:", userId); // ログ出力で確認
-        // console.log("Vuex user state:", this.$store.state.user.current.id);
-        
         const response = await this.$axios.$get(`api/v1/users/${userId}/profiles`);
         if (response) {
           this.profile = {
@@ -194,10 +188,6 @@ export default {
             favoriteArtSupply: response.art_supply || "未設定",
             bio: response.introduction || "プロフィールを編集して自己紹介を書こう！",
           };
-          // ダイアログ内に現在のプロフィール情報を事前にセット( X でも同様の挙動)
-          this.username = response.pen_name;
-          this.favoriteArtSupply = response.art_supply;
-          this.bio = response.introduction;
         }
       } catch (error) {
         console.error("プロフィール情報の取得に失敗", error);
@@ -231,22 +221,14 @@ export default {
         // API にリクエストを送信
         this.$axios.$patch(`api/v1/users/${userId}/profiles`, {
           profile: {
-            pen_name: this.username,
-            art_supply: this.favoriteArtSupply,
-            introduction: this.bio,
+            pen_name: this.profile.username,
+            art_supply: this.profile.favoriteArtSupply,
+            introduction: this.profile.bio,
           }
         })
         .then(response => {
           // APIリクエストが成功した場合の処理
           console.log('プロフィール更新成功', response);
-          // プロフィールデータの更新
-          this.profile = {
-            // 必須項目なので以下でもいい => username: this.username これは送信する値を入れている
-              username: response.pen_name,
-              ArtStyle: response.art_style ? response.art_style.name : "未判定",
-              favoriteArtSupply: response.art_supply || "未設定",
-              bio: response.introduction || "プロフィールを編集して自己紹介を書こう！",
-           }
           //  this.$refs.form.reset();
            this.closeDialog();
            // this.$store.dispatch('getProfileUser', this.username) でも可
