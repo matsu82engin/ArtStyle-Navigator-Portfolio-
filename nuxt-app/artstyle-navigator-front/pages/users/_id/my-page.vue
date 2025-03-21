@@ -28,7 +28,7 @@
             <!-- プロフィール編集ボタン -->
             <v-btn 
               color="primary"
-              :to="$my.projectLinkTo($authentication.user.id, 'users-id-profile')">
+              :to="$my.projectLinkTo($authentication.user.id, 'users-id-my-profile')">
               プロフィール編集
             </v-btn>
           </v-card-text>
@@ -123,6 +123,7 @@
 <script>
 export default {
   name: 'MyPage',
+  layout: 'logged-in',
   data() {
     return {
       
