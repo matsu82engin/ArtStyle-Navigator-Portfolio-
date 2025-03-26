@@ -67,8 +67,8 @@
     },
     mounted() {
       const userId = this.$store.state.user.current?.id;
-      console.log(`ユーザーID:${userId}`)
-      this.fetchUserAccount(userId)
+      console.log(`ユーザーID:${userId}`);
+      this.fetchUserAccount(userId);
     },
     methods: {
       async fetchUserAccount(userId){
@@ -86,21 +86,28 @@
       },
       saveChanges() {
         // ここに保存処理を記述
-        console.log('変更を保存しました')
-        this.$axios.$patch('api/v1/auth', {
-            name: this.user.name,
-            email: this.user.email,
-            password: this.user.password,
-            confirmPassword: this.user.password_confirmation,
-        })
+        console.log('変更を保存しました');
+        const payload = {
+          // payload の中に入力された name, email の値を含める
+          name: this.user.name,
+          email: this.user.email,
+        };
+
+        if(this.user.password) {
+          // name, email しか含まれてない payload の値に 入力された PW の値を含める
+          payload.password = this.user.password;
+          payload.password_confirmation = this.user.confirmPassword;
+        }
+
+        this.$axios.$patch('api/v1/auth', payload)
         .then(response => {
-          console.log('保存が成功', response)
+          console.log('保存が成功', response);
           // Vuex に新しいユーザー情報の保存
-          this.$store.dispatch('getCurrentUser', response.data)
+          this.$store.dispatch('getCurrentUser', response.data);
         })
         .catch(error => {
-          console.error('プロフィール更新失敗', error);
-          const msg = 'プロフィールの更新に失敗しました。'
+          console.error('ユーザーアカウント更新失敗', error);
+          const msg = 'ユーザーアカウントの更新に失敗しました。'
           return this.$store.dispatch('getToast', { msg })
         })
       },
