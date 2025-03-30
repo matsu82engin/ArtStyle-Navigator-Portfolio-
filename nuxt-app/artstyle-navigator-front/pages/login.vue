@@ -85,7 +85,7 @@ export default {
     return {
       // 実装時は中身は削除する
       password: 'password',
-      email: '1@example.com',
+      email: '2@example.com',
       // errorMessage: '',
       isValid: false,
       loading: false,

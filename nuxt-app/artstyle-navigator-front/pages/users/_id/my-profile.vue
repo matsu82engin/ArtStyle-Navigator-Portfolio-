@@ -148,8 +148,8 @@ export default {
         (v) => !v || (v && v.length <= 200) || "自己紹介は200文字以内で入力してください",
       ],
       profile:{
-        // username: '初期ユーザー名',
-        username: this.$store.state.user.current.name,
+        username: '初期ユーザー名',
+        // username: this.$store.state.user.current.name,
         ArtStyle: '未判定',
         favoriteArtSupply: '未設定',
         bio: 'プロフィールを編集して自己紹介を書こう！',
@@ -162,13 +162,11 @@ export default {
     // 現在のログインユーザーとそのユーザーが所有しているプロフィールIDとルートパラメータの :user_id が一致しているか
     const currentUserId = this.$store.state.user.current?.id;  // 現在のログインユーザーID
     const paramsId = Number(this.$route.params.id);       // URLのuser_idを数値化
-    const profileUserId = this.$store.state.user.profile?.user_id;
 
     console.log("ログイン中のユーザーID:", currentUserId);
     console.log("プロフィールのID:", paramsId);
-    console.log("URLのID:", profileUserId);
 
-    return currentUserId === paramsId && paramsId === profileUserId;
+    return currentUserId === paramsId; // プロフィールIDのチェックを削除
     }
   },
   mounted() {

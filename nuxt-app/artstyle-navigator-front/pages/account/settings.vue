@@ -20,15 +20,17 @@
           <v-text-field
             v-model="user.password"
             label="Password"
-            type="password"
+            
             required
+            @focus="clearPassword"
           ></v-text-field>
 
           <v-text-field
             v-model="user.confirmPassword"
             label="Confirm Password"
-            type="password"
+            
             required
+            @focus="clearConfirmPassword"
           ></v-text-field>
 
           <div class="d-flex align-center mb-4">
@@ -78,7 +80,10 @@
             this.user = {
               name: response.name,
               email: response.email,
+              password: '*********',
+              confirmPassword: '*********'
             };
+            this.isPasswordSet = !!response.password; // 実際にパスワードがあるか(実際の値ではない)どうかを判定
           }
         } catch (error) {
           console.error("ユーザー情報の取得に失敗", error);
@@ -93,7 +98,7 @@
           email: this.user.email,
         };
 
-        if(this.user.password) {
+        if(this.user.password && this.user.password !== "*********") {
           // name, email しか含まれてない payload の値に 入力された PW の値を含める
           payload.password = this.user.password;
           payload.password_confirmation = this.user.confirmPassword;
@@ -110,6 +115,12 @@
           const msg = 'ユーザーアカウントの更新に失敗しました。'
           return this.$store.dispatch('getToast', { msg })
         })
+      },
+      clearPassword() {
+        this.user.password = "";
+      },
+      clearConfirmPassword() {
+        this.user.confirmPassword = "";
       },
     },
   }
