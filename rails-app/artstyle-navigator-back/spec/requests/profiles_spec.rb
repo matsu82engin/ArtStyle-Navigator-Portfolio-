@@ -65,7 +65,6 @@ RSpec.describe 'Profiles', type: :request do
     context 'when a logged-in user submits valid parameters' do # 正しいパラメータを送信したらプロフィールが作成されるか
       it 'create your profile' do # プロフィールを作成
         expect(user.profile).to be_nil # 事前にプロフィールがないことを確認
-        user.create_profile(pen_name: 'デフォルトペンネーム') # IDを取得
         patch api_v1_user_profiles_path(user), params: valid_params, headers:, xhr: true # user, profile ではなく user のみに変更
         expect(response).to have_http_status(:ok)
         user.reload

@@ -3,7 +3,6 @@
     <v-row justify="center">
       <v-col cols="12" md="8">
         <!-- プロフィール表示部分 -->
-        <app-toaster />
         <v-card>
           <v-card-title>現在のプロフィール</v-card-title>
           <v-card-text>
@@ -70,7 +69,7 @@
 
             <!-- ユーザー名変更 -->
             <v-text-field
-              v-model="profile.username"
+              v-model="editProfile.username"
               label="ペンネーム(必須)"
               :rules="usernameRules"
               :counter="pennameMax"
@@ -80,7 +79,7 @@
 
             <!-- よく使うペン -->
             <v-select
-              v-model="profile.favoriteArtSupply"
+              v-model="editProfile.favoriteArtSupply"
               :items="favoriteArtSupplyOptions"
               label="よく使うペン(任意)"
               :rules="favoriteArtSupplyRules"
@@ -89,7 +88,7 @@
 
             <!-- 自己紹介 -->
             <v-textarea
-              v-model="profile.bio"
+              v-model="editProfile.bio"
               label="自己紹介(任意)"
               :rules="bioRules"
               :counter="introductionMax"
@@ -154,7 +153,14 @@ export default {
         favoriteArtSupply: '未設定',
         bio: 'プロフィールを編集して自己紹介を書こう！',
         icon: null
-      }
+      },
+      editProfile: { // 編集用オブジェクトを追加
+        username: '',
+        ArtStyle: '',
+        favoriteArtSupply: '',
+        bio: '',
+        icon: null
+      },
     };
   },
   computed: {
@@ -192,7 +198,7 @@ export default {
       }
     },
     openDialog() {
-      // ダイアログを開く前に、フォームの値を現在のプロフィールで初期化する処理を実装する予定
+      this.editProfile = { ...this.profile } // スプレッド構文でコピー
       this.dialog = true;
     },
     closeDialog() {
@@ -219,19 +225,20 @@ export default {
         // API にリクエストを送信
         this.$axios.$patch(`api/v1/users/${userId}/profiles`, {
           profile: {
-            pen_name: this.profile.username,
-            art_supply: this.profile.favoriteArtSupply,
-            introduction: this.profile.bio,
+            pen_name: this.editProfile.username,
+            art_supply: this.editProfile.favoriteArtSupply,
+            introduction: this.editProfile.bio,
           }
         })
         .then(response => {
           // APIリクエストが成功した場合の処理
           console.log('プロフィール更新成功', response);
-          //  this.$refs.form.reset();
-           this.closeDialog();
-           // this.$store.dispatch('getProfileUser', this.username) でも可
-           // ↑の場合は レスポンスからではなく、送信するデータの pen_name を Vuex に送っている
-           this.$store.dispatch('getProfileUser', response)
+          this.closeDialog();
+          this.profile.username = response.pen_name;
+          this.profile.ArtStyle = response.art_style ? response.art_style.name : "未判定";
+          this.profile.favoriteArtSupply = response.art_supply || "未設定";
+          this.profile.bio = response.introduction || "プロフィールを編集して自己紹介を書こう！";
+          this.$store.dispatch('getProfileUser', response)
         })
         .catch(error => {
           console.error('プロフィール更新失敗', error);
