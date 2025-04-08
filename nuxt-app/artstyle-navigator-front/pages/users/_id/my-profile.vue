@@ -107,7 +107,8 @@
           <v-btn color="grey lighten-2" @click="closeDialog">キャンセル</v-btn>
           <v-btn
             color="primary"
-            :disabled="!valid"
+            :disabled="!valid || loading"
+            :loading="loading"
             @click="saveProfile"
           >
             変更を保存
@@ -126,6 +127,8 @@ export default {
     const introductionMax = 200
       return {
       valid: true,
+      loading: false,
+      updateProfileSuccess: false,
       dialog: false, // ダイアログの表示状態を管理
       // icon: null,
       pennameMax,
@@ -215,9 +218,8 @@ export default {
     },
      saveProfile() {
       if (this.$refs.form.validate()) {
-        // バリデーション成功時の処理
-        console.log("saveProfile メソッド実行");
-
+        this.loading = true;
+        const startTime = Date.now(); // 開始時間を記録
         // 現在ログインしているユーザーのIDを取得 (Vuexから)
         const userId = this.$store.state.user.current.id;
         console.log(userId);
@@ -233,18 +235,33 @@ export default {
         .then(response => {
           // APIリクエストが成功した場合の処理
           console.log('プロフィール更新成功', response);
-          this.closeDialog();
           this.profile.username = response.pen_name;
           this.profile.ArtStyle = response.art_style ? response.art_style.name : "未判定";
           this.profile.favoriteArtSupply = response.art_supply || "未設定";
           this.profile.bio = response.introduction || "プロフィールを編集して自己紹介を書こう！";
           this.$store.dispatch('getProfileUser', response)
+          this.updateProfileSuccess = true;
         })
         .catch(error => {
           console.error('プロフィール更新失敗', error);
           // alert('プロフィールの更新に失敗しました。');
           const msg = 'プロフィールの更新に失敗しました。'
-          return this.$store.dispatch('getToast', { msg })
+          this.$store.dispatch('getToast', { msg }) // finally があるからここで return で処理を止めない？
+          this.updateProfileSuccess = false;
+        })
+        .finally(() => {
+          // this.loading = false
+          const elapsed = Date.now() - startTime;
+          const minDuration = 1000; // 最低1000ms(1秒)はローディング表示
+          const remainingTime = Math.max(minDuration - elapsed, 0);
+
+          setTimeout(() => {
+            this.loading = false;
+            // 成功した時のダイアログを閉じる(updateProfileSuccess = true)
+            if (this.updateProfileSuccess) {
+              this.closeDialog();
+            }
+          }, remainingTime);
         });
       }
     },

@@ -3,15 +3,21 @@
     <v-card>
       <v-card-title class="headline">Update your profile</v-card-title>
       <v-card-text>
-        <v-form>
+        <v-form
+          ref="form"
+          v-model="isValid"
+        >
           <v-text-field
             v-model="user.name"
+            :counter="nameMax"
+            :rules="nameRules"
             label="Name"
             required
           ></v-text-field>
 
           <v-text-field
             v-model="user.email"
+            :rules="emailRules"
             label="Email"
             type="email"
             required
@@ -19,18 +25,21 @@
 
           <v-text-field
             v-model="user.password"
-            label="Password"
-            
+            :rules="form.updatePasswordRules"
+            :hint="currentHint"
+            :persistent-hint="showPersistentHint"
+            :counter="''"
+            label="パスワード"
+            type="password"
             required
-            @focus="clearPassword"
+            @input="onPasswordInput"
           ></v-text-field>
 
           <v-text-field
             v-model="user.confirmPassword"
-            label="Confirm Password"
-            
+            label="パスワード確認"
+            type="password"
             required
-            @focus="clearConfirmPassword"
           ></v-text-field>
 
           <div class="d-flex align-center mb-4">
@@ -46,7 +55,14 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="primary" @click="saveChanges"> Save changes </v-btn>
+        <v-btn
+          color="primary"
+          :disabled="!isValid || loading"
+          :loading="loading"
+          @click="saveChanges"
+        >
+          Save changes
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-container>
@@ -56,6 +72,7 @@
   export default {
     layout: 'logged-in',
     data() {
+      const nameMax = 50
       return {
         // 現在のユーザーの設定データを表示する
         user: {
@@ -65,6 +82,31 @@
           confirmPassword: '',
         },
         profileImage: 'https://randomuser.me/api/portraits/women/1.jpg', // サンプルとしてランダムな画像URL
+        isValid: false,
+        loading: false,
+        nameMax,
+        showPersistentHint: true,
+        currentHint: 'パスワードは変更する場合のみ入力してください',
+        nameRules: [
+          // v => (v && v.trim().length > 0) || '名前を入力してください',
+          // v => (!!v && nameMax >= v.length) || `${nameMax}文字以内で入力してください`
+        ],
+        emailRules: [
+          v => !!v || '',
+          v => /.+@.+\..+/.test(v) || ''
+        ],
+      }
+    },
+    computed: {
+      form() {
+        const min = '6文字以上'
+        const msg = `${min}必須。空白不可。半角英数字・ﾊｲﾌﾝ・ｱﾝﾀﾞｰﾊﾞｰが使えます`
+        const rules = v => {
+          if (!v) return true // 空欄OK（変更しない時）
+          return /^[\w-]{6,72}$/.test(v) || msg
+        }
+        const updatePasswordRules = [rules]
+        return { min, msg, updatePasswordRules }
       }
     },
     mounted() {
@@ -80,25 +122,30 @@
             this.user = {
               name: response.name,
               email: response.email,
-              password: '*********',
-              confirmPassword: '*********'
             };
-            this.isPasswordSet = !!response.password; // 実際にパスワードがあるか(実際の値ではない)どうかを判定
           }
         } catch (error) {
           console.error("ユーザー情報の取得に失敗", error);
         }
       },
+      onPasswordInput() {
+        if (this.user.password === '') { // こちらを用意しておくことで入力をやめたときにPWが必要ないことを再表示できる
+          this.currentHint = 'パスワードは変更する場合のみ入力してください'
+        } else {
+          this.currentHint = '6文字以上必須。空白不可。半角英数字・ﾊｲﾌﾝ・ｱﾝﾀﾞｰﾊﾞｰが使えます'
+          this.showPersistentHint = false
+        }
+      },
       saveChanges() {
-        // ここに保存処理を記述
-        console.log('変更を保存しました');
+        this.loading = true; // ここでローディング開始
+        const startTime = Date.now(); // 開始時間を記録
         const payload = {
           // payload の中に入力された name, email の値を含める
           name: this.user.name,
           email: this.user.email,
         };
 
-        if(this.user.password && this.user.password !== "*********") {
+        if(this.user.password) {
           // name, email しか含まれてない payload の値に 入力された PW の値を含める
           payload.password = this.user.password;
           payload.password_confirmation = this.user.confirmPassword;
@@ -115,12 +162,16 @@
           const msg = 'ユーザーアカウントの更新に失敗しました。'
           return this.$store.dispatch('getToast', { msg })
         })
-      },
-      clearPassword() {
-        this.user.password = "";
-      },
-      clearConfirmPassword() {
-        this.user.confirmPassword = "";
+        .finally(() => {
+          // this.loading = false;
+          const elapsed = Date.now() - startTime;
+          const minDuration = 1000; // 最低1000ms(1秒)はローディング表示
+          const remainingTime = Math.max(minDuration - elapsed, 0);
+
+          setTimeout(() => {
+            this.loading = false;
+          }, remainingTime);
+        });
       },
     },
   }
