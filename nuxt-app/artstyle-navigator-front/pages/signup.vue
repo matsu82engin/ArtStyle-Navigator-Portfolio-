@@ -11,7 +11,7 @@
           ref="form"
           v-model="isValid"
           lazy-validation
-          @submit.prevent="userForm"
+          @submit.prevent="userRegister"
         >
           <v-text-field
             v-model="user.name"
@@ -112,16 +112,6 @@ export default {
     this.resetToast()
     },
     methods: {
-      userForm() {
-        this.registerLoading();
-        this.userRegister();
-      },
-      registerLoading(){
-        this.loading = true
-        setTimeout(() => {
-          this.loading = false
-        }, 3000)
-      },
       formReset(){
         this.$refs.form.reset();
         this.user = {
@@ -132,6 +122,8 @@ export default {
         };
       },
       async userRegister() {
+        this.loading = true; // ここでローディング開始
+        const startTime = Date.now(); // 開始時間を記録
         try {
           // ユーザー登録API
           await this.$axios.post('/api/v1/auth', this.user)
@@ -146,7 +138,6 @@ export default {
 
           // ユーザー情報保存
           this.$authentication.loginAdd(loginResponse)
-
           this.formReset()
           this.$router.push('artStyleMain')
         } catch (error) {
@@ -165,6 +156,14 @@ export default {
               message: apiError?.message || 'An unexpected error occurred',
             })
           }
+        } finally {
+          const elapsed = Date.now() - startTime;
+          const minDuration = 1000; // 最低1000ms(1秒)はローディング表示
+          const remainingTime = Math.max(minDuration - elapsed, 0);
+
+          setTimeout(() => {
+            this.loading = false;
+          }, remainingTime);
         }
       },
       // Vuexのtoast.msgの値を変更する

@@ -216,7 +216,7 @@ export default {
     resetDialog(){
       this.$refs.form.reset();
     },
-     saveProfile() {
+     async saveProfile() {
       if (this.$refs.form.validate()) {
         this.loading = true;
         const startTime = Date.now(); // 開始時間を記録
@@ -224,15 +224,15 @@ export default {
         const userId = this.$store.state.user.current.id;
         console.log(userId);
 
-        // API にリクエストを送信
-        this.$axios.$patch(`api/v1/users/${userId}/profiles`, {
-          profile: {
-            pen_name: this.editProfile.username,
-            art_supply: this.editProfile.favoriteArtSupply,
-            introduction: this.editProfile.bio,
-          }
-        })
-        .then(response => {
+        try {
+          // API にリクエストを送信
+          const response = await this.$axios.$patch(`api/v1/users/${userId}/profiles`, {
+            profile: {
+              pen_name: this.editProfile.username,
+              art_supply: this.editProfile.favoriteArtSupply,
+              introduction: this.editProfile.bio,
+            }
+          })
           // APIリクエストが成功した場合の処理
           console.log('プロフィール更新成功', response);
           this.profile.username = response.pen_name;
@@ -241,18 +241,16 @@ export default {
           this.profile.bio = response.introduction || "プロフィールを編集して自己紹介を書こう！";
           this.$store.dispatch('getProfileUser', response)
           this.updateProfileSuccess = true;
-        })
-        .catch(error => {
+        } catch (error) {
           console.error('プロフィール更新失敗', error);
           // alert('プロフィールの更新に失敗しました。');
-          const msg = 'プロフィールの更新に失敗しました。'
-          this.$store.dispatch('getToast', { msg }) // finally があるからここで return で処理を止めない？
+          const msg = 'プロフィールの更新に失敗しました。';
+          this.$store.dispatch('getToast', { msg })
           this.updateProfileSuccess = false;
-        })
-        .finally(() => {
+        } finally {
           // this.loading = false
           const elapsed = Date.now() - startTime;
-          const minDuration = 1000; // 最低1000ms(1秒)はローディング表示
+          const minDuration = 500; // 最低500ms(0.5秒)はローディング。こちらは速さ重視。
           const remainingTime = Math.max(minDuration - elapsed, 0);
 
           setTimeout(() => {
@@ -262,7 +260,7 @@ export default {
               this.closeDialog();
             }
           }, remainingTime);
-        });
+        }
       }
     },
   },

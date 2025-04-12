@@ -136,7 +136,7 @@
           this.showPersistentHint = false
         }
       },
-      saveChanges() {
+      async saveChanges() {
         this.loading = true; // ここでローディング開始
         const startTime = Date.now(); // 開始時間を記録
         const payload = {
@@ -151,27 +151,24 @@
           payload.password_confirmation = this.user.confirmPassword;
         }
 
-        this.$axios.$patch('api/v1/auth', payload)
-        .then(response => {
+        try {
+          const response = await this.$axios.$patch('api/v1/auth', payload)
           console.log('保存が成功', response);
-          // Vuex に新しいユーザー情報の保存
           this.$store.dispatch('getCurrentUser', response.data);
-        })
-        .catch(error => {
+        } catch (error) {
           console.error('ユーザーアカウント更新失敗', error);
           const msg = 'ユーザーアカウントの更新に失敗しました。'
-          return this.$store.dispatch('getToast', { msg })
-        })
-        .finally(() => {
+          this.$store.dispatch('getToast', { msg });
+        } finally {
           // this.loading = false;
           const elapsed = Date.now() - startTime;
-          const minDuration = 1000; // 最低1000ms(1秒)はローディング表示
+          const minDuration = 500; // 最低500ms(0.5秒)はローディング。こちらは速さ重視。
           const remainingTime = Math.max(minDuration - elapsed, 0);
 
           setTimeout(() => {
             this.loading = false;
           }, remainingTime);
-        });
+        }
       },
     },
   }

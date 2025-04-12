@@ -115,9 +115,10 @@ export default {
   methods: {
     loginForm() {
       if (this.isValid) {
-        this.loading = true;
         this.loginWithAuthModule();
       } else {
+        //  else はバリデーション確認のためのデバッグ用。
+        // ただし基本的にここはフロントエンドを改竄しない限り辿り着かないため必要ない
         const msg = 'フォームの入力内容にエラーがあります。'
         const timeout = -1
         this.loading = false;
@@ -132,6 +133,8 @@ export default {
       };
     },
     async loginWithAuthModule() {
+      this.loading = true;
+      const startTime = Date.now(); // 開始時間を記録
       try {
         const response = await this.$auth.loginWith('local', {
           data: {
@@ -147,14 +150,13 @@ export default {
         console.log('レスポンスのデータ', response.data);
         this.$store.dispatch('getProfileUser', response.data.profile)
         this.$authentication.loginAdd(response)
-        this.loading = false;
         return response;
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // バックエンドからのエラーレスポンスがある場合トースターで出力
           const msg = 'ログインに失敗しました。正しいメールアドレスとパスワードを入力してください'
           const timeout = -1
-          this.loading = false;
+
           return this.$store.dispatch('getToast', { msg, timeout })
         } else {
           // ネットワークエラーやその他のエラーの場合
@@ -164,8 +166,15 @@ export default {
             message: apiError?.message || 'An unexpected error occurred', // ハンドラのメッセージまたはデフォルトメッセージ
           })
         }
+      } finally {
+        const elapsed = Date.now() - startTime;
+        const minDuration = 1000; // 最低1000ms(1秒)はローディング表示
+        const remainingTime = Math.max(minDuration - elapsed, 0);
+
+        setTimeout(() => {
+          this.loading = false;
+        }, remainingTime);
       }
-      this.loading = false;
     },
     // Vuexのtoast.msgの値を変更する
     resetToast () {
