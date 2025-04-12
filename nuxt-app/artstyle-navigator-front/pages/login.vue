@@ -147,7 +147,7 @@ export default {
         console.log('レスポンスのデータ', response.data);
         this.$store.dispatch('getProfileUser', response.data.profile)
         this.$authentication.loginAdd(response)
-        this.loading = false;      
+        this.loading = false;
         return response;
       } catch (error) {
         if (error.response && error.response.status === 401) {

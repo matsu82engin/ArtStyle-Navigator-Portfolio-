@@ -88,8 +88,8 @@
         showPersistentHint: true,
         currentHint: 'パスワードは変更する場合のみ入力してください',
         nameRules: [
-          // v => (v && v.trim().length > 0) || '名前を入力してください',
-          // v => (!!v && nameMax >= v.length) || `${nameMax}文字以内で入力してください`
+          v => (v && v.trim().length > 0) || '名前を入力してください',
+          v => (!!v && nameMax >= v.length) || `${nameMax}文字以内で入力してください`
         ],
         emailRules: [
           v => !!v || '',

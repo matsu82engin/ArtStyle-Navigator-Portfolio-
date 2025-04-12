@@ -131,41 +131,41 @@ export default {
           password_confirmation: ''
         };
       },
-      userRegister() {
-        // ユーザー登録
-        this.$axios.post('/api/v1/auth', this.user)
-        .then(response => {
-        // ログイン処理
-        this.$auth.loginWith('local', {
-          data: {
-            email: this.user.email,
-            password: this.user.password
+      async userRegister() {
+        try {
+          // ユーザー登録API
+          await this.$axios.post('/api/v1/auth', this.user)
+
+          // 登録成功後、ログインAPI（ログイン時のレスポンス取得）
+          const loginResponse = await this.$auth.loginWith('local', {
+            data: {
+              email: this.user.email,
+              password: this.user.password
+            }
+          })
+
+          // ユーザー情報保存
+          this.$authentication.loginAdd(loginResponse)
+
+          this.formReset()
+          this.$router.push('artStyleMain')
+        } catch (error) {
+          if (error.response && error.response.status === 422) {
+            const msg = 'フォームの入力内容にエラーがあります。'
+            const timeout = -1
+            this.$store.dispatch('getToast', { msg, timeout })
+          } else if (error.response && error.response.status === 401) {
+            const msg = 'ログインに失敗しました。'
+            const timeout = -1
+            this.$store.dispatch('getToast', { msg, timeout })
+          } else {
+            const apiError = this.$my.apiErrorHandler(error.response)
+            this.$nuxt.error({
+              statusCode: apiError?.statusCode || 500,
+              message: apiError?.message || 'An unexpected error occurred',
+            })
           }
-            }).then(() => {
-              // ログイン後の処理
-              this.formReset();
-              this.$router.push(`/users/${response.data.data.id}`);
-              }).catch(() => {
-              // ログイン処理をしたとき失敗した場合(理論的に失敗しないが念の為)
-              const msg = 'ログインに失敗しました。'
-              const timeout = -1
-              return this.$store.dispatch('getToast', { msg, timeout })
-            });
-          })
-          .catch(error => {
-            if (error.response && error.response.status === 422) {
-              const msg = 'フォームの入力内容にエラーがあります。'
-              // const msg = error.response.data.errors.full_messages
-              const timeout = -1
-              this.$store.dispatch('getToast', { msg, timeout })
-            } else {
-              const apiError = this.$my.apiErrorHandler(error.response)
-              this.$nuxt.error({
-                statusCode: apiError?.statusCode || 500, // エラーハンドラが返すステータスコードまたは 500
-                message: apiError?.message || 'An unexpected error occurred', // ハンドラのメッセージまたはデフォルトメッセージ
-              });
-            } 
-          })
+        }
       },
       // Vuexのtoast.msgの値を変更する
       resetToast () {
