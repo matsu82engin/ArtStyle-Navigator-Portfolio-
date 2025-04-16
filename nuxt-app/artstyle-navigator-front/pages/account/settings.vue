@@ -37,7 +37,16 @@
 
           <v-text-field
             v-model="user.confirmPassword"
+            :rules="passwordConfirmationRules"
             label="パスワード確認"
+            type="password"
+            required
+          ></v-text-field>
+
+          <v-text-field
+            v-if="user.password"
+            v-model="user.currentPassword"
+            label="現在のパスワード"
             type="password"
             required
           ></v-text-field>
@@ -80,6 +89,7 @@
           email: '',
           password: '',
           confirmPassword: '',
+          currentPassword: '',
         },
         profileImage: 'https://randomuser.me/api/portraits/women/1.jpg', // サンプルとしてランダムな画像URL
         isValid: false,
@@ -107,6 +117,20 @@
         }
         const updatePasswordRules = [rules]
         return { min, msg, updatePasswordRules }
+      },
+      passwordConfirmationRules() {
+        return [
+          v => v === this.user.password || 'パスワードが一致しません'
+        ]
+      }
+    },
+    watch: {
+      // パスワード入力時にリアルタイムバリデーション実行
+      'user.password'(val) {
+        this.$refs.form?.validate();
+      },
+      'user.confirmPassword'(val) {
+        this.$refs.form?.validate();
       }
     },
     mounted() {
@@ -149,6 +173,7 @@
           // name, email しか含まれてない payload の値に 入力された PW の値を含める
           payload.password = this.user.password;
           payload.password_confirmation = this.user.confirmPassword;
+          payload.current_password = this.user.currentPassword
         }
 
         try {
