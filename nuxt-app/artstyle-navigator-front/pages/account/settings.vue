@@ -2,11 +2,12 @@
   <v-container>
     <v-card>
       <v-card-title class="headline">Update your profile</v-card-title>
-      <v-card-text>
-        <v-form
-          ref="form"
-          v-model="isValid"
-        >
+      <v-form
+        ref="form"
+        v-model="isValid"
+        @submit.prevent="saveChanges"
+      >
+        <v-card-text>
           <v-text-field
             v-model="user.name"
             :counter="nameMax"
@@ -60,19 +61,20 @@
             ></v-img>
             <a href="#">change</a>
           </div>
-        </v-form>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn
-          color="primary"
-          :disabled="!isValid || loading"
-          :loading="loading"
-          @click="saveChanges"
-        >
-          Save changes
-        </v-btn>
-      </v-card-actions>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            type="submit"
+            color="primary"
+            :disabled="!isValid || loading"
+            :loading="loading"
+            >
+            Save changes
+          </v-btn>
+        </v-card-actions>
+      </v-form>
     </v-card>
   </v-container>
 </template>

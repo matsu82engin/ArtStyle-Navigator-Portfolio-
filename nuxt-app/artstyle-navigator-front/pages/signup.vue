@@ -41,6 +41,7 @@
           />
           <v-text-field
             v-model="user.password_confirmation"
+            :rules="passwordConfirmationRules"
             prepend-icon="mdi-lock"
             :append-icon="toggle.icon"
             :type="toggle.type"
@@ -74,10 +75,10 @@ export default {
       return {
           max,
           user: {
-              name: '',
-              email: '',
-              password: '',
-              password_confirmation: '',
+            name: '',
+            email: '',
+            password: '',
+            password_confirmation: '',
           },
           isValid: false,
           loading: false,
@@ -100,6 +101,11 @@ export default {
         const hint = msg
         const signupPasswordRules = [rules]
         return {min, msg, signupPasswordRules, hint}
+      },
+      passwordConfirmationRules() {
+        return [
+          v => v === this.user.password || 'パスワードが一致しません'
+        ]
       },
       toggle() {
         const icon = this.show ? 'mdi-eye' : 'mdi-eye-off'
