@@ -67,6 +67,8 @@
 </template>
 
 <script>
+import { translateErrorMessages } from '@/utils/validationMessages.js'
+
 export default {
     name: 'SignupForm',
     layout: 'before-login',
@@ -148,9 +150,12 @@ export default {
           this.$router.push('artStyleMain')
         } catch (error) {
           if (error.response && error.response.status === 422) {
-            const msg = 'フォームの入力内容にエラーがあります。'
+            const errors = error.response.data.errors
+            console.log(errors);
+            const msgArray = errors.full_messages || [] // 右は空の配列を用意し、後でデフォルトメッセージを入れる
+            const translated = translateErrorMessages(msgArray) // 日本語に変換
             const timeout = -1
-            this.$store.dispatch('getToast', { msg, timeout })
+            this.$store.dispatch('getToast', { msg: translated, timeout })
           } else if (error.response && error.response.status === 401) {
             const msg = 'ログインに失敗しました。'
             const timeout = -1
@@ -175,7 +180,7 @@ export default {
       // Vuexのtoast.msgの値を変更する
       resetToast () {
           return this.$store.dispatch('getToast', { msg: null })
-      }
+      },
     },
 };
 </script>

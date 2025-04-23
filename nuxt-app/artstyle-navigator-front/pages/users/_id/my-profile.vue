@@ -120,6 +120,8 @@
 </template>
 
 <script>
+import { translateErrorMessages } from '@/utils/validationMessages';
+
 export default {
   layout: 'logged-in',
   data() {
@@ -242,10 +244,21 @@ export default {
           this.$store.dispatch('getProfileUser', response)
           this.updateProfileSuccess = true;
         } catch (error) {
-          console.error('プロフィール更新失敗', error);
-          // alert('プロフィールの更新に失敗しました。');
-          const msg = 'プロフィールの更新に失敗しました。';
-          this.$store.dispatch('getToast', { msg })
+          if (error.response && error.response.status === 422) {
+            console.error('プロフィール更新失敗', error);
+            // alert('プロフィールの更新に失敗しました。');
+            // const msg = 'プロフィールの更新に失敗しました。';
+            const errors = error.response.data.errors;
+            const msgArray = errors || [];
+  
+            // 翻訳関数を使用
+            const translated = translateErrorMessages(msgArray);
+            this.$store.dispatch('getToast', { msg: translated })
+          } else {
+            // 不明なエラーの場合に対応
+            const msg = 'プロフィールの更新に失敗しました。';
+            this.$store.dispatch('getToast', { msg });
+          }
           this.updateProfileSuccess = false;
         } finally {
           // this.loading = false

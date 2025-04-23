@@ -80,6 +80,8 @@
 </template>
 
 <script>
+import { translateErrorMessages } from '@/utils/validationMessages.js'
+
   export default {
     layout: 'logged-in',
     data() {
@@ -140,6 +142,9 @@
       console.log(`ユーザーID:${userId}`);
       this.fetchUserAccount(userId);
     },
+    beforeDestroy () {
+      this.resetToast()
+    },
     methods: {
       async fetchUserAccount(userId){
         try {
@@ -183,9 +188,21 @@
           console.log('保存が成功', response);
           this.$store.dispatch('getCurrentUser', response.data);
         } catch (error) {
-          console.error('ユーザーアカウント更新失敗', error);
-          const msg = 'ユーザーアカウントの更新に失敗しました。'
-          this.$store.dispatch('getToast', { msg });
+          const timeout = -1
+          
+          if (error.response && error.response.status === 422) {
+            // console.error('ユーザーアカウント更新失敗', error);
+            // const msg = 'ユーザーアカウントの更新に失敗しました。'
+            // this.$store.dispatch('getToast', { msg });
+            const errors = error.response.data.errors;
+            console.log(errors);
+            const msgArray = Array.isArray(errors?.full_messages) ? errors.full_messages : errors || [];
+            const translated = translateErrorMessages(msgArray); // 日本語に変換
+            this.$store.dispatch('getToast', { msg: translated , timeout })
+          } else {
+            const msg = ['アカウント更新に失敗しました。']
+            this.$store.dispatch('getToast', { msg, timeout })
+          }
         } finally {
           // this.loading = false;
           const elapsed = Date.now() - startTime;
@@ -196,6 +213,10 @@
             this.loading = false;
           }, remainingTime);
         }
+      },
+      // Vuexのtoast.msgの値を変更する
+      resetToast () {
+          return this.$store.dispatch('getToast', { msg: null })
       },
     },
   }

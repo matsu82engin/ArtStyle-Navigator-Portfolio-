@@ -7,8 +7,12 @@
     :timeout="toast.timeout"
     :color="toast.color"
   >
-    {{ toast.msg }}
-    <template v-slot:action="{ attrs }">
+    <div>
+      <ul>
+        <li v-for="(errorMessage, index) in toast.msg" :key="index">{{ errorMessage }}</li>
+      </ul>
+    </div>
+    <template #action="{ attrs }">
       <v-btn
         v-bind="attrs"
         text

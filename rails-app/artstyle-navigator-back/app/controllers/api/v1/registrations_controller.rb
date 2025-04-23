@@ -8,7 +8,7 @@ module Api
       # パスワードを変更しようとしている時のみ、現在のパスワード確認
       if account_update_params[:password].present?
         unless @resource.valid_password?(account_update_params[:current_password])
-          return render json: { errors: ['現在のパスワードが正しくありません'] }, status: :unauthorized
+          return render json: { errors: ['現在のパスワードが正しくありません'] }, status: :unprocessable_entity
         end
       end
 
