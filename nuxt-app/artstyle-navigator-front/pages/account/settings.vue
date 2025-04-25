@@ -82,142 +82,142 @@
 <script>
 import { translateErrorMessages } from '@/utils/validationMessages.js'
 
-  export default {
-    layout: 'logged-in',
-    data() {
-      const nameMax = 50
-      return {
-        // 現在のユーザーの設定データを表示する
-        user: {
-          name: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
-          currentPassword: '',
-        },
-        profileImage: 'https://randomuser.me/api/portraits/women/1.jpg', // サンプルとしてランダムな画像URL
-        isValid: false,
-        loading: false,
-        nameMax,
-        showPersistentHint: true,
-        currentHint: 'パスワードは変更する場合のみ入力してください',
-        nameRules: [
-          v => (v && v.trim().length > 0) || '名前を入力してください',
-          v => (!!v && nameMax >= v.length) || `${nameMax}文字以内で入力してください`
-        ],
-        emailRules: [
-          v => !!v || '',
-          v => /.+@.+\..+/.test(v) || ''
-        ],
+export default {
+  layout: 'logged-in',
+  data() {
+    const nameMax = 50
+    return {
+      // 現在のユーザーの設定データを表示する
+      user: {
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        currentPassword: '',
+      },
+      profileImage: 'https://randomuser.me/api/portraits/women/1.jpg', // サンプルとしてランダムな画像URL
+      isValid: false,
+      loading: false,
+      nameMax,
+      showPersistentHint: true,
+      currentHint: 'パスワードは変更する場合のみ入力してください',
+      nameRules: [
+        v => (v && v.trim().length > 0) || '名前を入力してください',
+        v => (!!v && nameMax >= v.length) || `${nameMax}文字以内で入力してください`
+      ],
+      emailRules: [
+        v => !!v || '',
+        v => /.+@.+\..+/.test(v) || ''
+      ],
+    }
+  },
+  computed: {
+    form() {
+      const min = '6文字以上'
+      const msg = `${min}必須。空白不可。半角英数字・ﾊｲﾌﾝ・ｱﾝﾀﾞｰﾊﾞｰが使えます`
+      const rules = v => {
+        if (!v) return true // 空欄OK（変更しない時）
+        return /^[\w-]{6,72}$/.test(v) || msg
       }
+      const updatePasswordRules = [rules]
+      return { min, msg, updatePasswordRules }
     },
-    computed: {
-      form() {
-        const min = '6文字以上'
-        const msg = `${min}必須。空白不可。半角英数字・ﾊｲﾌﾝ・ｱﾝﾀﾞｰﾊﾞｰが使えます`
-        const rules = v => {
-          if (!v) return true // 空欄OK（変更しない時）
-          return /^[\w-]{6,72}$/.test(v) || msg
+    passwordConfirmationRules() {
+      return [
+        v => v === this.user.password || 'パスワードが一致しません'
+      ]
+    }
+  },
+  watch: {
+    // パスワード入力時にリアルタイムバリデーション実行
+    'user.password'(val) {
+      this.$refs.form?.validate();
+    },
+    'user.confirmPassword'(val) {
+      this.$refs.form?.validate();
+    }
+  },
+  mounted() {
+    const userId = this.$store.state.user.current?.id;
+    console.log(`ユーザーID:${userId}`);
+    this.fetchUserAccount(userId);
+  },
+  beforeDestroy () {
+    this.resetToast()
+  },
+  methods: {
+    async fetchUserAccount(userId){
+      try {
+        const response = await this.$axios.$get(`api/v1/users/${userId}`);
+        if (response) {
+          this.user = {
+            name: response.name,
+            email: response.email,
+          };
         }
-        const updatePasswordRules = [rules]
-        return { min, msg, updatePasswordRules }
-      },
-      passwordConfirmationRules() {
-        return [
-          v => v === this.user.password || 'パスワードが一致しません'
-        ]
+      } catch (error) {
+        console.error("ユーザー情報の取得に失敗", error);
       }
     },
-    watch: {
-      // パスワード入力時にリアルタイムバリデーション実行
-      'user.password'(val) {
-        this.$refs.form?.validate();
-      },
-      'user.confirmPassword'(val) {
-        this.$refs.form?.validate();
+    onPasswordInput() {
+      if (this.user.password === '') { // こちらを用意しておくことで入力をやめたときにPWが必要ないことを再表示できる
+        this.currentHint = 'パスワードは変更する場合のみ入力してください'
+      } else {
+        this.currentHint = '6文字以上必須。空白不可。半角英数字・ﾊｲﾌﾝ・ｱﾝﾀﾞｰﾊﾞｰが使えます'
+        this.showPersistentHint = false
       }
     },
-    mounted() {
-      const userId = this.$store.state.user.current?.id;
-      console.log(`ユーザーID:${userId}`);
-      this.fetchUserAccount(userId);
-    },
-    beforeDestroy () {
-      this.resetToast()
-    },
-    methods: {
-      async fetchUserAccount(userId){
-        try {
-          const response = await this.$axios.$get(`api/v1/users/${userId}`);
-          if (response) {
-            this.user = {
-              name: response.name,
-              email: response.email,
-            };
-          }
-        } catch (error) {
-          console.error("ユーザー情報の取得に失敗", error);
-        }
-      },
-      onPasswordInput() {
-        if (this.user.password === '') { // こちらを用意しておくことで入力をやめたときにPWが必要ないことを再表示できる
-          this.currentHint = 'パスワードは変更する場合のみ入力してください'
+    async saveChanges() {
+      this.loading = true; // ここでローディング開始
+      const startTime = Date.now(); // 開始時間を記録
+      const payload = {
+        // payload の中に入力された name, email の値を含める
+        name: this.user.name,
+        email: this.user.email,
+      };
+
+      if(this.user.password) {
+        // name, email しか含まれてない payload の値に 入力された PW の値を含める
+        payload.password = this.user.password;
+        payload.password_confirmation = this.user.confirmPassword || "";
+        payload.current_password = this.user.currentPassword
+      }
+      
+      try {
+        const response = await this.$axios.$patch('api/v1/auth', payload)
+        console.log('保存が成功', response);
+        this.$store.dispatch('getCurrentUser', response.data);
+      } catch (error) {
+        const timeout = -1
+        
+        if (error.response && error.response.status === 422) {
+          // console.error('ユーザーアカウント更新失敗', error);
+          // const msg = 'ユーザーアカウントの更新に失敗しました。'
+          // this.$store.dispatch('getToast', { msg });
+          const errors = error.response.data.errors;
+          console.log(errors);
+          const msgArray = Array.isArray(errors?.full_messages) ? errors.full_messages : errors || [];
+          const translated = translateErrorMessages(msgArray); // 日本語に変換
+          this.$store.dispatch('getToast', { msg: translated , timeout })
         } else {
-          this.currentHint = '6文字以上必須。空白不可。半角英数字・ﾊｲﾌﾝ・ｱﾝﾀﾞｰﾊﾞｰが使えます'
-          this.showPersistentHint = false
+          const msg = ['アカウント更新に失敗しました。'];
+          this.$store.dispatch('getToast', { msg, timeout });
         }
-      },
-      async saveChanges() {
-        this.loading = true; // ここでローディング開始
-        const startTime = Date.now(); // 開始時間を記録
-        const payload = {
-          // payload の中に入力された name, email の値を含める
-          name: this.user.name,
-          email: this.user.email,
-        };
+      } finally {
+        // this.loading = false;
+        const elapsed = Date.now() - startTime;
+        const minDuration = 500; // 最低500ms(0.5秒)はローディング。こちらは速さ重視。
+        const remainingTime = Math.max(minDuration - elapsed, 0);
 
-        if(this.user.password) {
-          // name, email しか含まれてない payload の値に 入力された PW の値を含める
-          payload.password = this.user.password;
-          payload.password_confirmation = this.user.confirmPassword;
-          payload.current_password = this.user.currentPassword
-        }
-
-        try {
-          const response = await this.$axios.$patch('api/v1/auth', payload)
-          console.log('保存が成功', response);
-          this.$store.dispatch('getCurrentUser', response.data);
-        } catch (error) {
-          const timeout = -1
-          
-          if (error.response && error.response.status === 422) {
-            // console.error('ユーザーアカウント更新失敗', error);
-            // const msg = 'ユーザーアカウントの更新に失敗しました。'
-            // this.$store.dispatch('getToast', { msg });
-            const errors = error.response.data.errors;
-            console.log(errors);
-            const msgArray = Array.isArray(errors?.full_messages) ? errors.full_messages : errors || [];
-            const translated = translateErrorMessages(msgArray); // 日本語に変換
-            this.$store.dispatch('getToast', { msg: translated , timeout })
-          } else {
-            const msg = ['アカウント更新に失敗しました。']
-            this.$store.dispatch('getToast', { msg, timeout })
-          }
-        } finally {
-          // this.loading = false;
-          const elapsed = Date.now() - startTime;
-          const minDuration = 500; // 最低500ms(0.5秒)はローディング。こちらは速さ重視。
-          const remainingTime = Math.max(minDuration - elapsed, 0);
-
-          setTimeout(() => {
-            this.loading = false;
-          }, remainingTime);
-        }
-      },
-      // Vuexのtoast.msgの値を変更する
-      resetToast () {
-          return this.$store.dispatch('getToast', { msg: null })
-      },
+        setTimeout(() => {
+          this.loading = false;
+        }, remainingTime);
+      }
     },
-  }
+    // Vuexのtoast.msgの値を変更する
+    resetToast () {
+        return this.$store.dispatch('getToast', { msg: null })
+    },
+  },
+}
 </script>

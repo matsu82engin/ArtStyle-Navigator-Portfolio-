@@ -154,7 +154,7 @@ export default {
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // バックエンドからのエラーレスポンスがある場合トースターで出力
-          const msg = 'ログインに失敗しました。正しいメールアドレスとパスワードを入力してください'
+          const msg = ['ログインに失敗しました。正しいメールアドレスとパスワードを入力してください']
           const timeout = -1
 
           return this.$store.dispatch('getToast', { msg, timeout })

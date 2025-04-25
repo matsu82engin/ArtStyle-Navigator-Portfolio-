@@ -157,7 +157,7 @@ export default {
             const timeout = -1
             this.$store.dispatch('getToast', { msg: translated, timeout })
           } else if (error.response && error.response.status === 401) {
-            const msg = 'ログインに失敗しました。'
+            const msg = ['ログインに失敗しました。']
             const timeout = -1
             this.$store.dispatch('getToast', { msg, timeout })
           } else {
