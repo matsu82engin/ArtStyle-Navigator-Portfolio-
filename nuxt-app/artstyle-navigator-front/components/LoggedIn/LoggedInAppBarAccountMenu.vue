@@ -47,6 +47,7 @@
           v-if="menu.name !== 'ログアウト'"
           :key="`menu-list-${i}`"
           :to="menu.link"
+          nuxt
         >
           <v-list-item-icon class="mr-2">
             <v-icon
@@ -83,13 +84,16 @@
 
 <script>
 export default {
-  data () {
-    return {
-      menus: [
+  computed: {
+    menus() {
+      const userId = this.$store.state.user.current?.id || null;
+      return [
+        { name: 'マイページ', icon: 'mdi-account', link: userId ? { name: 'users-id-my-page', params: { id: userId } } : {} },
+        { name: 'プロフィール', icon: 'mdi-card-account-details', link: userId ? { name: 'users-id-my-profile', params: { id: userId } } : {} },
         { name: 'アカウント設定', icon: 'mdi-account-cog', link: '/account/settings' },
-        { name: 'パスワード変更', icon: 'mdi-lock-outline', link: '/account/password'},
+        { name: 'パスワード変更', icon: 'mdi-lock-outline', link: '/account/password' },
         { name: 'ログアウト', icon: 'mdi-logout-variant', divider: true }
-      ]
+      ];
     }
   },
   methods: {

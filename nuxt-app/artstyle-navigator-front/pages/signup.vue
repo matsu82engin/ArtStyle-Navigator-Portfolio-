@@ -11,7 +11,7 @@
           ref="form"
           v-model="isValid"
           lazy-validation
-          @submit.prevent="userForm"
+          @submit.prevent="userRegister"
         >
           <v-text-field
             v-model="user.name"
@@ -41,6 +41,7 @@
           />
           <v-text-field
             v-model="user.password_confirmation"
+            :rules="passwordConfirmationRules"
             prepend-icon="mdi-lock"
             :append-icon="toggle.icon"
             :type="toggle.type"
@@ -66,6 +67,8 @@
 </template>
 
 <script>
+import { translateErrorMessages } from '@/utils/validationMessages.js'
+
 export default {
     name: 'SignupForm',
     layout: 'before-login',
@@ -74,10 +77,10 @@ export default {
       return {
           max,
           user: {
-              name: '',
-              email: '',
-              password: '',
-              password_confirmation: '',
+            name: '',
+            email: '',
+            password: '',
+            password_confirmation: '',
           },
           isValid: false,
           loading: false,
@@ -101,6 +104,11 @@ export default {
         const signupPasswordRules = [rules]
         return {min, msg, signupPasswordRules, hint}
       },
+      passwordConfirmationRules() {
+        return [
+          v => v === this.user.password || 'パスワードが一致しません'
+        ]
+      },
       toggle() {
         const icon = this.show ? 'mdi-eye' : 'mdi-eye-off'
         const type = this.show ? 'text' : 'password'
@@ -112,16 +120,6 @@ export default {
     this.resetToast()
     },
     methods: {
-      userForm() {
-        this.registerLoading();
-        this.userRegister();
-      },
-      registerLoading(){
-        this.loading = true
-        setTimeout(() => {
-          this.loading = false
-        }, 3000)
-      },
       formReset(){
         this.$refs.form.reset();
         this.user = {
@@ -131,46 +129,58 @@ export default {
           password_confirmation: ''
         };
       },
-      userRegister() {
-        // ユーザー登録
-        this.$axios.post('/api/v1/auth', this.user)
-        .then(response => {
-        // ログイン処理
-        this.$auth.loginWith('local', {
-          data: {
-            email: this.user.email,
-            password: this.user.password
+      async userRegister() {
+        this.loading = true; // ここでローディング開始
+        const startTime = Date.now(); // 開始時間を記録
+        try {
+          // ユーザー登録API
+          await this.$axios.post('/api/v1/auth', this.user)
+
+          // 登録成功後、ログインAPI（ログイン時のレスポンス取得）
+          const loginResponse = await this.$auth.loginWith('local', {
+            data: {
+              email: this.user.email,
+              password: this.user.password
+            }
+          })
+
+          // ユーザー情報保存
+          this.$authentication.loginAdd(loginResponse)
+          this.formReset()
+          this.$router.push('artStyleMain')
+        } catch (error) {
+          if (error.response && error.response.status === 422) {
+            const errors = error.response.data.errors
+            console.log(errors);
+            const msgArray = errors.full_messages || [] // 右は空の配列を用意し、後でデフォルトメッセージを入れる
+            const translated = translateErrorMessages(msgArray) // 日本語に変換
+            const timeout = -1
+            this.$store.dispatch('getToast', { msg: translated, timeout })
+          } else if (error.response && error.response.status === 401) {
+            const msg = ['ログインに失敗しました。']
+            const timeout = -1
+            this.$store.dispatch('getToast', { msg, timeout })
+          } else {
+            const apiError = this.$my.apiErrorHandler(error.response)
+            this.$nuxt.error({
+              statusCode: apiError?.statusCode || 500,
+              message: apiError?.message || 'An unexpected error occurred',
+            })
           }
-            }).then(() => {
-              // ログイン後の処理
-              this.formReset();
-              this.$router.push(`/users/${response.data.data.id}`);
-              }).catch(() => {
-              // ログイン処理をしたとき失敗した場合(理論的に失敗しないが念の為)
-              const msg = 'ログインに失敗しました。'
-              const timeout = -1
-              return this.$store.dispatch('getToast', { msg, timeout })
-            });
-          })
-          .catch(error => {
-            if (error.response && error.response.status === 422) {
-              const msg = 'フォームの入力内容にエラーがあります。'
-              // const msg = error.response.data.errors.full_messages
-              const timeout = -1
-              this.$store.dispatch('getToast', { msg, timeout })
-            } else {
-              const apiError = this.$my.apiErrorHandler(error.response)
-              this.$nuxt.error({
-                statusCode: apiError?.statusCode || 500, // エラーハンドラが返すステータスコードまたは 500
-                message: apiError?.message || 'An unexpected error occurred', // ハンドラのメッセージまたはデフォルトメッセージ
-              });
-            } 
-          })
+        } finally {
+          const elapsed = Date.now() - startTime;
+          const minDuration = 1000; // 最低1000ms(1秒)はローディング表示
+          const remainingTime = Math.max(minDuration - elapsed, 0);
+
+          setTimeout(() => {
+            this.loading = false;
+          }, remainingTime);
+        }
       },
       // Vuexのtoast.msgの値を変更する
       resetToast () {
           return this.$store.dispatch('getToast', { msg: null })
-      }
+      },
     },
 };
 </script>

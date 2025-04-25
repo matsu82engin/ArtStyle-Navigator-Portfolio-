@@ -12,6 +12,8 @@ class User < ActiveRecord::Base
   # rubocop:enable Rails/ApplicationRecord
   validates :name, presence: true, length: { maximum: 50 }
   validates :email, uniqueness: true, length: { maximum: 255 }
+  # パスワード確認のキーがない場合に更新できてしまうことへの対策
+  validates :password_confirmation, presence: true, if: -> { password.present? }
 
   # リフレッシュトークンのJWT IDを保存
   def remember(jti)

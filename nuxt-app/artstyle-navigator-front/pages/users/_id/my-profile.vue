@@ -3,7 +3,6 @@
     <v-row justify="center">
       <v-col cols="12" md="8">
         <!-- プロフィール表示部分 -->
-        <app-toaster />
         <v-card>
           <v-card-title>現在のプロフィール</v-card-title>
           <v-card-text>
@@ -70,7 +69,7 @@
 
             <!-- ユーザー名変更 -->
             <v-text-field
-              v-model="username"
+              v-model="editProfile.username"
               label="ペンネーム(必須)"
               :rules="usernameRules"
               :counter="pennameMax"
@@ -80,7 +79,7 @@
 
             <!-- よく使うペン -->
             <v-select
-              v-model="favoriteArtSupply"
+              v-model="editProfile.favoriteArtSupply"
               :items="favoriteArtSupplyOptions"
               label="よく使うペン(任意)"
               :rules="favoriteArtSupplyRules"
@@ -89,7 +88,7 @@
 
             <!-- 自己紹介 -->
             <v-textarea
-              v-model="bio"
+              v-model="editProfile.bio"
               label="自己紹介(任意)"
               :rules="bioRules"
               :counter="introductionMax"
@@ -108,7 +107,8 @@
           <v-btn color="grey lighten-2" @click="closeDialog">キャンセル</v-btn>
           <v-btn
             color="primary"
-            :disabled="!valid"
+            :disabled="!valid || loading"
+            :loading="loading"
             @click="saveProfile"
           >
             変更を保存
@@ -120,6 +120,8 @@
 </template>
 
 <script>
+import { translateErrorMessages } from '@/utils/validationMessages';
+
 export default {
   layout: 'logged-in',
   data() {
@@ -127,16 +129,16 @@ export default {
     const introductionMax = 200
       return {
       valid: true,
+      loading: false,
+      updateProfileSuccess: false,
       dialog: false, // ダイアログの表示状態を管理
       // icon: null,
       pennameMax,
       introductionMax,
-      username: "",
       usernameRules: [
         (v) => !!v || "ユーザー名は必須です",
         (v) => (v && v.length <= 20) || "ユーザー名は20文字以内で入力してください",
       ],
-      favoriteArtSupply: null,
       favoriteArtSupplyOptions: [
         "デジタルペン : ペンタブレット(ペンタブ)",
         "デジタルペン : 液晶タブレット(液タブ)",
@@ -146,18 +148,24 @@ export default {
         "その他"
       ],
       favoriteArtSupplyRules: [],
-      bio: "",
       bioRules: [
         (v) => !v || (v && v.length <= 200) || "自己紹介は200文字以内で入力してください",
       ],
       profile:{
-        // username: '初期ユーザー名',
-        username: this.$store.state.user.current.name,
+        username: '初期ユーザー名',
+        // username: this.$store.state.user.current.name,
         ArtStyle: '未判定',
         favoriteArtSupply: '未設定',
         bio: 'プロフィールを編集して自己紹介を書こう！',
         icon: null
-      }
+      },
+      editProfile: { // 編集用オブジェクトを追加
+        username: '',
+        ArtStyle: '',
+        favoriteArtSupply: '',
+        bio: '',
+        icon: null
+      },
     };
   },
   computed: {
@@ -165,13 +173,11 @@ export default {
     // 現在のログインユーザーとそのユーザーが所有しているプロフィールIDとルートパラメータの :user_id が一致しているか
     const currentUserId = this.$store.state.user.current?.id;  // 現在のログインユーザーID
     const paramsId = Number(this.$route.params.id);       // URLのuser_idを数値化
-    const profileUserId = this.$store.state.user.profile?.user_id;
 
     console.log("ログイン中のユーザーID:", currentUserId);
     console.log("プロフィールのID:", paramsId);
-    console.log("URLのID:", profileUserId);
 
-    return currentUserId === paramsId && paramsId === profileUserId;
+    return currentUserId === paramsId; // プロフィールIDのチェックを削除
     }
   },
   mounted() {
@@ -183,9 +189,6 @@ export default {
     // プロフィール情報を取得
     async fetchProfile(userId) {
       try {
-        // console.log("Fetching profile for userId:", userId); // ログ出力で確認
-        // console.log("Vuex user state:", this.$store.state.user.current.id);
-        
         const response = await this.$axios.$get(`api/v1/users/${userId}/profiles`);
         if (response) {
           this.profile = {
@@ -194,17 +197,13 @@ export default {
             favoriteArtSupply: response.art_supply || "未設定",
             bio: response.introduction || "プロフィールを編集して自己紹介を書こう！",
           };
-          // ダイアログ内に現在のプロフィール情報を事前にセット( X でも同様の挙動)
-          this.username = response.pen_name;
-          this.favoriteArtSupply = response.art_supply;
-          this.bio = response.introduction;
         }
       } catch (error) {
         console.error("プロフィール情報の取得に失敗", error);
       }
     },
     openDialog() {
-      // ダイアログを開く前に、フォームの値を現在のプロフィールで初期化する処理を実装する予定
+      this.editProfile = { ...this.profile } // スプレッド構文でコピー
       this.dialog = true;
     },
     closeDialog() {
@@ -219,46 +218,62 @@ export default {
     resetDialog(){
       this.$refs.form.reset();
     },
-     saveProfile() {
+     async saveProfile() {
       if (this.$refs.form.validate()) {
-        // バリデーション成功時の処理
-        console.log("saveProfile メソッド実行");
-
+        this.loading = true;
+        const startTime = Date.now(); // 開始時間を記録
         // 現在ログインしているユーザーのIDを取得 (Vuexから)
         const userId = this.$store.state.user.current.id;
         console.log(userId);
 
-        // API にリクエストを送信
-        this.$axios.$patch(`api/v1/users/${userId}/profiles`, {
-          profile: {
-            pen_name: this.username,
-            art_supply: this.favoriteArtSupply,
-            introduction: this.bio,
-          }
-        })
-        .then(response => {
+        try {
+          // API にリクエストを送信
+          const response = await this.$axios.$patch(`api/v1/users/${userId}/profiles`, {
+            profile: {
+              pen_name: this.editProfile.username,
+              art_supply: this.editProfile.favoriteArtSupply,
+              introduction: this.editProfile.bio,
+            }
+          })
           // APIリクエストが成功した場合の処理
           console.log('プロフィール更新成功', response);
-          // プロフィールデータの更新
-          this.profile = {
-            // 必須項目なので以下でもいい => username: this.username これは送信する値を入れている
-              username: response.pen_name,
-              ArtStyle: response.art_style ? response.art_style.name : "未判定",
-              favoriteArtSupply: response.art_supply || "未設定",
-              bio: response.introduction || "プロフィールを編集して自己紹介を書こう！",
-           }
-          //  this.$refs.form.reset();
-           this.closeDialog();
-           // this.$store.dispatch('getProfileUser', this.username) でも可
-           // ↑の場合は レスポンスからではなく、送信するデータの pen_name を Vuex に送っている
-           this.$store.dispatch('getProfileUser', response)
-        })
-        .catch(error => {
-          console.error('プロフィール更新失敗', error);
-          // alert('プロフィールの更新に失敗しました。');
-          const msg = 'プロフィールの更新に失敗しました。'
-          return this.$store.dispatch('getToast', { msg })
-        });
+          this.profile.username = response.pen_name;
+          this.profile.ArtStyle = response.art_style ? response.art_style.name : "未判定";
+          this.profile.favoriteArtSupply = response.art_supply || "未設定";
+          this.profile.bio = response.introduction || "プロフィールを編集して自己紹介を書こう！";
+          this.$store.dispatch('getProfileUser', response)
+          this.updateProfileSuccess = true;
+        } catch (error) {
+          if (error.response && error.response.status === 422) {
+            console.error('プロフィール更新失敗', error);
+            // alert('プロフィールの更新に失敗しました。');
+            // const msg = 'プロフィールの更新に失敗しました。';
+            const errors = error.response.data.errors;
+            const msgArray = errors || [];
+  
+            // 翻訳関数を使用
+            const translated = translateErrorMessages(msgArray);
+            this.$store.dispatch('getToast', { msg: translated })
+          } else {
+            // 不明なエラーの場合に対応
+            const msg = 'プロフィールの更新に失敗しました。';
+            this.$store.dispatch('getToast', { msg });
+          }
+          this.updateProfileSuccess = false;
+        } finally {
+          // this.loading = false
+          const elapsed = Date.now() - startTime;
+          const minDuration = 500; // 最低500ms(0.5秒)はローディング。こちらは速さ重視。
+          const remainingTime = Math.max(minDuration - elapsed, 0);
+
+          setTimeout(() => {
+            this.loading = false;
+            // 成功した時のダイアログを閉じる(updateProfileSuccess = true)
+            if (this.updateProfileSuccess) {
+              this.closeDialog();
+            }
+          }, remainingTime);
+        }
       }
     },
   },
