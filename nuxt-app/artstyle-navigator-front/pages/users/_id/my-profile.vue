@@ -256,7 +256,7 @@ export default {
             this.$store.dispatch('getToast', { msg: translated })
           } else {
             // 不明なエラーの場合に対応
-            const msg = 'プロフィールの更新に失敗しました。';
+            const msg = ['プロフィールの更新に失敗しました。'];
             this.$store.dispatch('getToast', { msg });
           }
           this.updateProfileSuccess = false;
