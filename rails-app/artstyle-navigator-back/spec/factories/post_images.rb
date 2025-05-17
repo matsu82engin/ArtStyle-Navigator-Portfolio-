@@ -1,8 +1,8 @@
 FactoryBot.define do
   factory :post_image do
-    post { nil }
-    art_style { nil }
-    position { 1 }
+    post
+    art_style
+    position { 0 }
     caption { 'MyString' }
     tips { 'MyText' }
     alt { 'MyString' }

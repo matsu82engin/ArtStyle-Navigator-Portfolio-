@@ -25,13 +25,13 @@ RSpec.describe User, type: :model do
       # 名前が空白の場合は無効
       it 'is invalid if the name is blank' do
         user.name = nil
-        expect(user).not_to be_valid
+        expect(user).to be_invalid
       end
 
       # アドレスが空白の場合は無効
       it 'is invalid if the address is blank' do
         user.email = nil
-        expect(user).not_to be_valid
+        expect(user).to be_invalid
       end
     end
 
@@ -42,13 +42,13 @@ RSpec.describe User, type: :model do
       # 名前が長すぎる場合は無効
       it 'is invalid if the name is too long' do
         user.name = 'a' * 51 # 51 文字以上は無効
-        expect(user).not_to be_valid
+        expect(user).to be_invalid
       end
 
       # アドレスが長すぎる場合は無効
       it 'is invalid if the address is too long' do
         user.email = "#{'a' * 244}@example.com"
-        expect(user).not_to be_valid
+        expect(user).to be_invalid
       end
     end
 
@@ -70,7 +70,7 @@ RSpec.describe User, type: :model do
         invalid_addresses = %w[user@example,com user_at_foo.org user.name@example. foo@bar_baz.com foo@bar+baz.com]
         invalid_addresses.each do |invalid_address|
           user.email = invalid_address
-          expect(user).not_to be_valid, "#{invalid_address.inspect} should be invalid"
+          expect(user).to be_invalid, "#{invalid_address.inspect} should be invalid"
         end
       end
 
@@ -78,7 +78,7 @@ RSpec.describe User, type: :model do
       it 'is email addresses should be unique' do
         duplicate_user = user.dup
         user.save
-        expect(duplicate_user).not_to be_valid
+        expect(duplicate_user).to be_invalid
       end
     end
 
@@ -89,25 +89,25 @@ RSpec.describe User, type: :model do
       # パスワードが空白の場合は無効
       it 'is invalid if the password is blank' do
         user.password = nil
-        expect(user).not_to be_valid
+        expect(user).to be_invalid
       end
 
       # パスワードが5文字以下の場合は無効
       it 'is invalid with a too short password' do
         user.password = user.password_confirmation = 'short'
-        expect(user).not_to be_valid
+        expect(user).to be_invalid
       end
 
       # パスワードが6文字以上だが空白の場合は無効
       it 'is invalid when the password is 6 characters or more but blank' do
         user.password = user.password_confirmation = '' * 6
-        expect(user).not_to be_valid
+        expect(user).to be_invalid
       end
 
       # パスワードとパスワード確認が一致しない場合は無効
       it 'is invalid when password confirmation does not match' do
         user.password_confirmation = 'mismatched_password'
-        expect(user).not_to be_valid
+        expect(user).to be_invalid
       end
     end
   end

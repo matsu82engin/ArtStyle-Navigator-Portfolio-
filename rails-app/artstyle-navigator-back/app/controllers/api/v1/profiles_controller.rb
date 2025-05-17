@@ -46,7 +46,7 @@ module Api
         end
 
         # 4. 認可処理（他人のプロフィールを更新しようとしていないか）
-        unless profile.user_id == paramsProfile.user_id
+        unless profile.user_id == params_profile.user_id
           render json: { errors: ['権限がありません'] }, status: :forbidden
           return
         end

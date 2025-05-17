@@ -19,19 +19,19 @@ RSpec.describe Post, type: :model do
     context 'with invalid attributes' do # 無効な投稿
       it 'without a title' do # タイトルがない場合は無効
         post.title = nil
-        expect(post).not_to be_valid
+        expect(post).to be_invalid
         expect(post.errors[:title]).to include("can't be blank")
       end
 
       it 'when title is too long' do # タイトルが50文字を超えると無効
         post.title = 'a' * 51
-        expect(post).not_to be_valid
+        expect(post).to be_invalid
         expect(post.errors[:title]).to include('is too long (maximum is 50 characters)')
       end
 
       it 'without a user' do # ユーザーが紐付いていない場合は無効
         post_without_user = build(:post, user: nil, title: 'Some title')
-        expect(post_without_user).not_to be_valid
+        expect(post_without_user).to be_invalid
         expect(post_without_user.errors[:user]).to include('must exist')
       end
     end
