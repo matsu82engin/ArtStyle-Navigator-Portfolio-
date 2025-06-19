@@ -35,5 +35,22 @@ RSpec.describe Post, type: :model do
         expect(post_without_user.errors[:user]).to include('must exist')
       end
     end
+
+    context 'regarding post_images' do # 投稿画像について
+      let(:post_with_title_and_user) { build(:post, user: user, title: 'Valid Title') } # title と user は有効な状態
+
+      it 'is invalid without any post_images' do
+        post_without_images = build(:post, :without_images, title: 'Valid Title') # trait + transient (:without)を使って画像をつけない投稿にする
+        expect(post_without_images).to be_invalid
+        expect(post_without_images.errors[:post_images]).to include("can't be blank")
+      end
+
+      it 'is invalid if post_images_attributes is an empty array' do
+        post_without_images = build(:post, :without_images, title: 'Valid Title')
+        post_without_images.post_images_attributes = [] # この操作自体は post_images の状態を変えない
+        expect(post_without_images).to be_invalid
+        expect(post_without_images.errors[:post_images]).to include("can't be blank")
+      end
+    end
   end
 end

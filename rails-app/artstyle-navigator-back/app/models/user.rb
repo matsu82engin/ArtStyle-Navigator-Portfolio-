@@ -1,6 +1,7 @@
 # rubocop:disable Rails/ApplicationRecord
 class User < ActiveRecord::Base
   has_one :profile, dependent: :destroy
+  has_many :posts
 
   devise  :database_authenticatable, :registerable,
           :recoverable, :rememberable, :validatable

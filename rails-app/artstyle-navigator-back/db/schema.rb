@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_05_13_012745) do
+ActiveRecord::Schema.define(version: 2025_05_19_064941) do
 
   create_table "art_styles", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
@@ -30,6 +30,7 @@ ActiveRecord::Schema.define(version: 2025_05_13_012745) do
     t.string "alt"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["art_style_id", "created_at"], name: "index_post_images_on_art_style_id_and_created_at"
     t.index ["art_style_id"], name: "index_post_images_on_art_style_id"
     t.index ["post_id", "position"], name: "index_post_images_on_post_id_and_position", unique: true
     t.index ["post_id"], name: "index_post_images_on_post_id"
@@ -40,6 +41,8 @@ ActiveRecord::Schema.define(version: 2025_05_13_012745) do
     t.string "title", limit: 50, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["created_at"], name: "index_posts_on_created_at"
+    t.index ["user_id", "created_at"], name: "index_posts_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_posts_on_user_id"
   end
 

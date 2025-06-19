@@ -2,8 +2,8 @@ require 'rails_helper'
 
 RSpec.describe PostImage, type: :model do
   let(:post) { create(:post) }
-  let(:art_style) { create(:art_style) }
-  let(:post_image) { build(:post_image, post:, art_style:) }
+  let(:art_style) { post.post_images.first.art_style }
+  let(:post_image) { post.post_images.first }
 
   context 'with valid attributes' do # 有効な属性
     it 'is valid with default values' do # デフォルト値は有効
