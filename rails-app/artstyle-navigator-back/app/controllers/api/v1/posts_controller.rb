@@ -10,7 +10,7 @@ module Api
         raw_post_images_attributes = params.dig(:post, :post_images_attributes)
 
         if raw_post_images_attributes.present? && !raw_post_images_attributes.is_a?(Array)
-          render json: { errors: ["post_images_attributes must be an array"] }, status: :bad_request
+          render json: { errors: ['post_images_attributes must be an array'] }, status: :bad_request
           return # ここで処理を終了
         end
 
@@ -19,7 +19,7 @@ module Api
         # post.user = current_api_v1_user は build メソッドが自動で行います
 
         if post.save
-          render json: { post: post, post_images: post.post_images }, status: :created
+          render json: { post:, post_images: post.post_images }, status: :created
         else
           render json: { errors: post.errors.full_messages }, status: :unprocessable_entity
         end

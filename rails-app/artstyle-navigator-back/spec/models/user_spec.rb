@@ -110,5 +110,20 @@ RSpec.describe User, type: :model do
         expect(user).to be_invalid
       end
     end
+
+    context 'when dependencies' do # 依存関係
+      let!(:user) { create(:user) }
+      # let!(:post) { create(:post, user:) } # これは rubocop 的によくない
+
+      before do
+        create(:post, user:)
+      end
+
+      it 'deleting a user will delete both their posts and their images.' do # ユーザーを削除すると、投稿と投稿画像の両方が削除されること
+        expect { user.destroy }
+          .to change(Post, :count).by(-1) # user.destroy を実行すると、Post.countが1減ることを期待する
+          .and change(PostImage, :count).by(-1) # PostImageはPostに紐づいてるので、Postが削除されればPostImageも削除されるはず
+      end
+    end
   end
 end

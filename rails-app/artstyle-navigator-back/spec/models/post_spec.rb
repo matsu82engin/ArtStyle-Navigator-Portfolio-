@@ -36,8 +36,8 @@ RSpec.describe Post, type: :model do
       end
     end
 
-    context 'regarding post_images' do # 投稿画像について
-      let(:post_with_title_and_user) { build(:post, user: user, title: 'Valid Title') } # title と user は有効な状態
+    context 'when regarding post_images' do # 投稿画像について
+      let(:post_with_title_and_user) { build(:post, user:, title: 'Valid Title') } # title と user は有効な状態
 
       it 'is invalid without any post_images' do
         post_without_images = build(:post, :without_images, title: 'Valid Title') # trait + transient (:without)を使って画像をつけない投稿にする
@@ -50,6 +50,25 @@ RSpec.describe Post, type: :model do
         post_without_images.post_images_attributes = [] # この操作自体は post_images の状態を変えない
         expect(post_without_images).to be_invalid
         expect(post_without_images.errors[:post_images]).to include("can't be blank")
+      end
+    end
+
+    context 'when a user makes multiple posts' do
+      let!(:old_post) { create(:post, user:, created_at: 1.day.ago) }
+      let!(:new_post) { create(:post, user:, created_at: 1.hour.ago) }
+      let!(:middle_post) { create(:post, user:, created_at: 12.hours.ago) }
+
+      it 'is sort latest' do
+        # expect(Post.latest).to eq [new_post, middle_post, old_post] # Post.all の代わりに、Post.latest を使ってテスト
+        expect(described_class.latest).to eq [new_post, middle_post, old_post]
+      end
+    end
+
+    context 'when a post is deleted' do
+      let!(:sample_post) { create(:post, user:) }
+
+      it 'is posted images will also be deleted.' do
+        expect { sample_post.destroy }.to change(PostImage, :count).by(-1)
       end
     end
   end
