@@ -7,7 +7,7 @@
           <v-card-text class="text-center">
             <!-- ユーザーアイコン -->
             <v-avatar size="128" class="mb-4">
-              <img src="https://placekitten.com/128/128" alt="User Avatar" />
+              <!-- <img src="https://placekitten.com/128/128" alt="User Avatar" /> -->
             </v-avatar>
 
             <!-- ユーザー名と特徴 -->
@@ -49,26 +49,56 @@
               rows="3"
               auto-grow
             ></v-textarea>
+
+            <v-text-field
+              label="タイトル(必須)"
+              v-model="newPost.title"
+            ></v-text-field>
+
+            <!-- 絵柄の選択 -->
+            <v-select
+              label="絵柄を選択(必須)"
+              :items="artStyles"
+              item-text="name"
+              item-value="id"
+              v-model="newPost.artStyleId"
+            ></v-select>
+
+            <!-- キャプション -->
+            <v-text-field
+              label="絵の説明(任意)"
+              v-model="newPost.caption"
+            ></v-text-field>
           </v-card-text>
 
           <v-card-actions class="justify-end">
-              <v-btn color="primary">
+              <v-btn 
+                color="primary"
+                @click="createPost"
+              >
                 投稿する
               </v-btn>
           </v-card-actions>
         </v-card>
         <!-- ここまでPostForm -->
 
+        <!-- 投稿一覧 -->
+        <v-card
+          v-for="post in posts"
+          :key="post.id"
+          class="mt-4"
+        >
+
         <!-- 
           ここもコンポーネント化できる。
           ただし、v-for は除いてコンポーネント化して、
           このページで v-for を使う。
         -->
-        <v-card 
+        <!-- <v-card 
           v-for="post in 3"
           :key="post"
           class="mt-4"
-        >
+        > -->
           <v-card-title>
             <v-list-item class="pa-0">
               <v-list-item-avatar>
@@ -99,9 +129,11 @@
               </v-list>
             </v-menu>
           </v-card-title>
-          <v-card-text>
-            投稿内容のテキストが表示されます。
-          </v-card-text>
+
+          <!-- 投稿タイトル表示 -->
+          <v-card-subtitle class="font-weight-bold text-h6">
+            {{ post.title }}
+          </v-card-subtitle>
           <!-- 
             このいいねと数、画風はコンポーネント化できそう
             もしかしたら画像も含めてもいいかもしれない
@@ -126,13 +158,93 @@ export default {
   layout: 'logged-in',
   data() {
     return {
-      
+      newPost: {
+        title: '',
+        artStyleId: null,
+        caption: ''
+      },
+      posts: [],
+      artStyles: [],
+      selectedArtStyleId: null,
     }
   },
-  computed: {
-
+  mounted() {
+    this.fetchPosts();
+    this.fetchArtStyles();
   },
   methods: {
+    // async createPost() {
+    //   if (!this.newPost.title || !this.newPost.artStyleId) return
+
+    //   try {
+    //     const response = await this.$axios.post('/api/v1/posts', {
+    //       post: {
+    //         title: this.newPost.title,
+    //         post_images_attributes: [
+    //           {
+    //             art_style_id: this.newPost.artStyleId,
+    //             // 複数画像が送信できるようになったら position は変更
+    //             position: 0,
+    //             caption: this.newPost.caption
+    //           }
+    //         ]
+    //       }
+    //     })
+
+    //     // 投稿成功後、初期化やリロード
+    //     this.newPost.title = ''
+    //     this.newPost.artStyleId = null
+    //     this.newPost.caption = ''
+    //     await this.fetchPosts()
+    //   } catch (error) {
+    //     console.error('投稿に失敗しました:', error)
+    //   }
+    // },
+    // 本来の投稿メソッドではない
+    async createPost() {
+      // titleが空なら何もしない
+      if (!this.newPost.title) {
+        alert('タイトルは必須です。');
+        return;
+      }
+
+      // 送信するデータを組み立てる
+      const postData = {
+        post: {
+          title: this.newPost.title
+        }
+      };
+
+      try {
+        // 組み立てたデータを送信
+        await this.$axios.post('/api/v1/posts', postData);
+
+        this.newPost.title = '';
+        await this.fetchPosts();
+      } catch (error) {
+        console.error('投稿に失敗しました:', error);
+        alert('投稿に失敗しました。');
+      }
+    },
+
+    // マイページを開いた時に今まで投稿したデータを取得するメソッドが必要
+    async fetchPosts() {
+      try {
+        const response = await this.$axios.get('/api/v1/posts') // 自分の投稿一覧API これはつまり投稿したものを取り出している
+        this.posts = response.data
+        console.log(response.data);
+      } catch (error) {
+        console.error('投稿一覧の取得に失敗しました:', error);
+      }
+    },
+    async fetchArtStyles() {
+      try {
+        const response = await this.$axios.get('/api/v1/art_styles')
+        this.artStyles = response.data
+      } catch (error) {
+        console.error('絵柄の取得に失敗しました:', error)
+      }
+    }
   },
 }
 

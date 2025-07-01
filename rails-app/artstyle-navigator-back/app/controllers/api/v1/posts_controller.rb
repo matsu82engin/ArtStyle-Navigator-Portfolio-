@@ -5,6 +5,12 @@ module Api
 
       before_action :authenticate_api_v1_user!
 
+      # /api/v1/posts
+      def index
+        posts = current_api_v1_user.posts.latest
+        render json: posts, status: :ok
+      end
+
       def create
         # post_params を呼ぶ前に、ネストされた属性の形式をチェック
         raw_post_images_attributes = params.dig(:post, :post_images_attributes)

@@ -7,7 +7,7 @@ export default ({ $auth, store, route, redirect }) => {
 
   // ログイン前ユーザー処理
   if (!$auth.loggedIn) {
-    const msg = 'まずはログインしてください'
+    const msg = ['まずはログインしてください']
     const color = 'info'
     console.log(msg, color)
     // トースター出力

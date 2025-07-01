@@ -8,7 +8,10 @@ Rails.application.routes.draw do
       resources :pictures, only: [:index]
 
       # posts
-      resources :posts, only: [:create]
+      resources :posts, only: [:index, :create]
+
+      # art_styles
+      resources :art_styles, only: [:index]
 
       # devise_token_auth から２つのコントローラを継承してカスタムコントローラを作成
         mount_devise_token_auth_for 'User', at: 'auth', controllers: {
