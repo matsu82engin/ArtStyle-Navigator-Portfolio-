@@ -51,33 +51,33 @@
             ></v-textarea>
 
             <v-text-field
-              label="タイトル(必須)"
               v-model="newPost.title"
+              label="タイトル(必須)"
             ></v-text-field>
 
             <!-- 絵柄の選択 -->
             <v-select
+              v-model="newPost.artStyleId"
               label="絵柄を選択(必須)"
               :items="artStyles"
               item-text="name"
               item-value="id"
-              v-model="newPost.artStyleId"
             ></v-select>
 
             <!-- キャプション -->
             <v-text-field
-              label="絵の説明(任意)"
               v-model="newPost.caption"
+              label="絵の説明(任意)"
             ></v-text-field>
           </v-card-text>
 
           <v-card-actions class="justify-end">
-              <v-btn 
-                color="primary"
-                @click="createPost"
-              >
-                投稿する
-              </v-btn>
+            <v-btn 
+              color="primary"
+              @click="createPost"
+            >
+              投稿する
+            </v-btn>
           </v-card-actions>
         </v-card>
         <!-- ここまでPostForm -->
@@ -94,23 +94,13 @@
           ただし、v-for は除いてコンポーネント化して、
           このページで v-for を使う。
         -->
-        <!-- <v-card 
-          v-for="post in 3"
-          :key="post"
-          class="mt-4"
-        > -->
-          <v-card-title>
-            <v-list-item class="pa-0">
-              <v-list-item-avatar>
-                <v-avatar>
-                    <img src="#" alt="User Avatar">
-                </v-avatar>
-              </v-list-item-avatar>
-              <v-list-item-content>
-                  <v-list-item-title>ユーザー名</v-list-item-title>
-              </v-list-item-content>
-          </v-list-item>
-          <!-- ここの v-spacer の意味は？ -->
+          <v-card-title class="d-flex align-center">
+            <!-- アバターと名前 -->
+            <v-avatar size="40" class="mr-3">
+              <img src="#" alt="User Avatar" />
+            </v-avatar>
+            <span class="font-weight-medium">ユーザー名</span>
+
           <v-spacer></v-spacer>
           <v-menu offset-y>
               <template #activator="{ on, attrs }">
@@ -119,12 +109,20 @@
                   v-bind="attrs"
                   v-on="on"
                   >
-                   <v-icon>mdi-dots-vertical</v-icon>
+                   <!-- <v-icon>mdi-dots-vertical</v-icon> 縦の３点リーダー -->
+                   <v-icon>mdi-dots-horizontal</v-icon>
                 </v-btn>
               </template>
               <v-list>
-                <v-list-item>
+                <v-list-item
+                  @click="deletePost(post.id)"
+                >
+                <v-list-item-icon>
+                  <v-icon>mdi-trash-can-outline</v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
                   <v-list-item-title>削除</v-list-item-title>
+                </v-list-item-content>
                 </v-list-item>
               </v-list>
             </v-menu>
@@ -134,17 +132,29 @@
           <v-card-subtitle class="font-weight-bold text-h6">
             {{ post.title }}
           </v-card-subtitle>
-          <!-- 
-            このいいねと数、画風はコンポーネント化できそう
-            もしかしたら画像も含めてもいいかもしれない
-          -->
-          <v-card-actions>
-              <v-btn icon>
-                <!-- いいね数も?  -->
-                <v-icon>mdi-heart</v-icon>
-              </v-btn>
-              画風: xxxxxxx
-          </v-card-actions>
+
+          <div v-if="post.post_images && post.post_images.length > 0">
+          <!-- 将来的に複数画像になっても対応できるように v-for を使う -->
+            <div v-for="image in post.post_images" :key="image.id">
+              <!-- PostImageのcaption -->
+              <v-card-text>
+                説明: {{ image.caption }}
+              </v-card-text>
+
+              <!-- PostImageに紐づく絵柄 -->
+              <v-card-text v-if="image.art_style">
+                絵柄: {{ image.art_style.name }}
+              </v-card-text>
+
+              <v-card-actions>
+                <v-btn icon>
+                  <!-- いいね数アイコン  -->
+                  <v-icon>mdi-heart</v-icon>
+                  <!-- 押すとカウントが増えるようにする -->
+                </v-btn>
+              </v-card-actions>
+            </div>
+          </div>
         </v-card>
       </v-col>
 
@@ -163,8 +173,8 @@ export default {
         artStyleId: null,
         caption: ''
       },
-      posts: [],
-      artStyles: [],
+      posts: [], // fetchPost() で取得した投稿一覧のデータが入る
+      artStyles: [], // fetchArtStyles() で取得した絵柄一覧が入る
       selectedArtStyleId: null,
     }
   },
@@ -204,14 +214,21 @@ export default {
     async createPost() {
       // titleが空なら何もしない
       if (!this.newPost.title) {
-        alert('タイトルは必須です。');
+        alert('タイトルと絵柄は必須です。');
         return;
       }
 
       // 送信するデータを組み立てる
       const postData = {
         post: {
-          title: this.newPost.title
+          title: this.newPost.title,
+          post_images_attributes: [
+            {
+              art_style_id: this.newPost.artStyleId,
+              caption: this.newPost.caption,
+              // 他にも position や tips などがあればここに追加
+            }
+          ]
         }
       };
 
@@ -220,10 +237,29 @@ export default {
         await this.$axios.post('/api/v1/posts', postData);
 
         this.newPost.title = '';
+        this.newPost.artStyleId = null;
+        this.newPost.caption = '';
         await this.fetchPosts();
       } catch (error) {
         console.error('投稿に失敗しました:', error);
-        alert('投稿に失敗しました。');
+        // alert('投稿に失敗しました。');
+        const errors = error.response.data.errors;
+        const msgArray = errors || [];
+        const translated = translateErrorMessages(msgArray);
+        this.$store.dispatch('getToast', { msg: translated })
+      }
+    },
+
+    async deletePost(postId) {
+      if (!confirm("この投稿を削除してよろしいですか？")) return;
+
+      try {
+        await this.$axios.$delete(`/api/v1/posts/${postId}`);
+        // 投稿一覧から削除された投稿を除外する
+        this.posts = this.posts.filter(post => post.id !== postId);
+      } catch (error) {
+        console.error("削除失敗:", error);
+        alert("削除に失敗しました");
       }
     },
 
@@ -232,7 +268,7 @@ export default {
       try {
         const response = await this.$axios.get('/api/v1/posts') // 自分の投稿一覧API これはつまり投稿したものを取り出している
         this.posts = response.data
-        console.log(response.data);
+        console.log('レスポンスデータ:', response.data);
       } catch (error) {
         console.error('投稿一覧の取得に失敗しました:', error);
       }
@@ -247,6 +283,4 @@ export default {
     }
   },
 }
-
-
 </script>

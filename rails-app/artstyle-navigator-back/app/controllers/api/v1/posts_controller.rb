@@ -2,13 +2,32 @@ module Api
   module V1
     class PostsController < ApplicationController
       rescue_from ActionController::ParameterMissing, with: :handle_parameter_missing
-
       before_action :authenticate_api_v1_user!
+      before_action :set_post, only: [:destroy]
 
       # /api/v1/posts
       def index
-        posts = current_api_v1_user.posts.latest
-        render json: posts, status: :ok
+        # とりあえず投稿は確認OK
+        # posts = current_api_v1_user.posts.latest
+        # render json: posts, status: :ok
+
+        posts = current_api_v1_user.posts
+           .includes(post_images: :art_style)
+           .latest
+
+        render json: posts.map { |post|
+          post.as_json(
+            only: [:id, :title, :created_at],
+            include: {
+              post_images: {
+                only: [:id, :caption, :position],
+                include: {
+                  art_style: { only: [:id, :name] }
+                }
+              }
+            }
+          )
+        }, status: :ok
       end
 
       def create
@@ -31,7 +50,22 @@ module Api
         end
       end
 
+      def destroy
+        if @post.user_id == current_api_v1_user.id
+          @post.destroy
+          head :no_content
+        else
+          render json: { error: "削除権限がありません" }, status: :forbidden
+        end
+      end
+
       private
+
+      def set_post
+        @post = Post.find(params[:id])
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "投稿が見つかりません" }, status: :not_found
+      end
 
       def handle_parameter_missing(exception)
         render json: { error: "Required parameter missing: #{exception.param}" }, status: :bad_request

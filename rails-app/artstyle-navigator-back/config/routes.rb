@@ -8,7 +8,7 @@ Rails.application.routes.draw do
       resources :pictures, only: [:index]
 
       # posts
-      resources :posts, only: [:index, :create]
+      resources :posts, only: [:index, :create, :destroy]
 
       # art_styles
       resources :art_styles, only: [:index]
