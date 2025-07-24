@@ -91,31 +91,39 @@ RSpec.describe PostImage, type: :model do
       expect(post_image).to be_invalid
       expect(post_image.errors[:caption]).to include('is too long (maximum is 1000 characters)')
     end
+  end
 
-    it 'is invalid when caption spaces only' do # caption で空文字は無効
-      post_image.caption = '' # 空白
-      expect(post_image).to be_invalid
-      expect(post_image.errors[:caption]).to include("can't be blank")
+  context 'when handling whitespace in caption' do
+    it 'strips leading and trailing whitespace' do # 前後に空白がある文字列がトリミングされること
+      post_image.caption = '  hello world  '
+      post_image.valid?
+      expect(post_image.caption).to eq 'hello world'
     end
 
-    it 'is invalid when caption multiple spaces only' do # caption で複数空白のみは無効
-      post_image.caption = '     ' # 空白５つ(複数)
-      expect(post_image).to be_invalid
-      expect(post_image.errors[:caption]).to include("can't be blank")
+    it 'converts a string with only whitespace to an empty string' do # 空白のみの文字列が空文字列になること
+      post_image.caption = '   '
+      post_image.valid?
+      expect(post_image.caption).to eq ''
+    end
+
+    it 'strips full-width spaces' do # 前後に全角空白がある文字列がトリミングされること
+      post_image.caption = '　こんにちは　'
+      post_image.valid?
+      expect(post_image.caption).to eq 'こんにちは'
     end
   end
 
-  context 'with invalid attributes tips' do # tips の無効な属性
-    it 'is invalid when tips spaces only' do # tips で空文字は無効
-      post_image.tips = '' # 空白
-      expect(post_image).to be_invalid
-      expect(post_image.errors[:tips]).to include("can't be blank")
+  context 'when caption is nil' do
+    it 'does not raise an error' do # nil の場合にエラーにならないこと
+      post_image.caption = nil
+      expect { post_image.valid? }.not_to raise_error
     end
+  end
 
-    it 'is invalid when tips multiple spaces only' do # tips で複数空白のみは無効
-      post_image.tips = '     ' # 空白５つ(複数)
-      expect(post_image).to be_invalid
-      expect(post_image.errors[:tips]).to include("can't be blank")
+  context 'with blank tips' do # tip も空文字でも保存できる
+    it 'is valid' do
+      post_image.tips = '   '
+      expect(post_image).to be_valid
     end
   end
 end

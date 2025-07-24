@@ -12,7 +12,7 @@
 
             <!-- ユーザー名と特徴 -->
             <!-- <h2 class="mb-2">ユーザー名</h2> -->
-            <h2 class="mb-2">{{ $authentication.user.name }}</h2>
+            <h2 v-if="$authentication.user" class="mb-2">{{ $authentication.user.name }}</h2>
             <p class="text-subtitle-1">自己紹介文</p>
 
             <!-- フォロー情報 -->
@@ -26,7 +26,8 @@
             </div>
 
             <!-- プロフィール編集ボタン -->
-            <v-btn 
+            <v-btn
+              v-if="$authentication.user && $authentication.user.id" 
               color="primary"
               :to="$my.projectLinkTo($authentication.user.id, 'users-id-my-profile')">
               プロフィール編集
@@ -42,131 +43,173 @@
           <v-card-title>
             投稿する
           </v-card-title>
-          <v-card-text>
-            <!-- 投稿テキストエリア -->
-            <v-textarea
-              label="いま何してる？"
-              rows="3"
-              auto-grow
-            ></v-textarea>
+          <v-form
+            ref="form"
+            lazy-validation
+          >
+            <v-card-text>
+              <!-- 投稿テキストエリア -->
+              <v-textarea
+                label="いま何してる？"
+                rows="3"
+                auto-grow
+              ></v-textarea>
 
-            <v-text-field
-              v-model="newPost.title"
-              label="タイトル(必須)"
-            ></v-text-field>
+              <v-text-field
+                v-model="newPost.title"
+                label="タイトル(必須)"
+                :counter="titleMax"
+                :rules="titleRules"
+              ></v-text-field>
 
-            <!-- 絵柄の選択 -->
-            <v-select
-              v-model="newPost.artStyleId"
-              label="絵柄を選択(必須)"
-              :items="artStyles"
-              item-text="name"
-              item-value="id"
-            ></v-select>
+              <!-- 絵柄の選択 -->
+              <v-select
+                v-model="newPost.artStyleId"
+                label="絵柄を選択(必須)"
+                :items="artStyles"
+                item-text="name"
+                item-value="id"
+                :rules="artStyleRules"
+              ></v-select>
 
-            <!-- キャプション -->
-            <v-text-field
-              v-model="newPost.caption"
-              label="絵の説明(任意)"
-            ></v-text-field>
-          </v-card-text>
+              <!-- キャプション -->
+              <v-text-field
+                v-model="newPost.caption"
+                label="絵の説明(任意)"
+                :counter="captionMax"
+                :rules="captionRules"
+              ></v-text-field>
+            </v-card-text>
 
-          <v-card-actions class="justify-end">
-            <v-btn 
-              color="primary"
-              @click="createPost"
-            >
-              投稿する
-            </v-btn>
-          </v-card-actions>
+            <v-card-actions class="justify-end">
+              <v-btn 
+                color="primary"
+                :disabled="!isFormValid"
+                :loading="loading"
+                @click="createPost"
+              >
+                投稿する
+              </v-btn>
+            </v-card-actions>
+          </v-form>
         </v-card>
         <!-- ここまでPostForm -->
 
         <!-- 投稿一覧 -->
-        <v-card
-          v-for="post in posts"
-          :key="post.id"
-          class="mt-4"
+        <div v-if="postsLoading" class="text-center mt-6">
+          <v-progress-circular indeterminate color="primary"></v-progress-circular>
+          <p class="mt-2 grey--text">投稿を読み込んでいます...</p>
+        </div>
+
+        <!-- 2. エラー発生時の表示 -->
+        <v-alert
+          v-else-if="postsError"
+          type="error"
+          class="mt-6"
         >
+          投稿の読み込みに失敗しました。ページを再読み込みするか、時間をおいてお試しください。
+          <v-btn
+            small
+            outlined
+            class="ml-4"
+            @click="fetchPosts"
+          >
+            <v-icon left>mdi-refresh</v-icon>
+            再試行
+          </v-btn>
+        </v-alert>
 
-        <!-- 
-          ここもコンポーネント化できる。
-          ただし、v-for は除いてコンポーネント化して、
-          このページで v-for を使う。
-        -->
-          <v-card-title class="d-flex align-center">
-            <!-- アバターと名前 -->
-            <v-avatar size="40" class="mr-3">
-              <img src="#" alt="User Avatar" />
-            </v-avatar>
-            <span class="font-weight-medium">ユーザー名</span>
+        <!-- 3. 正常に取得できた場合の表示（投稿がある場合） -->
+        <div v-else-if="posts.length > 0">
+          <v-card
+            v-for="post in posts"
+            :key="post.id"
+            class="mt-4"
+          >
+            <!-- ここには元の <v-card> の中身（v-card-titleからv-card-actionsまで）をそのまま入れる -->
+            <v-card-title class="d-flex align-center">
+              <!-- アバターと名前 -->
+              <v-avatar size="40" class="mr-3">
+                <img src="#" alt="User Avatar" />
+              </v-avatar>
+              <span class="font-weight-medium">ユーザー名</span>
 
-          <v-spacer></v-spacer>
-          <v-menu offset-y>
-              <template #activator="{ on, attrs }">
-                <v-btn
-                  icon
-                  v-bind="attrs"
-                  v-on="on"
+              <v-spacer></v-spacer>
+
+              <v-menu offset-y>
+                <template #activator="{ on, attrs }">
+                  <v-btn icon v-bind="attrs" v-on="on">
+                    <v-icon>mdi-dots-horizontal</v-icon>
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item
+                    :disabled="isDeleting"
+                    @click="deletePost(post.id)"
                   >
-                   <!-- <v-icon>mdi-dots-vertical</v-icon> 縦の３点リーダー -->
-                   <v-icon>mdi-dots-horizontal</v-icon>
-                </v-btn>
-              </template>
-              <v-list>
-                <v-list-item
-                  @click="deletePost(post.id)"
-                >
-                <v-list-item-icon>
-                  <v-icon>mdi-trash-can-outline</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>削除</v-list-item-title>
-                </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-          </v-card-title>
+                    <v-list-item-icon>
+                      <v-icon>mdi-trash-can-outline</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                      <v-list-item-title>削除</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </v-card-title>
 
-          <!-- 投稿タイトル表示 -->
-          <v-card-subtitle class="font-weight-bold text-h6">
-            {{ post.title }}
-          </v-card-subtitle>
+            <v-card-subtitle class="font-weight-bold text-h6">
+              {{ post.title }}
+            </v-card-subtitle>
+            <div v-if="post.post_images && post.post_images.length > 0">
+              <!-- 将来的に複数画像になっても対応できるように v-for を使う -->
+              <div v-for="image in post.post_images" :key="image.id">
+                <!-- PostImageのcaption -->
+                <v-card-text>
+                  説明: {{ image.caption }}
+                </v-card-text>
 
-          <div v-if="post.post_images && post.post_images.length > 0">
-          <!-- 将来的に複数画像になっても対応できるように v-for を使う -->
-            <div v-for="image in post.post_images" :key="image.id">
-              <!-- PostImageのcaption -->
-              <v-card-text>
-                説明: {{ image.caption }}
-              </v-card-text>
+                <!-- PostImageに紐づく絵柄 -->
+                <v-card-text v-if="image.art_style">
+                  絵柄: {{ image.art_style.name }}
+                </v-card-text>
 
-              <!-- PostImageに紐づく絵柄 -->
-              <v-card-text v-if="image.art_style">
-                絵柄: {{ image.art_style.name }}
-              </v-card-text>
-
-              <v-card-actions>
-                <v-btn icon>
-                  <!-- いいね数アイコン  -->
-                  <v-icon>mdi-heart</v-icon>
-                  <!-- 押すとカウントが増えるようにする -->
-                </v-btn>
-              </v-card-actions>
+                <v-card-actions>
+                  <v-btn icon>
+                    <!-- いいね数アイコン  -->
+                    <v-icon>mdi-heart</v-icon>
+                    <!-- 押すとカウントが増えるようにする -->
+                  </v-btn>
+                </v-card-actions>
+              </div>
             </div>
-          </div>
-        </v-card>
-      </v-col>
+          </v-card>
+        </div>
 
+        <!-- 4. 正常に取得できたが、投稿が1件もなかった場合の表示 -->
+        <v-alert
+          v-else
+          type="info"
+          outlined
+          class="mt-6"
+        >
+          まだ投稿がありません。最初の投稿をしてみましょう！
+        </v-alert>
+
+      </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script>
+import { translateErrorMessages } from '@/utils/validationMessages';
+
 export default {
   name: 'MyPage',
   layout: 'logged-in',
   data() {
+    const titleMax = 50;
+    const captionMax = 1000;
     return {
       newPost: {
         title: '',
@@ -174,8 +217,34 @@ export default {
         caption: ''
       },
       posts: [], // fetchPost() で取得した投稿一覧のデータが入る
+      postsLoading: true,
+      postsError: false,
       artStyles: [], // fetchArtStyles() で取得した絵柄一覧が入る
       selectedArtStyleId: null,
+      loading: false,
+      isDeleting: false, // ★追加：削除処理中かどうかのフラグ
+      titleMax,
+      captionMax,
+      titleRules: [
+        // 入力必須
+        v => !!v || "投稿タイトルは必須です",
+        v => !v || v.length <= titleMax || `${titleMax}文字以内で入力してください`
+      ],
+      artStyleRules: [
+        // 入力必須
+        v => !!v || "画像の絵柄選択は必須です",
+        // 選択肢以外の入力除外(ただしこれはバックエンドで制限する？)
+      ],
+      captionRules: [
+        // 1000文字制限
+        v => !v || v.length <= captionMax || `${captionMax}文字以内で入力してください`
+      ],
+    }
+  },
+  computed: {
+    isFormValid() {
+      // newPostオブジェクトの必須項目がすべて「truthy」（空文字やnullでない）かをチェック
+      return !!this.newPost.title && !!this.newPost.artStyleId;
     }
   },
   mounted() {
@@ -212,11 +281,17 @@ export default {
     // },
     // 本来の投稿メソッドではない
     async createPost() {
-      // titleが空なら何もしない
-      if (!this.newPost.title) {
-        alert('タイトルと絵柄は必須です。');
-        return;
+      // if (!this.isValid) return;
+      if (!this.$refs.form.validate()) {
+        return; // バリデーションが失敗したら中断
       }
+      this.loading = true; // ここでローディング開始
+      const startTime = Date.now(); // 開始時間を記録
+      // titleが空なら何もしない
+      // if (!this.newPost.title) {
+      //   alert('タイトルと絵柄は必須です。');
+      //   return;
+      // }
 
       // 送信するデータを組み立てる
       const postData = {
@@ -236,22 +311,30 @@ export default {
         // 組み立てたデータを送信
         await this.$axios.post('/api/v1/posts', postData);
 
-        this.newPost.title = '';
-        this.newPost.artStyleId = null;
-        this.newPost.caption = '';
+        this.$refs.form.reset() 
         await this.fetchPosts();
       } catch (error) {
         console.error('投稿に失敗しました:', error);
-        // alert('投稿に失敗しました。');
         const errors = error.response.data.errors;
         const msgArray = errors || [];
         const translated = translateErrorMessages(msgArray);
         this.$store.dispatch('getToast', { msg: translated })
+      } finally {
+        const elapsed = Date.now() - startTime;
+        const minDuration = 500; // 最低500ms(0.5秒)はローディング表示
+        const remainingTime = Math.max(minDuration - elapsed, 0);
+
+        setTimeout(() => {
+          this.loading = false;
+        }, remainingTime);
       }
     },
 
     async deletePost(postId) {
+      if (this.isDeleting) return; // 処理中(true)なら何もしない（連打防止）
       if (!confirm("この投稿を削除してよろしいですか？")) return;
+
+      this.isDeleting = true;
 
       try {
         await this.$axios.$delete(`/api/v1/posts/${postId}`);
@@ -259,18 +342,29 @@ export default {
         this.posts = this.posts.filter(post => post.id !== postId);
       } catch (error) {
         console.error("削除失敗:", error);
-        alert("削除に失敗しました");
+        const msg = ['削除に失敗しました']
+        this.$store.dispatch('getToast', { msg })
+      } finally {
+        this.isDeleting = false;
       }
     },
 
     // マイページを開いた時に今まで投稿したデータを取得するメソッドが必要
     async fetchPosts() {
+      this.postsLoading = true;
+      this.postsError = false;
       try {
         const response = await this.$axios.get('/api/v1/posts') // 自分の投稿一覧API これはつまり投稿したものを取り出している
         this.posts = response.data
         console.log('レスポンスデータ:', response.data);
       } catch (error) {
         console.error('投稿一覧の取得に失敗しました:', error);
+        // const msg = ['投稿一覧の取得に失敗しました']
+        // this.$store.dispatch('getToast', { msg })
+        this.postsError = true; // エラーが発生したことを記録
+      } finally {
+        // tryが成功しようが、catchで失敗しようが、必ず最後に実行される
+        this.postsLoading = false; // ローディング完了を宣言
       }
     },
     async fetchArtStyles() {
@@ -278,7 +372,7 @@ export default {
         const response = await this.$axios.get('/api/v1/art_styles')
         this.artStyles = response.data
       } catch (error) {
-        console.error('絵柄の取得に失敗しました:', error)
+        console.error('絵柄の取得に失敗しました:', error);
       }
     }
   },
