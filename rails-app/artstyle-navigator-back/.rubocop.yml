@@ -97,7 +97,7 @@ RSpec/MultipleExpectations:
 
 # RSpec の it ブロックを 8行までに変更
 RSpec/ExampleLength:
-  Max: 10
+  Max: 12
 
 # not_to be valid よりも be_invalid を使う。
 RSpec/Rails/NegationBeValid:

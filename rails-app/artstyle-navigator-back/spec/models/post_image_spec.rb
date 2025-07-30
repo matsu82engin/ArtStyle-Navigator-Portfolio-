@@ -78,9 +78,20 @@ RSpec.describe PostImage, type: :model do
     end
 
     it 'is valid if position is duplicated but for a different post' do # 違う投稿であれば、同じ position でも有効
-      create(:post_image, post:, art_style:, position: 1)
-      another_post = create(:post) # 別のPostを作成
-      valid_duplicate = build(:post_image, post: another_post, art_style:, position: 1)
+      # create(:post_image, post:, art_style:, position: 1)
+      # another_post = create(:post) # 別のPostを作成
+      # valid_duplicate = build(:post_image, post: another_post, art_style:, position: 1)
+      # expect(valid_duplicate).to be_valid
+
+      post1 = create(:post)
+      create(:post_image, post: post1, position: 1)
+
+      # 2つ目の投稿を作成
+      post2 = create(:post)
+      # 別の投稿であれば、同じpositionでも有効なはず
+      # art_styleはFactoryが勝手に選んでくれるので、ここでは意識しなくて良い
+      valid_duplicate = build(:post_image, post: post2, position: 1)
+
       expect(valid_duplicate).to be_valid
     end
   end

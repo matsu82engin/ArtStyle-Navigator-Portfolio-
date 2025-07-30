@@ -4,7 +4,7 @@ RSpec.describe 'Posts API', type: :request do
   describe 'POST /api/v1/posts' do
     let!(:user) { create(:user) } # 投稿するユーザー (認証が必要ならトークンなども準備)
     let(:headers) { sign_in_user(user) } # user でログインして認証情報を取り出す
-    let!(:art_style) { create(:art_style) } # PostImageで使うArtStyle
+    let!(:art_style) { ArtStyle.find_by!(name: 'リアル系') } # 作成済みのマスターデータを "見つけてくる"
     let(:base_attributes) do # ベースの属性 (PostImage の部分は正常)
       {
         post: {
@@ -218,7 +218,9 @@ RSpec.describe 'Posts API', type: :request do
       it 'nil is ok' do
         valid_params_tip = base_attributes.deep_merge(
           post: {
-            post_images_attributes: [{ art_style_id: art_style.id, position: 1, caption: 'Image 1', tips: nil }]
+            post_images_attributes: [
+              { art_style_id: art_style.id, position: 1, caption: 'Image 1', tips: nil }
+            ]
           }
         )
         post api_v1_posts_path, params: valid_params_tip, headers:, xhr: true
@@ -227,19 +229,54 @@ RSpec.describe 'Posts API', type: :request do
     end
 
     context 'when a alt' do # alt ついて
-      it 'nil is ok' do
+      it 'copies caption to alt when alt is nil' do # captionがあり、altがnilの場合
         valid_params_alt = base_attributes.deep_merge(
           post: {
             post_images_attributes: [
-              { art_style_id: art_style.id, position: 1, caption: 'Image 1', alt: nil }
+              { art_style_id: art_style.id, position: 1, caption: 'This is the caption', alt: nil }
             ]
           }
         )
+
         post api_v1_posts_path, params: valid_params_alt, headers:, xhr: true
         expect(response).to have_http_status(:created)
+
+        created_post_image = Post.last.post_images.first # 作成された投稿の最新のデータを取得
+        expect(created_post_image.alt).to eq('This is the caption') # データの中の alt が caption の中の値と同じか確認
       end
 
-      # 後で caption と alt が同じ値になっているかもチェックすべき
+      it 'does not overwrite alt if it is already present' do # captionとaltの両方に値がある場合
+        valid_params_alt = base_attributes.deep_merge(
+          post: {
+            # altに個別の値を設定
+            post_images_attributes: [
+              { art_style_id: art_style.id, caption: 'This is the caption', alt: 'This is specific alt text' }
+            ]
+          }
+        )
+
+        post api_v1_posts_path, params: valid_params_alt, headers:, xhr: true
+        expect(response).to have_http_status(:created)
+
+        created_post_image = Post.last.post_images.first
+        expect(created_post_image.alt).to eq('This is specific alt text') # altが上書きされず、送信した値のままであることを確認
+      end
+
+      it 'keeps alt as nil when caption is nil' do # caption が nil
+        valid_params_alt = base_attributes.deep_merge(
+          post: {
+            post_images_attributes: [
+              { art_style_id: art_style.id, caption: nil, alt: nil }
+            ]
+          }
+        )
+
+        post api_v1_posts_path, params: valid_params_alt, headers:, xhr: true
+        expect(response).to have_http_status(:created)
+
+        created_post_image = Post.last.post_images.first
+        expect(created_post_image.alt).to be_nil
+      end
     end
   end
 end

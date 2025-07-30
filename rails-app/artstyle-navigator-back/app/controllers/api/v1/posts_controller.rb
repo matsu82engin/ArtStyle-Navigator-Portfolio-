@@ -12,8 +12,8 @@ module Api
         # render json: posts, status: :ok
 
         posts = current_api_v1_user.posts
-           .includes(post_images: :art_style)
-           .latest
+                                   .includes(post_images: :art_style)
+                                   .latest
 
         render json: posts.map { |post|
           post.as_json(
@@ -55,7 +55,7 @@ module Api
           @post.destroy
           head :no_content
         else
-          render json: { error: "削除権限がありません" }, status: :forbidden
+          render json: { error: '削除権限がありません' }, status: :forbidden
         end
       end
 
@@ -64,7 +64,7 @@ module Api
       def set_post
         @post = Post.find(params[:id])
       rescue ActiveRecord::RecordNotFound
-        render json: { error: "投稿が見つかりません" }, status: :not_found
+        render json: { error: '投稿が見つかりません' }, status: :not_found
       end
 
       def handle_parameter_missing(exception)

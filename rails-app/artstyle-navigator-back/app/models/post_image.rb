@@ -23,15 +23,15 @@ class PostImage < ApplicationRecord
   def set_alt_from_caption
     # もし caption に値があり、alt が空の場合に値をコピーする
     # これにより、将来的にaltだけを個別に設定したくなった場合にも対応できる
-    self.alt = self.caption if self.caption.present? && self.alt.blank?
+    self.alt = caption if caption.present? && alt.blank?
   end
 
   def strip_whitespace
     # 最初と最後に半角空白があれば(複数も)削除して保存
     # self.caption = self.caption.strip if self.caption.present?
     # 最初と最後に全角空白があれば(複数も)削除して保存
-    self.caption&.gsub!(/\A[\s　]+|[\s　]+\z/, "")
-    self.tips&.gsub!(/\A[\s　]+|[\s　]+\z/, "")
-    self.alt&.gsub!(/\A[\s　]+|[\s　]+\z/, "")
+    caption&.gsub!(/\A[\s　]+|[\s　]+\z/, '')
+    tips&.gsub!(/\A[\s　]+|[\s　]+\z/, '')
+    alt&.gsub!(/\A[\s　]+|[\s　]+\z/, '')
   end
 end
