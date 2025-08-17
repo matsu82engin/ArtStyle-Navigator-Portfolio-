@@ -3,12 +3,12 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :users, only: [:index, :show] do
         resource :profiles, only: [:show, :update, :destroy]
+        # posts
+        resources :posts, only: [:index, :create, :destroy]
       end
+
       # pictures
       resources :pictures, only: [:index]
-
-      # posts
-      resources :posts, only: [:index, :create, :destroy]
 
       # art_styles
       resources :art_styles, only: [:index]

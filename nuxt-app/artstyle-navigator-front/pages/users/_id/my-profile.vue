@@ -170,7 +170,7 @@ export default {
   },
   computed: {
     isOwnProfile() {
-    // 現在のログインユーザーとそのユーザーが所有しているプロフィールIDとルートパラメータの :user_id が一致しているか
+    // 現在のログインユーザーとルートパラメータの :user_id が一致しているか
     const currentUserId = this.$store.state.user.current?.id;  // 現在のログインユーザーID
     const paramsId = Number(this.$route.params.id);       // URLのuser_idを数値化
 
@@ -223,7 +223,7 @@ export default {
         this.loading = true;
         const startTime = Date.now(); // 開始時間を記録
         // 現在ログインしているユーザーのIDを取得 (Vuexから)
-        const userId = this.$store.state.user.current.id;
+        const userId = this.$store.state.user.current?.id;
         console.log(userId);
 
         try {

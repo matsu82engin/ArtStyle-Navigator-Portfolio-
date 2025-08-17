@@ -44,7 +44,7 @@ RSpec.describe 'Posts API', type: :request do
 
       it 'creates a new Post and associated PostImages' do # 新しい投稿と関連する投稿画像を作成
         expect do
-          post api_v1_posts_path, params: valid_attributes, headers:, xhr: true
+          post api_v1_user_posts_path(user), params: valid_attributes, headers:, xhr: true
         end.to change(Post, :count).by(1).and(
           change(PostImage, :count).by(2) # PostImageが2つ作成されることを期待
         )
@@ -57,12 +57,12 @@ RSpec.describe 'Posts API', type: :request do
       end
 
       it 'returns a created status' do
-        post api_v1_posts_path, params: valid_attributes, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: valid_attributes, headers:, xhr: true
         expect(response).to have_http_status(:created)
       end
 
       it 'returns the created post and post_images in JSON' do # 作成された投稿と post_images を JSON で返す。
-        post api_v1_posts_path, params: valid_attributes, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: valid_attributes, headers:, xhr: true
         # json_response = JSON.parse(response.body)
         json_response = response.parsed_body
 
@@ -76,19 +76,19 @@ RSpec.describe 'Posts API', type: :request do
     # ここから無効なパラメータのテスト
     context 'with invalid title' do # 無効なタイトルパラメータ
       it 'cannot post when user is not authenticated' do # 認証されてないユーザーの投稿
-        post api_v1_posts_path, params: base_attributes, xhr: true
+        post api_v1_user_posts_path(user), params: base_attributes, xhr: true
         expect(response).to have_http_status(:unauthorized)
       end
 
       it 'no title returns 422' do # タイトルを入れない場合はエラー
         params_with_nil_title = base_attributes.deep_merge(post: { title: nil })
-        post api_v1_posts_path, params: params_with_nil_title, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: params_with_nil_title, headers:, xhr: true
         expect(response).to have_http_status(:unprocessable_entity)
       end
 
       it 'title length 51 is returns 422' do # タイトルが 51 文字ならエラー
         params_with_long_title = base_attributes.deep_merge(post: { title: 'a' * 51 })
-        post api_v1_posts_path, params: params_with_long_title, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: params_with_long_title, headers:, xhr: true
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
@@ -98,7 +98,7 @@ RSpec.describe 'Posts API', type: :request do
         params_with_empty_images = base_attributes.deep_merge(
           post: { post_images_attributes: [] } # 空の配列で上書き
         )
-        post api_v1_posts_path, params: params_with_empty_images, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: params_with_empty_images, headers:, xhr: true
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
@@ -109,7 +109,7 @@ RSpec.describe 'Posts API', type: :request do
       end
 
       it 'returns 400 Bad Request when :post key is missing from params' do # :post キーがなければエラー
-        post api_v1_posts_path, params: params_missing_root_key, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: params_missing_root_key, headers:, xhr: true
         expect(response).to have_http_status(:bad_request) # 要 rescue_from
       end
     end
@@ -125,7 +125,7 @@ RSpec.describe 'Posts API', type: :request do
 
       # post_images_attributes が期待する形式(配列)になっていない場合
       it 'returns 400 Bad Request when post_images_attributes is not an array' do
-        post api_v1_posts_path, params: params_invalid_nested_format, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: params_invalid_nested_format, headers:, xhr: true
         # ここは 422 Unprocessable Entity になる可能性もある (Rails の nested attributes の解釈次第)
         # 実際に動かして確認し、期待するステータスコードに合わせる
         expect(response).to have_http_status(:bad_request)
@@ -142,7 +142,7 @@ RSpec.describe 'Posts API', type: :request do
             ]
           }
         )
-        post api_v1_posts_path, params: invalid_params_art_style_id, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: invalid_params_art_style_id, headers:, xhr: true
         expect(response).to have_http_status(:unprocessable_entity)
       end
 
@@ -155,7 +155,7 @@ RSpec.describe 'Posts API', type: :request do
             ]
           }
         )
-        post api_v1_posts_path, params: invalid_params_art_style_id, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: invalid_params_art_style_id, headers:, xhr: true
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
@@ -170,7 +170,7 @@ RSpec.describe 'Posts API', type: :request do
             ]
           }
         )
-        post api_v1_posts_path, params: invalid_params_position, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: invalid_params_position, headers:, xhr: true
         expect(response).to have_http_status(:unprocessable_entity)
       end
 
@@ -183,7 +183,7 @@ RSpec.describe 'Posts API', type: :request do
             ]
           }
         )
-        post api_v1_posts_path, params: invalid_params_position, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: invalid_params_position, headers:, xhr: true
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
@@ -197,7 +197,7 @@ RSpec.describe 'Posts API', type: :request do
             ]
           }
         )
-        post api_v1_posts_path, params: valid_params_caption, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: valid_params_caption, headers:, xhr: true
         expect(response).to have_http_status(:created)
       end
 
@@ -209,7 +209,7 @@ RSpec.describe 'Posts API', type: :request do
             ]
           }
         )
-        post api_v1_posts_path, params: invalid_params_caption, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: invalid_params_caption, headers:, xhr: true
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
@@ -223,7 +223,7 @@ RSpec.describe 'Posts API', type: :request do
             ]
           }
         )
-        post api_v1_posts_path, params: valid_params_tip, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: valid_params_tip, headers:, xhr: true
         expect(response).to have_http_status(:created)
       end
     end
@@ -238,7 +238,7 @@ RSpec.describe 'Posts API', type: :request do
           }
         )
 
-        post api_v1_posts_path, params: valid_params_alt, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: valid_params_alt, headers:, xhr: true
         expect(response).to have_http_status(:created)
 
         created_post_image = Post.last.post_images.first # 作成された投稿の最新のデータを取得
@@ -255,7 +255,7 @@ RSpec.describe 'Posts API', type: :request do
           }
         )
 
-        post api_v1_posts_path, params: valid_params_alt, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: valid_params_alt, headers:, xhr: true
         expect(response).to have_http_status(:created)
 
         created_post_image = Post.last.post_images.first
@@ -271,7 +271,7 @@ RSpec.describe 'Posts API', type: :request do
           }
         )
 
-        post api_v1_posts_path, params: valid_params_alt, headers:, xhr: true
+        post api_v1_user_posts_path(user), params: valid_params_alt, headers:, xhr: true
         expect(response).to have_http_status(:created)
 
         created_post_image = Post.last.post_images.first

@@ -245,10 +245,21 @@ export default {
     isFormValid() {
       // newPostオブジェクトの必須項目がすべて「truthy」（空文字やnullでない）かをチェック
       return !!this.newPost.title && !!this.newPost.artStyleId;
-    }
+    },
+    // isOwnPage() {
+    // // 現在のログインユーザーとルートパラメータの :user_id が一致しているか
+    // const currentUserId = this.$store.state.user.current?.id; // 現在のログインユーザーID
+    // const paramsId = Number(this.$route.params.id); // URLのuser_idを数値化
+
+    // console.log("ログイン中のユーザーID:", currentUserId);
+    // console.log("入力されたID:", paramsId);
+
+    // return currentUserId === paramsId; // プロフィールIDのチェックを削除
+    // }
   },
   mounted() {
-    this.fetchPosts();
+    const userId = this.$route.params.id;
+    this.fetchPosts(userId);
     this.fetchArtStyles();
   },
   methods: {
@@ -307,12 +318,16 @@ export default {
         }
       };
 
+      // 現在ログインしているユーザーのIDを取得 (Vuexから)
+      const userId = this.$store.state.user.current?.id;
+      console.log(userId);
+
       try {
         // 組み立てたデータを送信
-        await this.$axios.post('/api/v1/posts', postData);
+        await this.$axios.post(`/api/v1/users/${userId}/posts`, postData);
 
         this.$refs.form.reset() 
-        await this.fetchPosts();
+        await this.fetchPosts(userId);
       } catch (error) {
         console.error('投稿に失敗しました:', error);
         const errors = error.response.data.errors;
@@ -335,9 +350,10 @@ export default {
       if (!confirm("この投稿を削除してよろしいですか？")) return;
 
       this.isDeleting = true;
+      const userId = this.$store.state.user.current.id;
 
       try {
-        await this.$axios.$delete(`/api/v1/posts/${postId}`);
+        await this.$axios.$delete(`/api/v1/users/${userId}/posts/${postId}`);
         // 投稿一覧から削除された投稿を除外する
         this.posts = this.posts.filter(post => post.id !== postId);
       } catch (error) {
@@ -350,17 +366,21 @@ export default {
     },
 
     // マイページを開いた時に今まで投稿したデータを取得するメソッドが必要
-    async fetchPosts() {
+    async fetchPosts(userId) {
       this.postsLoading = true;
       this.postsError = false;
       try {
-        const response = await this.$axios.get('/api/v1/posts') // 自分の投稿一覧API これはつまり投稿したものを取り出している
+        const response = await this.$axios.get(`/api/v1/users/${userId}/posts`) // 自分の投稿一覧API これはつまり投稿したものを取り出している
         this.posts = response.data
         console.log('レスポンスデータ:', response.data);
       } catch (error) {
+
+
+
+        
         console.error('投稿一覧の取得に失敗しました:', error);
-        // const msg = ['投稿一覧の取得に失敗しました']
-        // this.$store.dispatch('getToast', { msg })
+        const msg = ['投稿一覧の取得に失敗しました']
+        this.$store.dispatch('getToast', { msg })
         this.postsError = true; // エラーが発生したことを記録
       } finally {
         // tryが成功しようが、catchで失敗しようが、必ず最後に実行される
