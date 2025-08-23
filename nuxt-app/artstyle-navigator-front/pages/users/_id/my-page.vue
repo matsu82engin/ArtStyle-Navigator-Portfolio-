@@ -1,6 +1,21 @@
 <template>
   <v-container>
-    <v-row>
+    <div v-if="$fetchState.pending" class="loading-container">
+      <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+      <p class="mt-4 grey--text">ユーザー情報を読み込んでいます...</p>
+    </div>
+
+    <div v-else-if="$fetchState.error" class="error-container">
+      <p class="text-h6">ページの読み込みに失敗しました。</p>
+      <p class="grey--text">時間をおいて再度お試しください。</p>
+      <v-btn color="primary" @click="$fetch">
+        <v-icon left>mdi-refresh</v-icon>
+        再試行
+      </v-btn>
+    </div>
+
+    <v-row v-else>
+      
       <!-- ユーザー情報セクション => コンポーネント化できそう -->
       <v-col cols="12" md="4">
         <v-card>
@@ -95,32 +110,8 @@
         </v-card>
         <!-- ここまでPostForm -->
 
-        <!-- 投稿一覧 -->
-        <div v-if="postsLoading" class="text-center mt-6">
-          <v-progress-circular indeterminate color="primary"></v-progress-circular>
-          <p class="mt-2 grey--text">投稿を読み込んでいます...</p>
-        </div>
-
-        <!-- 2. エラー発生時の表示 -->
-        <v-alert
-          v-else-if="postsError"
-          type="error"
-          class="mt-6"
-        >
-          投稿の読み込みに失敗しました。ページを再読み込みするか、時間をおいてお試しください。
-          <v-btn
-            small
-            outlined
-            class="ml-4"
-            @click="fetchPosts"
-          >
-            <v-icon left>mdi-refresh</v-icon>
-            再試行
-          </v-btn>
-        </v-alert>
-
-        <!-- 3. 正常に取得できた場合の表示（投稿がある場合） -->
-        <div v-else-if="posts.length > 0">
+        <!-- 正常に取得できた場合の表示（投稿がある場合） -->
+        <div v-if="posts.length > 0">
           <v-card
             v-for="post in posts"
             :key="post.id"
@@ -186,7 +177,7 @@
           </v-card>
         </div>
 
-        <!-- 4. 正常に取得できたが、投稿が1件もなかった場合の表示 -->
+        <!-- 正常に取得できたが、投稿が1件もなかった場合の表示 -->
         <v-alert
           v-else
           type="info"
@@ -217,12 +208,10 @@ export default {
         caption: ''
       },
       posts: [], // fetchPost() で取得した投稿一覧のデータが入る
-      postsLoading: true,
-      postsError: false,
       artStyles: [], // fetchArtStyles() で取得した絵柄一覧が入る
       selectedArtStyleId: null,
       loading: false,
-      isDeleting: false, // ★追加：削除処理中かどうかのフラグ
+      isDeleting: false, // 削除処理中かどうかのフラグ
       titleMax,
       captionMax,
       titleRules: [
@@ -241,6 +230,11 @@ export default {
       ],
     }
   },
+    async fetch() {
+    const userId = this.$route.params.id;
+    await this.fetchPosts(userId);
+    await this.fetchArtStyles();
+  },
   computed: {
     isFormValid() {
       // newPostオブジェクトの必須項目がすべて「truthy」（空文字やnullでない）かをチェック
@@ -257,11 +251,11 @@ export default {
     // return currentUserId === paramsId; // プロフィールIDのチェックを削除
     // }
   },
-  mounted() {
-    const userId = this.$route.params.id;
-    this.fetchPosts(userId);
-    this.fetchArtStyles();
-  },
+  // mounted() {
+  //   const userId = this.$route.params.id;
+  //   this.fetchPosts(userId);
+  //   this.fetchArtStyles();
+  // },
   methods: {
     // async createPost() {
     //   if (!this.newPost.title || !this.newPost.artStyleId) return
@@ -292,17 +286,11 @@ export default {
     // },
     // 本来の投稿メソッドではない
     async createPost() {
-      // if (!this.isValid) return;
       if (!this.$refs.form.validate()) {
         return; // バリデーションが失敗したら中断
       }
       this.loading = true; // ここでローディング開始
       const startTime = Date.now(); // 開始時間を記録
-      // titleが空なら何もしない
-      // if (!this.newPost.title) {
-      //   alert('タイトルと絵柄は必須です。');
-      //   return;
-      // }
 
       // 送信するデータを組み立てる
       const postData = {
@@ -364,27 +352,23 @@ export default {
         this.isDeleting = false;
       }
     },
-
     // マイページを開いた時に今まで投稿したデータを取得するメソッドが必要
     async fetchPosts(userId) {
-      this.postsLoading = true;
-      this.postsError = false;
       try {
         const response = await this.$axios.get(`/api/v1/users/${userId}/posts`) // 自分の投稿一覧API これはつまり投稿したものを取り出している
         this.posts = response.data
         console.log('レスポンスデータ:', response.data);
       } catch (error) {
-
-
-
-        
+        if (error.response && error.response.status === 404) {
+          return this.$nuxt.error({
+            statusCode: 404,
+            message: 'お探しのユーザーは見つかりませんでした'
+          });
+        } 
+        // 404 以外のエラーの場合
         console.error('投稿一覧の取得に失敗しました:', error);
-        const msg = ['投稿一覧の取得に失敗しました']
-        this.$store.dispatch('getToast', { msg })
-        this.postsError = true; // エラーが発生したことを記録
-      } finally {
-        // tryが成功しようが、catchで失敗しようが、必ず最後に実行される
-        this.postsLoading = false; // ローディング完了を宣言
+        // トースターは画面に直接エラー情報を出すので必要なし
+        throw error;
       }
     },
     async fetchArtStyles() {
@@ -398,3 +382,13 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+}
+</style>

@@ -33,9 +33,8 @@ module Api
       end
 
       def create
-        # current_api_v1_user を使って Post をビルドするのが一般的です
+        # current_api_v1_user を使って Post をビルドするのが一般的
         post = current_api_v1_user.posts.build(post_params)
-        # post.user = current_api_v1_user は build メソッドが自動で行います
 
         if post.save
           render json: { post:, post_images: post.post_images }, status: :created
@@ -58,20 +57,19 @@ module Api
       # create アクション用の権限チェックメソッド
       def authorize_user_for_creation!
         # URL の user_id がログインユーザーの id と一致しない場合、403 を返す
-        if params[:user_id].to_s != current_api_v1_user.id.to_s
-          render json: { error: '権限がありません' }, status: :forbidden
-        end
+        render json: { error: '権限がありません' }, status: :forbidden if params[:user_id].to_s != current_api_v1_user.id.to_s
       end
 
+      # rubocop:disable Style/GuardClause
       def validate_post_images_attributes_format
         # post_params を呼ぶ前に、ネストされた属性の形式をチェック
         raw_post_images_attributes = params.dig(:post, :post_images_attributes)
 
         if raw_post_images_attributes.present? && !raw_post_images_attributes.is_a?(Array)
           render json: { errors: ['post_images_attributes must be an array'] }, status: :bad_request
-          return # ここで処理を終了
         end
       end
+      # rubocop:enable Style/GuardClause
 
       def set_post
         @post = Post.find(params[:id])

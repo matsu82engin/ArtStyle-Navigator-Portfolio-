@@ -134,7 +134,7 @@ RSpec.describe 'Profiles', type: :request do
       it 'delete my profile' do # 自分のプロフィールを削除できるか
         expect { delete api_v1_user_profiles_path(user), headers:, xhr: true }
           .to change(Profile, :count).by(-1)
-        expect(response).to have_http_status(:ok)
+        expect(response).to have_http_status(:no_content)
         get api_v1_user_profiles_path(user), headers:, xhr: true
         expect(response).to have_http_status(:not_found)
       end

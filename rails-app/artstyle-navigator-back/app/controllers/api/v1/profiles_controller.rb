@@ -2,83 +2,59 @@ module Api
   module V1
     class ProfilesController < ApplicationController
       before_action :authenticate_api_v1_user!
+      # 最初に、URLから対象のユーザー(@user)を特定する
+      before_action :set_user
+      # updateとdestroyは、本人しか実行できないように権限チェックを行う
+      before_action :authorize_user!, only: [:update, :destroy]
 
       def show
-        # users/:user_id/profiles なので user_id に ユーザーオブジェクトの主キー(id)が入っている。よってそれで find をかける。
-        user = User.find(params[:user_id])
-        # ユーザーに紐づいているプロフィールを便利メソッドから取得
-        profile = user.profile
+        profile = @user.profile
         if profile
           render json: profile
         else
+          # プロフィールがない場合は、not_foundを返す
           render json: { error: 'Profile not found' }, status: :not_found
         end
       end
 
-      # rubocop:disable Metrics/PerceivedComplexity
       def update
-        # 不正な params[:user_id] をチェック
-        if params[:user_id].blank? || params[:user_id] !~ /^\d+$/
-          render json: { errors: ['不正なリクエストです'] }, status: :bad_request
-          return
-        end
+        # set_userとauthorize_user!を通過しているので、
+        # @userはログインユーザー本人であることが保証されている。
 
-        # 現在のユーザーのプロフィールを取得（なければ作成する）
-        profile = current_api_v1_user.profile || current_api_v1_user.build_profile
+        # ログインユーザーのプロフィールを取得または新規作成
+        profile = @user.profile || @user.build_profile
 
-        # URL から取得したプロフィール（他人のプロフィール）を検索
-        params_profile = Profile.find_by(user_id: params[:user_id])
-
-        # URL から取得したプロフィールが存在しない場合
-        if params_profile.nil?
-          # 自分のプロフィールページなら新規作成を許可
-          if params[:user_id].to_i == current_api_v1_user.id
-            if profile.update(profile_params)
-              render json: profile, status: :ok
-            else
-              render json: { errors: profile.errors.full_messages }, status: :unprocessable_entity
-            end
-          else
-            # 他人のプロフィールページで新規作成はエラー
-            render json: { errors: ['プロフィールが見つかりません'] }, status: :not_found
-          end
-          return
-        end
-
-        # 4. 認可処理（他人のプロフィールを更新しようとしていないか）
-        unless profile.user_id == params_profile.user_id
-          render json: { errors: ['権限がありません'] }, status: :forbidden
-          return
-        end
-
-        # 5. 更新処理
         if profile.update(profile_params)
           render json: profile, status: :ok
         else
           render json: { errors: profile.errors.full_messages }, status: :unprocessable_entity
         end
       end
-      # rubocop:enable Metrics/PerceivedComplexity
 
+      # DELETE /api/v1/users/:user_id/profiles
       def destroy
-        user = User.find(params[:user_id])
-        profile = user.profile
-        return render json: { error: 'Profile not found' }, status: :not_found unless profile
-
-        if profile.user != current_api_v1_user # 認可処理: プロフィールの所有者と現在のログインユーザーが一致するか
-          render json: { error: 'Forbidden' }, status: :forbidden # 403 Forbidden を返す
-          return # 一致しなければ処理を中断
-        end
+        # set_userとauthorize_user!を通過済み。
+        profile = @user.profile
 
         if profile
           profile.destroy
-          render json: { message: 'Profile deleted successfully' }, status: :ok
+          head :no_content # 成功時は no_content (204) を返すのが一般的
         else
-          render json: { error: 'Profile not found' }, status: :not_found # 404 Not Found に修正
+          render json: { error: 'Profile not found' }, status: :not_found
         end
       end
 
       private
+
+      def set_user
+        # params[:user_id] でユーザーを探す。見つからなければ404を返す。(application_contoroller の rescue_from)
+        @user = User.find(params[:user_id])
+      end
+
+      def authorize_user!
+        # posts_controller と全く同じロジック
+        render json: { error: '権限がありません' }, status: :forbidden if params[:user_id].to_s != current_api_v1_user.id.to_s
+      end
 
       # ストロングパラメータ。送られてきたパラメータを検閲して指定のパラメータのみ許可
       def profile_params
