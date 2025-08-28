@@ -27,9 +27,12 @@
 
             <!-- ユーザー名と特徴 -->
             <!-- <h2 class="mb-2">ユーザー名</h2> -->
-            <h2 v-if="$authentication.user" class="mb-2">{{ $authentication.user.name }}</h2>
-            <p class="text-subtitle-1">自己紹介文</p>
+            <!-- <h2 v-if="$authentication.user" class="mb-2">{{ $authentication.user.name }}</h2> -->
+            <h2 v-if="profileUser" class="mb-2">{{ profileUser.pen_name }}</h2>
 
+            <p class="text-subtitle-1">自己紹介文</p>
+            <p v-if="profileUser" class="text-subtitle-1">{{ profileUser.introduction }}</p> 
+            
             <!-- フォロー情報 -->
             <div class="d-flex justify-center my-4">
               <div class="mr-4">
@@ -42,7 +45,7 @@
 
             <!-- プロフィール編集ボタン -->
             <v-btn
-              v-if="$authentication.user && $authentication.user.id" 
+              v-if="isOwnPage" 
               color="primary"
               :to="$my.projectLinkTo($authentication.user.id, 'users-id-my-profile')">
               プロフィール編集
@@ -54,7 +57,9 @@
       <!-- 投稿フィードセクション -->
       <v-col cols="12" md="8">
         <!-- この投稿フォーム(PostForm)もコンポーネント化できそう -->
-        <v-card>
+        <v-card
+          v-if="isOwnPage" 
+        >
           <v-card-title>
             投稿する
           </v-card-title>
@@ -135,6 +140,7 @@
                 </template>
                 <v-list>
                   <v-list-item
+                    v-if="isOwnPage"
                     :disabled="isDeleting"
                     @click="deletePost(post.id)"
                   >
@@ -184,7 +190,7 @@
           outlined
           class="mt-6"
         >
-          まだ投稿がありません。最初の投稿をしてみましょう！
+          まだ投稿がありません
         </v-alert>
 
       </v-col>
@@ -208,6 +214,7 @@ export default {
         caption: ''
       },
       posts: [], // fetchPost() で取得した投稿一覧のデータが入る
+      profileUser: null,
       artStyles: [], // fetchArtStyles() で取得した絵柄一覧が入る
       selectedArtStyleId: null,
       loading: false,
@@ -230,29 +237,84 @@ export default {
       ],
     }
   },
-    async fetch() {
+  //   async fetch() {
+  //   const userId = this.$route.params.id;
+  //   try {
+  //     // 複数のAPIを同時に呼ぶので Promise.all を使うと効率が良い
+  //     const [postsResponse, userResponse] = await Promise.all([
+  //     this.$axios.get(`/api/v1/users/${userId}/posts`),
+  //     this.$axios.get(`/api/v1/users/${userId}/profiles`)  // ← ユーザー情報を取得するAPI
+  //   ]);
+
+  //   this.posts = postsResponse.data;
+  //   this.profileUser = userResponse.data; // ← 取得したデータを格納
+
+
+  //   // fetchArtStyles() も必要なら Promise.all に含める
+  //   await this.fetchArtStyles();
+
+  //   } catch (error) {
+  //     if (error.response && error.response.status === 404) {
+  //     return this.$nuxt.error({ statusCode: 404, message: 'お探しのユーザーは見つかりませんでした' });
+  //   }
+  //   throw error;
+  //   }
+  // },
+  async fetch() {
     const userId = this.$route.params.id;
-    await this.fetchPosts(userId);
-    await this.fetchArtStyles();
+    try {
+      // プロフィール取得のPromise。失敗した場合は null を返すようにする
+      const profilePromise = this.$axios.get(`/api/v1/users/${userId}/profiles`)
+        .catch(error => {
+          // プロフィール取得が404エラーの場合は、失敗と見なさない（正常系として扱う）
+          if (error.response && error.response.status === 404) {
+            return { data: null }; // プロフィールがない場合は null データとして返す
+          }
+          // それ以外のエラー（500など）は、Promise.all全体を失敗させるためにエラーを再度throwする
+          throw error;
+        });
+
+      // 投稿一覧取得のPromise。こちらは失敗したらページ全体のエラーとしたいので、catchは付けない
+      const postsPromise = this.$axios.get(`/api/v1/users/${userId}/posts`);
+
+      const [postsResponse, profileResponse] = await Promise.all([
+        postsPromise,
+        profilePromise
+      ]);
+
+      this.posts = postsResponse.data;
+      this.profileUser = profileResponse.data; // プロフィールがない場合は null が入る
+
+      await this.fetchArtStyles();
+
+    } catch (error) {
+      // ここに来るエラーは「ユーザーが存在しない(postsが404)」か「サーバーエラー(500)」
+      if (error.response && error.response.status === 404) {
+        return this.$nuxt.error({ statusCode: 404, message: 'お探しのユーザーは見つかりませんでした' });
+      }
+      // サーバーエラーなど、その他の致命的なエラー
+      throw error;
+    }
   },
   computed: {
     isFormValid() {
       // newPostオブジェクトの必須項目がすべて「truthy」（空文字やnullでない）かをチェック
       return !!this.newPost.title && !!this.newPost.artStyleId;
     },
-    // isOwnPage() {
-    // // 現在のログインユーザーとルートパラメータの :user_id が一致しているか
-    // const currentUserId = this.$store.state.user.current?.id; // 現在のログインユーザーID
-    // const paramsId = Number(this.$route.params.id); // URLのuser_idを数値化
+    isOwnPage() {
+    // 現在のログインユーザーとルートパラメータの :user_id が一致しているか
+    const currentUserId = this.$store.state.user.current?.id; // 現在のログインユーザーID
+    const paramsId = Number(this.$route.params.id); // URLのuser_idを数値化
 
-    // console.log("ログイン中のユーザーID:", currentUserId);
-    // console.log("入力されたID:", paramsId);
+    console.log("ログイン中のユーザーID:", currentUserId);
+    console.log("入力されたID:", paramsId);
 
-    // return currentUserId === paramsId; // プロフィールIDのチェックを削除
-    // }
+    return currentUserId === paramsId; // プロフィールIDのチェックを削除
+    }
   },
   // mounted() {
   //   const userId = this.$route.params.id;
+  //   console.log(userId);
   //   this.fetchPosts(userId);
   //   this.fetchArtStyles();
   // },
