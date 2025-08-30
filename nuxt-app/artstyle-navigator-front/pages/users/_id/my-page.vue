@@ -23,15 +23,16 @@
             <!-- ユーザーアイコン -->
             <v-avatar size="128" class="mb-4">
               <!-- <img src="https://placekitten.com/128/128" alt="User Avatar" /> -->
+              <!-- <img v-if="profile.icon" :src="profile.icon" alt="User Avatar" />
+              <v-icon v-else size="128">mdi-account-circle</v-icon> -->
             </v-avatar>
 
             <!-- ユーザー名と特徴 -->
-            <!-- <h2 class="mb-2">ユーザー名</h2> -->
-            <!-- <h2 v-if="$authentication.user" class="mb-2">{{ $authentication.user.name }}</h2> -->
-            <h2 v-if="profileUser" class="mb-2">{{ profileUser.pen_name }}</h2>
+            <h2 class="mb-2">ユーザー名</h2>
+            <h2 v-if="profile" class="mb-2">{{ profile.username }}</h2>
 
             <p class="text-subtitle-1">自己紹介文</p>
-            <p v-if="profileUser" class="text-subtitle-1">{{ profileUser.introduction }}</p> 
+            <p v-if="profile" class="text-subtitle-1">{{ profile.bio }}</p> 
             
             <!-- フォロー情報 -->
             <div class="d-flex justify-center my-4">
@@ -237,29 +238,6 @@ export default {
       ],
     }
   },
-  //   async fetch() {
-  //   const userId = this.$route.params.id;
-  //   try {
-  //     // 複数のAPIを同時に呼ぶので Promise.all を使うと効率が良い
-  //     const [postsResponse, userResponse] = await Promise.all([
-  //     this.$axios.get(`/api/v1/users/${userId}/posts`),
-  //     this.$axios.get(`/api/v1/users/${userId}/profiles`)  // ← ユーザー情報を取得するAPI
-  //   ]);
-
-  //   this.posts = postsResponse.data;
-  //   this.profileUser = userResponse.data; // ← 取得したデータを格納
-
-
-  //   // fetchArtStyles() も必要なら Promise.all に含める
-  //   await this.fetchArtStyles();
-
-  //   } catch (error) {
-  //     if (error.response && error.response.status === 404) {
-  //     return this.$nuxt.error({ statusCode: 404, message: 'お探しのユーザーは見つかりませんでした' });
-  //   }
-  //   throw error;
-  //   }
-  // },
   async fetch() {
     const userId = this.$route.params.id;
     try {
@@ -297,6 +275,28 @@ export default {
     }
   },
   computed: {
+    // 表示用に整形したプロフィールデータ
+    profile() {
+      // プロフィールデータ(rawProfile)が存在しない場合
+      if (!this.profileUser) {
+        return {
+          username: '未設定',
+          ArtStyle: '未判定',
+          favoriteArtSupply: '未設定',
+          bio: 'プロフィールを編集して自己紹介を書こう！',
+          icon: null,
+        };
+      }
+
+      // プロフィールデータが存在する場合
+      return {
+        username: this.profileUser.pen_name,
+        ArtStyle: this.profileUser.art_style ? this.profileUser.art_style.name : '未判定',
+        favoriteArtSupply: this.profileUser.art_supply || '未設定',
+        bio: this.profileUser.introduction || 'プロフィールを編集して自己紹介を書こう！',
+        icon: this.profileUser.icon || '未設定',
+      };
+    },
     isFormValid() {
       // newPostオブジェクトの必須項目がすべて「truthy」（空文字やnullでない）かをチェック
       return !!this.newPost.title && !!this.newPost.artStyleId;
@@ -312,12 +312,6 @@ export default {
     return currentUserId === paramsId; // プロフィールIDのチェックを削除
     }
   },
-  // mounted() {
-  //   const userId = this.$route.params.id;
-  //   console.log(userId);
-  //   this.fetchPosts(userId);
-  //   this.fetchArtStyles();
-  // },
   methods: {
     // async createPost() {
     //   if (!this.newPost.title || !this.newPost.artStyleId) return

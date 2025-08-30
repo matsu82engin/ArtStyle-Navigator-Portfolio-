@@ -32,7 +32,7 @@
                 自分の絵柄: {{ profile.ArtStyle }}
                 <!-- ここでもし未判定なら絵柄判定をするページへの誘導を作る -->
               </p>
-              <p>よく使うペン: {{ profile.favoriteArtSupply }}</p>
+              <p>よく使うペン: {{ profile.favoriteArtSupply || '未設定' }}</p>
               <p>自己紹介: {{ profile.bio }}</p>
               <v-img
                 v-if="profile.icon"
@@ -226,9 +226,9 @@ export default {
       return {
         username: this.rawProfile.pen_name,
         ArtStyle: this.rawProfile.art_style ? this.rawProfile.art_style.name : '未判定',
-        favoriteArtSupply: this.rawProfile.art_supply || '未設定',
+        favoriteArtSupply: this.rawProfile.art_supply || null,
         bio: this.rawProfile.introduction || 'プロフィールを編集して自己紹介を書こう！',
-        icon: this.rawProfile.icon || '未設定', // APIレスポンスにiconが含まれていると仮定
+        // icon: this.rawProfile.icon || '未設定', // APIレスポンスにiconが含まれていると仮定
       };
     },
     isOwnProfile() {
@@ -241,7 +241,22 @@ export default {
   },
   methods: {
     openDialog() {
-      this.editProfile = { ...this.profile }; // スプレッド構文でコピー
+      // rawProfileを元に編集用データを作成する
+      if (this.rawProfile) {
+        // プロフィールが存在する場合
+        this.editProfile = {
+          username: this.rawProfile.pen_name,
+          favoriteArtSupply: this.rawProfile.art_supply || null, // 設定されていなければ null
+          bio: this.rawProfile.introduction || null, // 設定されていなければ null
+        };
+      } else {
+        // プロフィールがまだ存在しない場合（新規作成）
+        this.editProfile = {
+          username: this.$store.state.user?.current.name, // ログインユーザー名を初期値に
+          favoriteArtSupply: null,
+          bio: null,
+        };
+      }
       this.dialog = true;
     },
     closeDialog() {
