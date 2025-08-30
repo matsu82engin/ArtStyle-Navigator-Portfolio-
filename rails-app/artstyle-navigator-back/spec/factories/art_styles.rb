@@ -3,7 +3,8 @@ FactoryBot.define do
     # name { "MyString" }
     # description { "MyString" }
     # thumbnail_url { "MyString" }
-    name { Faker::Lorem.unique.word } # Fakerでユニークな値を生成
+    # name { Faker::Lorem.unique.word } # Fakerでユニークな値を生成
+    name { 'リアル系' }
     description { Faker::Lorem.sentence }
     thumbnail_url { Faker::Internet.url }
   end

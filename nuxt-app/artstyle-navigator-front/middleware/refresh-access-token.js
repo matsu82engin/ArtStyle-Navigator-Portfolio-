@@ -15,7 +15,7 @@ export default async ({ $auth, $authentication, $axios, store, route, redirect, 
       console.warn('アクセストークンのリフレッシュに失敗しました')
 
       isRedirecting = true
-      const msg = 'セッションの有効期限が切れました。もう一度ログインしてください'
+      const msg = ['セッションの有効期限が切れました。もう一度ログインしてください']
       store.dispatch('getToast', { msg })
       store.dispatch('getRememberPath', route)
 

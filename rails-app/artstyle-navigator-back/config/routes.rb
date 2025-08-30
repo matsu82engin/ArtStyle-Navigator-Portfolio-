@@ -3,9 +3,15 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :users, only: [:index, :show] do
         resource :profiles, only: [:show, :update, :destroy]
+        # posts
+        resources :posts, only: [:index, :create, :destroy]
       end
+
       # pictures
       resources :pictures, only: [:index]
+
+      # art_styles
+      resources :art_styles, only: [:index]
 
       # devise_token_auth から２つのコントローラを継承してカスタムコントローラを作成
         mount_devise_token_auth_for 'User', at: 'auth', controllers: {

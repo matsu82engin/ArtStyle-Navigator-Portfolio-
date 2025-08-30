@@ -14,24 +14,24 @@ RSpec.describe Profile, type: :model do
   context 'when user is not associated' do # プロフィールの user_id が存在しない時
     it 'is invalid' do # 関連付けを行うユーザーがいないと無効
       profile = build(:profile, user: nil) # build で user を nil に指定
-      expect(profile).not_to be_valid
+      expect(profile).to be_invalid
     end
   end
 
   context 'when profile_pen_name is invalid' do # プロフィールの pen_name が有効な値でない時
     it 'is invalid when pen_name is too long' do # pen_nameが長すぎるため無効(20文字まで)
       profile = build(:profile, pen_name: 'a' * 21)
-      expect(profile).not_to be_valid
+      expect(profile).to be_invalid
     end
 
     it 'is invalid when pen_name is blank' do # pen_name が空白のため無効
       profile = build(:profile, pen_name: ' ')
-      expect(profile).not_to be_valid
+      expect(profile).to be_invalid
     end
 
     it 'is invalid when pen_name is null' do # pen_name が null のため無効
       profile = build(:profile, pen_name: nil)
-      expect(profile).not_to be_valid
+      expect(profile).to be_invalid
     end
   end
 
@@ -55,24 +55,24 @@ RSpec.describe Profile, type: :model do
 
     it 'is invalid with an invalid art_supply' do # 選択肢以外の値のため無効
       profile = build(:profile, art_supply: 'a: a')
-      expect(profile).not_to be_valid
+      expect(profile).to be_invalid
     end
 
     it 'is invalid when art_supply is blank' do # 選択肢が空白のため無効
       profile = build(:profile, art_supply: '')
-      expect(profile).not_to be_valid
+      expect(profile).to be_invalid
     end
   end
 
   context 'when profile_introduction is invalid' do # プロフィールの 自己紹介 が有効な値でないとき
     it 'is invalid when introduction is too long' do # 自己紹介が長すぎるため無効(500文字まで)
       profile = build(:profile, introduction: 'a' * 501)
-      expect(profile).not_to be_valid
+      expect(profile).to be_invalid
     end
 
     it 'is invalid when introduction is blank' do # 自己紹介が空白は無効
       profile = build(:profile, introduction: '')
-      expect(profile).not_to be_valid
+      expect(profile).to be_invalid
     end
 
     it 'is valid when introduction is nil' do # 自己紹介を書かないのは有効

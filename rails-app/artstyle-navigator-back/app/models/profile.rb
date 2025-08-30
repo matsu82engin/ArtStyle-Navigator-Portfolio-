@@ -16,9 +16,13 @@ class Profile < ApplicationRecord
     'つけペン : カブラペン',
     'その他'
   ].freeze
-  validates :art_supply, inclusion: { in: VALID_ART_SUPPLIES }, allow_nil: true
+
+  validates :art_supply,
+            inclusion: { in: VALID_ART_SUPPLIES },
+            allow_nil: true
+
   validates :introduction,
+            presence: true,
             allow_nil: true,
-            format: { without: /\A\s*\z/, message: :blank },
             length: { maximum: 500 }
 end

@@ -24,12 +24,21 @@ require 'rspec/rails'
 
 # Checks for pending migrations and applies them before tests are run.
 # If you are not using ActiveRecord, you can remove these lines.
+
+# supportディレクトリを読み込むように設定
+# 読み込み順を保証するために .sort を付けているが、RuboCopは冗長だと判断してしまう。
+# しかし、ファイルの依存関係を考慮すると .sort は必要なため、この行だけ警告を無効化する。
+# rubocop:disable Lint/RedundantDirGlobSort
+Dir[Rails.root.join('spec/support/**/*.rb')].sort.each { |f| require f }
+# rubocop:enable Lint/RedundantDirGlobSort
+
 begin
   ActiveRecord::Migration.maintain_test_schema!
 rescue ActiveRecord::PendingMigrationError => e
   puts e.to_s.strip
   exit 1
 end
+
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   # rubocop:disable Rails/FilePath, Style/RedundantConstantBase
@@ -72,10 +81,22 @@ RSpec.configure do |config|
     Capybara.default_driver = :rack_test
   end
 
-  # supportディレクトリを読み込むように設定
-  # rubocop:disable Rails/FilePath
-  Dir[Rails.root.join('spec', 'support', '**', '*.rb')].each { |f| require f }
-  # rubocop:enable Rails/FilePath
+  config.before(:suite) do
+    # 安全装置（外部キー制約チェック）を一時的に無効にする
+    ActiveRecord::Base.connection.execute('SET FOREIGN_KEY_CHECKS = 0')
+
+    # テーブルを空にする
+    ActiveRecord::Base.connection.execute('TRUNCATE TABLE post_images')
+    ActiveRecord::Base.connection.execute('TRUNCATE TABLE posts')
+    ActiveRecord::Base.connection.execute('TRUNCATE TABLE art_styles')
+
+    # マスターデータを作成する
+    setup_art_style_master_data
+  ensure
+    # 作業が終わったら、必ず安全装置を元に戻す
+    ActiveRecord::Base.connection.execute('SET FOREIGN_KEY_CHECKS = 1')
+  end
+
   # ヘルパーモジュールをRspecで使える様にする
   config.include AuthorizationHelper, type: :request
   # 時間操作ヘルパーの追加

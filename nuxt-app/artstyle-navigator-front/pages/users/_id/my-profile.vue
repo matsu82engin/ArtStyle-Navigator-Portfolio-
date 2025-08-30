@@ -1,38 +1,60 @@
 <template>
   <v-container>
-    <v-row justify="center">
-      <v-col cols="12" md="8">
-        <!-- プロフィール表示部分 -->
-        <v-card>
-          <v-card-title>現在のプロフィール</v-card-title>
-          <v-card-text>
-            <p>ペンネーム: {{ profile.username }}</p>
-            <p>
-              自分の絵柄: {{ profile.ArtStyle }}
-              <!-- ここでもし未判定なら絵柄判定をするページへの誘導を作る -->
-            </p>
-            <p>よく使うペン: {{ profile.favoriteArtSupply }}</p>
-            <p>自己紹介: {{ profile.bio }}</p>
-            <v-img
-              v-if="profile.icon"
-              :src="profile.icon"
-              max-width="100"
-            ></v-img>
-            <v-icon v-else icon="mdi-account"></v-icon>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn
-              v-if="isOwnProfile"
-              color="primary"
-              @click="openDialog"
-            >
-              プロフィール編集
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-col>
-    </v-row>
+
+    <!-- fetch()が実行中は、このローディング表示だけを描画 -->
+    <div v-if="$fetchState.pending" class="loading-container">
+      <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+      <p class="mt-4 grey--text">ユーザー情報を読み込んでいます...</p>
+    </div>
+
+    <!-- fetch() でエラーが発生した場合のUI(404 を除く) -->
+    <div v-else-if="$fetchState.error" class="error-container">
+      <p class="text-h6">ページの読み込みに失敗しました。</p>
+      <p class="grey--text">時間をおいて再度お試しください。</p>
+      <v-btn color="primary" @click="$fetch">
+        <v-icon left>mdi-refresh</v-icon>
+        再試行
+      </v-btn>
+    </div>
+
+    <div v-else>
+      <v-row 
+        v-if="profile"
+        justify="center"
+      >
+        <v-col cols="12" md="8">
+          <!-- プロフィール表示部分 -->
+          <v-card>
+            <v-card-title>現在のプロフィール</v-card-title>
+            <v-card-text>
+              <p>ペンネーム: {{ profile.username }}</p>
+              <p>
+                自分の絵柄: {{ profile.ArtStyle }}
+                <!-- ここでもし未判定なら絵柄判定をするページへの誘導を作る -->
+              </p>
+              <p>よく使うペン: {{ profile.favoriteArtSupply || '未設定' }}</p>
+              <p>自己紹介: {{ profile.bio }}</p>
+              <v-img
+                v-if="profile.icon"
+                :src="profile.icon"
+                max-width="100"
+              ></v-img>
+              <v-icon v-else icon="mdi-account"></v-icon>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                v-if="isOwnProfile"
+                color="primary"
+                @click="openDialog"
+              >
+                プロフィール編集
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+      </v-row>
+    </div>
 
     <!-- プロフィール編集ダイアログ -->
     <v-dialog
@@ -128,6 +150,7 @@ export default {
     const pennameMax = 20
     const introductionMax = 200
       return {
+      rawProfile: null,
       valid: true,
       loading: false,
       updateProfileSuccess: false,
@@ -151,14 +174,6 @@ export default {
       bioRules: [
         (v) => !v || (v && v.length <= 200) || "自己紹介は200文字以内で入力してください",
       ],
-      profile:{
-        username: '初期ユーザー名',
-        // username: this.$store.state.user.current.name,
-        ArtStyle: '未判定',
-        favoriteArtSupply: '未設定',
-        bio: 'プロフィールを編集して自己紹介を書こう！',
-        icon: null
-      },
       editProfile: { // 編集用オブジェクトを追加
         username: '',
         ArtStyle: '',
@@ -168,42 +183,80 @@ export default {
       },
     };
   },
+  async fetch() {
+    const userId = this.$route.params.id;
+    try {
+      await this.$axios.get(`/api/v1/users/${userId}`);
+  
+      try {
+        const profileResponse = await this.$axios.get(`/api/v1/users/${userId}/profiles`);
+        this.rawProfile = profileResponse.data;
+      } catch (profileError) {
+        // プロフィールがない(404)場合は、rawProfileをnullにする
+        if (profileError.response && profileError.response.status === 404) {
+          this.rawProfile = null;
+        } else {
+          // プロフィール取得時の予期せぬエラーは throw する
+          throw profileError;
+        }
+      }
+    } catch (userError) {
+      // ユーザー取得が失敗した場合（ユーザーが存在しない）
+      if (userError.response && userError.response.status === 404) {
+        return this.$nuxt.error({ statusCode: 404, message: 'お探しのユーザーは見つかりませんでした' });
+      }
+      throw userError;
+    }
+  },
   computed: {
-    isOwnProfile() {
-    // 現在のログインユーザーとそのユーザーが所有しているプロフィールIDとルートパラメータの :user_id が一致しているか
-    const currentUserId = this.$store.state.user.current?.id;  // 現在のログインユーザーID
-    const paramsId = Number(this.$route.params.id);       // URLのuser_idを数値化
+    // 表示用に整形したプロフィールデータ
+    profile() {
+      // プロフィールデータ(rawProfile)が存在しない場合
+      if (!this.rawProfile) {
+        return {
+          username: '未設定',
+          ArtStyle: '未判定',
+          favoriteArtSupply: '未設定',
+          bio: 'プロフィールを編集して自己紹介を書こう！',
+          icon: null,
+        };
+      }
 
-    console.log("ログイン中のユーザーID:", currentUserId);
-    console.log("プロフィールのID:", paramsId);
+      // プロフィールデータが存在する場合
+      return {
+        username: this.rawProfile.pen_name,
+        ArtStyle: this.rawProfile.art_style ? this.rawProfile.art_style.name : '未判定',
+        favoriteArtSupply: this.rawProfile.art_supply || null,
+        bio: this.rawProfile.introduction || 'プロフィールを編集して自己紹介を書こう！',
+        // icon: this.rawProfile.icon || '未設定', // APIレスポンスにiconが含まれていると仮定
+      };
+    },
+    isOwnProfile() {
+    // 現在のログインユーザーとルートパラメータの :user_id が一致しているか
+    const currentUserId = this.$store.state.user.current?.id;
+    const paramsId = Number(this.$route.params.id);
 
     return currentUserId === paramsId; // プロフィールIDのチェックを削除
     }
   },
-  mounted() {
-    // リロード時にプロフィール情報を取得
-    const userId = this.$route.params.id;
-    this.fetchProfile(userId);
-  },
   methods: {
-    // プロフィール情報を取得
-    async fetchProfile(userId) {
-      try {
-        const response = await this.$axios.$get(`api/v1/users/${userId}/profiles`);
-        if (response) {
-          this.profile = {
-            username: response.pen_name,
-            ArtStyle: response.art_style ? response.art_style.name : "未判定",
-            favoriteArtSupply: response.art_supply || "未設定",
-            bio: response.introduction || "プロフィールを編集して自己紹介を書こう！",
-          };
-        }
-      } catch (error) {
-        console.error("プロフィール情報の取得に失敗", error);
-      }
-    },
     openDialog() {
-      this.editProfile = { ...this.profile } // スプレッド構文でコピー
+      // rawProfileを元に編集用データを作成する
+      if (this.rawProfile) {
+        // プロフィールが存在する場合
+        this.editProfile = {
+          username: this.rawProfile.pen_name,
+          favoriteArtSupply: this.rawProfile.art_supply || null, // 設定されていなければ null
+          bio: this.rawProfile.introduction || null, // 設定されていなければ null
+        };
+      } else {
+        // プロフィールがまだ存在しない場合（新規作成）
+        this.editProfile = {
+          username: this.$store.state.user?.current.name, // ログインユーザー名を初期値に
+          favoriteArtSupply: null,
+          bio: null,
+        };
+      }
       this.dialog = true;
     },
     closeDialog() {
@@ -223,8 +276,7 @@ export default {
         this.loading = true;
         const startTime = Date.now(); // 開始時間を記録
         // 現在ログインしているユーザーのIDを取得 (Vuexから)
-        const userId = this.$store.state.user.current.id;
-        console.log(userId);
+        const userId = this.$store.state.user.current?.id;
 
         try {
           // API にリクエストを送信
@@ -237,10 +289,8 @@ export default {
           })
           // APIリクエストが成功した場合の処理
           console.log('プロフィール更新成功', response);
-          this.profile.username = response.pen_name;
-          this.profile.ArtStyle = response.art_style ? response.art_style.name : "未判定";
-          this.profile.favoriteArtSupply = response.art_supply || "未設定";
-          this.profile.bio = response.introduction || "プロフィールを編集して自己紹介を書こう！";
+          // 更新をしたプロフィール情報をセット
+          this.rawProfile = response; 
           this.$store.dispatch('getProfileUser', response)
           this.updateProfileSuccess = true;
         } catch (error) {
@@ -256,7 +306,7 @@ export default {
             this.$store.dispatch('getToast', { msg: translated })
           } else {
             // 不明なエラーの場合に対応
-            const msg = 'プロフィールの更新に失敗しました。';
+            const msg = ['プロフィールの更新に失敗しました。'];
             this.$store.dispatch('getToast', { msg });
           }
           this.updateProfileSuccess = false;
@@ -279,3 +329,13 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+}
+</style>
