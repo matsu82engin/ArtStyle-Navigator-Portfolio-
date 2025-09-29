@@ -2,10 +2,16 @@ class PostImage < ApplicationRecord
   belongs_to :post
   belongs_to :art_style
 
+  has_one_attached :image
+
+  # RailsのURLヘルパーを使えるようにするためのおまじない
+  include Rails.application.routes.url_helpers
+
   before_validation :set_alt_from_caption
   before_validation :strip_whitespace
 
   # ここからカラムのバリデーション
+  validates :image, presence: true # 追加するとテストで大量にエラーが出るので保留
   validates :position,
             presence: true,
             numericality: { only_integer: true, greater_than_or_equal_to: 0 },
@@ -17,6 +23,13 @@ class PostImage < ApplicationRecord
   # tips は今のところバリデーションはいらない。
   # nil (未入力)は許可し空白のみ弾きたいが、フォームの挙動によって自動的に空白になるので、
   # 空白のみに投稿は strip_whitespace で消され、結果的に複数空白のない入力、つまり未入力のみを許可した状態になるから。
+
+  # 画像のURLを返すためのカスタムメソッド
+  def image_url
+    # imageが添付されているかを確認し、添付されていればURLを生成して返す
+    # (image.attached? がないと、画像がない場合にエラーになる)
+    image.attached? ? url_for(image) : nil
+  end
 
   private
 

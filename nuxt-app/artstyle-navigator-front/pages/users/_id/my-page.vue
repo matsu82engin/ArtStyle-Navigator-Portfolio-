@@ -69,12 +69,13 @@
             lazy-validation
           >
             <v-card-text>
-              <!-- 投稿テキストエリア -->
-              <v-textarea
-                label="いま何してる？"
+              <!-- 画像の添付 -->
+              <v-file-input
+                label="画像を選択"
                 rows="3"
                 auto-grow
-              ></v-textarea>
+                @change="onFilechange"
+              ></v-file-input>
 
               <v-text-field
                 v-model="newPost.title"
@@ -162,6 +163,18 @@
             <div v-if="post.post_images && post.post_images.length > 0">
               <!-- 将来的に複数画像になっても対応できるように v-for を使う -->
               <div v-for="image in post.post_images" :key="image.id">
+
+                <v-img
+                  v-if="image.image_url"
+                  :src="image.image_url"
+                  :alt="image.caption"
+                  class="white--text align-end"
+                  gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
+                  max-height="500px"
+                  contain
+                >
+                </v-img>
+
                 <!-- PostImageのcaption -->
                 <v-card-text>
                   説明: {{ image.caption }}
@@ -215,6 +228,7 @@ export default {
         caption: ''
       },
       posts: [], // fetchPost() で取得した投稿一覧のデータが入る
+      imageFile: null,
       profileUser: null,
       artStyles: [], // fetchArtStyles() で取得した絵柄一覧が入る
       selectedArtStyleId: null,
@@ -313,34 +327,6 @@ export default {
     }
   },
   methods: {
-    // async createPost() {
-    //   if (!this.newPost.title || !this.newPost.artStyleId) return
-
-    //   try {
-    //     const response = await this.$axios.post('/api/v1/posts', {
-    //       post: {
-    //         title: this.newPost.title,
-    //         post_images_attributes: [
-    //           {
-    //             art_style_id: this.newPost.artStyleId,
-    //             // 複数画像が送信できるようになったら position は変更
-    //             position: 0,
-    //             caption: this.newPost.caption
-    //           }
-    //         ]
-    //       }
-    //     })
-
-    //     // 投稿成功後、初期化やリロード
-    //     this.newPost.title = ''
-    //     this.newPost.artStyleId = null
-    //     this.newPost.caption = ''
-    //     await this.fetchPosts()
-    //   } catch (error) {
-    //     console.error('投稿に失敗しました:', error)
-    //   }
-    // },
-    // 本来の投稿メソッドではない
     async createPost() {
       if (!this.$refs.form.validate()) {
         return; // バリデーションが失敗したら中断
@@ -348,19 +334,15 @@ export default {
       this.loading = true; // ここでローディング開始
       const startTime = Date.now(); // 開始時間を記録
 
-      // 送信するデータを組み立てる
-      const postData = {
-        post: {
-          title: this.newPost.title,
-          post_images_attributes: [
-            {
-              art_style_id: this.newPost.artStyleId,
-              caption: this.newPost.caption,
-              // 他にも position や tips などがあればここに追加
-            }
-          ]
-        }
-      };
+      const formData = new FormData();
+      formData.append('post[title]', this.newPost.title);
+      formData.append('post[post_images_attributes][0][art_style_id]', this.newPost.artStyleId);
+      formData.append('post[post_images_attributes][0][caption]', this.newPost.caption);
+      // 他にも position や tips などがあればここに追加
+
+      if (this.newPost.imageFile) {
+        formData.append('post[post_images_attributes][0][image]', this.newPost.imageFile);
+      }
 
       // 現在ログインしているユーザーのIDを取得 (Vuexから)
       const userId = this.$store.state.user.current?.id;
@@ -368,9 +350,10 @@ export default {
 
       try {
         // 組み立てたデータを送信
-        await this.$axios.post(`/api/v1/users/${userId}/posts`, postData);
+        await this.$axios.post(`/api/v1/users/${userId}/posts`, formData);
 
         this.$refs.form.reset() 
+        this.newPost.imageFile = null;
         await this.fetchPosts(userId);
       } catch (error) {
         console.error('投稿に失敗しました:', error);
@@ -387,6 +370,10 @@ export default {
           this.loading = false;
         }, remainingTime);
       }
+    },
+
+    onFilechange(file) {
+      this.newPost.imageFile = file;
     },
 
     async deletePost(postId) {

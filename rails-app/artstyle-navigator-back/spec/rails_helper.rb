@@ -101,4 +101,6 @@ RSpec.configure do |config|
   config.include AuthorizationHelper, type: :request
   # 時間操作ヘルパーの追加
   config.include ActiveSupport::Testing::TimeHelpers
+  # サンプル画像の添付
+  config.include FileUploadHelpers # type を指定せず、全テストで使えるようにする
 end
