@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe PostImage, type: :model do
-  let(:post) { create(:post) }
+  let(:post) { build(:post) }
   let(:art_style) { post.post_images.first.art_style }
   let(:post_image) { post.post_images.first }
 
@@ -135,6 +135,42 @@ RSpec.describe PostImage, type: :model do
     it 'is valid' do
       post_image.tips = '   '
       expect(post_image).to be_valid
+    end
+  end
+
+  context 'with Image validation' do # 画像そのものに対するバリデーション
+    it 'is invalid when an unauthorized format file' do # 許可されていない形式のファイルは無効
+      post_image = build(:post_image, image: nil) # image: nil で上書き
+
+      post_image.image.attach(
+        io: File.open(Rails.root.join('spec/support/test_images/sample.pdf')),
+        filename: 'sample.pdf',
+        content_type: 'application/pdf'
+      )
+
+      expect(post_image).to be_invalid
+      expect(post_image.errors[:image]).to include('はPNGまたはJPEG形式でアップロードしてください')
+    end
+
+    it 'is Invalid when image size is larger than 5MB' do # 画像の容量が 5MB より大きければ無効
+      post_image = build(:post_image, image: nil)
+
+      # ダミーファイルを作る
+      large_file = Tempfile.new(['large_image', '.jpg'])
+      large_file.write('a' * 6.megabytes) # 6MBの疑似データ
+      large_file.rewind
+
+      post_image.image.attach(
+        io: large_file,
+        filename: 'large_image.jpg',
+        content_type: 'image/jpeg'
+      )
+
+      expect(post_image).to be_invalid
+      expect(post_image.errors[:image]).to include('は5MB以下にしてください')
+
+      large_file.close
+      large_file.unlink
     end
   end
 end

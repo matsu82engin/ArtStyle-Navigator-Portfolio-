@@ -11,7 +11,10 @@ class PostImage < ApplicationRecord
   before_validation :strip_whitespace
 
   # ここからカラムのバリデーション
-  validates :image, presence: true # 追加するとテストで大量にエラーが出るので保留
+  validate :image_attached
+  # validates :image, presence: true
+  validate :validate_image
+
   validates :position,
             presence: true,
             numericality: { only_integer: true, greater_than_or_equal_to: 0 },
@@ -32,6 +35,25 @@ class PostImage < ApplicationRecord
   end
 
   private
+  
+  def image_attached
+    errors.add(:image, 'を添付してください') unless image.attached?
+  end
+
+  # active_storage_validations gem を使うと簡単にバリデーションが書けるが自作してみる
+  def validate_image
+    return unless image.attached?
+  
+    # MIMEタイプのチェック
+    unless image.content_type.in?(%w(image/png image/jpg image/jpeg))
+      errors.add(:image, 'はPNGまたはJPEG形式でアップロードしてください')
+    end
+  
+    # ファイルサイズのチェック
+    if image.byte_size > 5.megabytes
+      errors.add(:image, 'は5MB以下にしてください')
+    end
+  end
 
   def set_alt_from_caption
     # もし caption に値があり、alt が空の場合に値をコピーする
