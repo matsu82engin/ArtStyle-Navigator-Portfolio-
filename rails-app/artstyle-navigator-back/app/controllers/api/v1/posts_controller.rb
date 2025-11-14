@@ -6,7 +6,6 @@ module Api
       before_action :set_post, only: [:destroy]
       # createアクションの権限チェックを before_action に切り出す
       before_action :authorize_user_for_creation!, only: [:create]
-      before_action :validate_post_images_attributes_format, only: [:create]
 
       # /api/v1/posts
       def index
@@ -23,6 +22,7 @@ module Api
             include: {
               post_images: {
                 only: [:id, :caption, :position],
+                methods: [:image_url], # 画像のURLをレスポンス
                 include: {
                   art_style: { only: [:id, :name] }
                 }
@@ -60,17 +60,6 @@ module Api
         render json: { error: '権限がありません' }, status: :forbidden if params[:user_id].to_s != current_api_v1_user.id.to_s
       end
 
-      # rubocop:disable Style/GuardClause
-      def validate_post_images_attributes_format
-        # post_params を呼ぶ前に、ネストされた属性の形式をチェック
-        raw_post_images_attributes = params.dig(:post, :post_images_attributes)
-
-        if raw_post_images_attributes.present? && !raw_post_images_attributes.is_a?(Array)
-          render json: { errors: ['post_images_attributes must be an array'] }, status: :bad_request
-        end
-      end
-      # rubocop:enable Style/GuardClause
-
       def set_post
         @post = Post.find(params[:id])
       rescue ActiveRecord::RecordNotFound
@@ -91,6 +80,7 @@ module Api
             :caption,
             :tips,
             :alt,
+            :image,
             :_destroy # ネストされたレコードの削除を許可する場合
           ]
         )

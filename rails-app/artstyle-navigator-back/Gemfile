@@ -5,6 +5,11 @@ ruby '3.1.3'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
 gem 'rails', '~> 6.1.4', '>= 6.1.4.7'
+
+# Image processing
+gem 'image_processing', '~> 1.12'
+gem 'mini_magick'
+
 # Use mysql as the database for Active Record
 gem 'dotenv-rails'
 gem 'mysql2', '~> 0.5'
@@ -39,6 +44,8 @@ group :development, :test do
   gem 'factory_bot_rails'
   # Faker gem 導入
   gem 'faker'
+  # pry 導入
+  gem 'pry'
 end
 
 group :development do
@@ -52,15 +59,16 @@ group :development do
   gem 'rubocop-rspec', require: false
 end
 
+group :test do
+  gem 'database_cleaner-active_record', '~> 2.0'
+end
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # devise 導入
 gem 'devise'
 gem 'devise_token_auth'
-
-# pry 導入
-gem 'pry'
 
 # Capybara 導入
 gem 'capybara', '~> 3.35'

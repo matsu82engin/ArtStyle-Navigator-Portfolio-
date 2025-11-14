@@ -6,8 +6,8 @@ class Post < ApplicationRecord
   # ここからカラムのバリデーション
   validates :title, presence: true, length: { maximum: 50 }
   validates :post_images, presence: true
-  # validate  :validate_uniqueness_of_position_per_post_images # validate で s はないので注意
-  validate :validate_uniqueness_of_position_per_post_images, if: -> { post_images.present? }
+  validate  :validate_uniqueness_of_position_per_post_images # validate で s はないので注意
+  # validate :validate_uniqueness_of_position_per_post_images, if: -> { post_images.present? }
 
   scope :latest, -> { order(created_at: :desc) }
 

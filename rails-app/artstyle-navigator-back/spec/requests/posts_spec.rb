@@ -5,14 +5,15 @@ RSpec.describe 'Posts API', type: :request do
     let!(:user) { create(:user) } # 投稿するユーザー (認証が必要ならトークンなども準備)
     let(:headers) { sign_in_user(user) } # user でログインして認証情報を取り出す
     let!(:art_style) { ArtStyle.find_by!(name: 'リアル系') } # 作成済みのマスターデータを "見つけてくる"
+
     let(:base_attributes) do # ベースの属性 (PostImage の部分は正常)
       {
         post: {
           title: 'Valid Title',
-          post_images_attributes: [
-            { art_style_id: art_style.id, position: 0, caption: 'Image 1' },
-            { art_style_id: art_style.id, position: 1, caption: 'Image 2' }
-          ]
+          post_images_attributes: {
+            '0' => { art_style_id: art_style.id, position: 0, image: sample_image_file, caption: 'Image 1' },
+            '1' => { art_style_id: art_style.id, position: 1, image: sample_image_file, caption: 'Image 2' }
+          }
         }
       }
     end
@@ -22,22 +23,24 @@ RSpec.describe 'Posts API', type: :request do
         {
           post: {
             title: '新しい投稿のタイトル',
-            post_images_attributes: [
-              {
+            post_images_attributes: {
+              '0' => {
                 art_style_id: art_style.id,
                 position: 0,
                 caption: '最初の画像の説明',
+                image: sample_image_file,
                 tips: '描画のコツ1',
                 alt: '画像1'
               },
-              {
+              '1' => {
                 art_style_id: art_style.id,
                 position: 1,
                 caption: '二番目の画像の説明',
+                image: sample_image_file,
                 tips: '描画のコツ2',
                 alt: '画像2'
               }
-            ]
+            }
           }
         }
       end
@@ -95,8 +98,12 @@ RSpec.describe 'Posts API', type: :request do
 
     context 'when invalid post_images_attributes' do # (画像1枚以上必須)
       it 'returns 422 if post_images_attributes is empty' do # 画像がなければエラー
-        params_with_empty_images = base_attributes.deep_merge(
-          post: { post_images_attributes: [] } # 空の配列で上書き
+        params_with_empty_images = base_attributes.merge(
+          post: {
+            post_images_attributes: {
+              '0' => { art_style_id: art_style.id, position: 0, image: nil }
+            }
+          }
         )
         post api_v1_user_posts_path(user), params: params_with_empty_images, headers:, xhr: true
         expect(response).to have_http_status(:unprocessable_entity)
@@ -105,7 +112,12 @@ RSpec.describe 'Posts API', type: :request do
 
     context 'when root :post key is missing' do # post: でラップされていない場合
       let(:params_missing_root_key) do
-        { title: 'Title without root key', post_images_attributes: [{ art_style_id: art_style.id, position: 0 }] }
+        {
+          title: 'Title without root key',
+          post_images_attributes: {
+            '0' => { art_style_id: art_style.id, position: 0, image: sample_image_file }
+          }
+        }
       end
 
       it 'returns 400 Bad Request when :post key is missing from params' do # :post キーがなければエラー
@@ -114,32 +126,13 @@ RSpec.describe 'Posts API', type: :request do
       end
     end
 
-    context 'when post_images_attributes has invalid format (not an array)' do # post_images_attributes が配列でない場合
-      let(:params_invalid_nested_format) do
-        base_attributes.deep_merge(
-          post: {
-            post_images_attributes: { art_style_id: art_style.id, position: 0 } # 配列ではなくオブジェクト
-          }
-        )
-      end
-
-      # post_images_attributes が期待する形式(配列)になっていない場合
-      it 'returns 400 Bad Request when post_images_attributes is not an array' do
-        post api_v1_user_posts_path(user), params: params_invalid_nested_format, headers:, xhr: true
-        # ここは 422 Unprocessable Entity になる可能性もある (Rails の nested attributes の解釈次第)
-        # 実際に動かして確認し、期待するステータスコードに合わせる
-        expect(response).to have_http_status(:bad_request)
-      end
-    end
-
     context 'when a post_image' do # 絵柄について
       it 'missing art_style_id return 422' do # 絵柄の指定がなかった場合
         invalid_params_art_style_id = base_attributes.deep_merge(
           post: {
-            post_images_attributes: [
-              { art_style_id: nil, position: 0, caption: '画像の絵柄ID なし' },
-              { art_style_id: art_style.id, position: 1, caption: 'Image 2' }
-            ]
+            post_images_attributes: {
+              '0' => { art_style_id: nil }
+            }
           }
         )
         post api_v1_user_posts_path(user), params: invalid_params_art_style_id, headers:, xhr: true
@@ -149,10 +142,9 @@ RSpec.describe 'Posts API', type: :request do
       it 'an unexpected ID is entered' do # 絵柄に想定外の値が入る
         invalid_params_art_style_id = base_attributes.deep_merge(
           post: {
-            post_images_attributes: [
-              { art_style_id: 99_999, position: 0, caption: '画像の絵柄ID が 99_999' },
-              { art_style_id: art_style.id, position: 1, caption: 'Image 2' }
-            ]
+            post_images_attributes: {
+              '0' => { art_style_id: 99_999 }
+            }
           }
         )
         post api_v1_user_posts_path(user), params: invalid_params_art_style_id, headers:, xhr: true
@@ -164,10 +156,10 @@ RSpec.describe 'Posts API', type: :request do
       it 'duplicates are invalid return 422' do # position が重複すると無効
         invalid_params_position = base_attributes.deep_merge(
           post: {
-            post_images_attributes: [
-              { art_style_id: art_style.id, position: 0, caption: 'Image 1' },
-              { art_style_id: art_style.id, position: 0, caption: 'Image 2' }
-            ]
+            post_images_attributes: {
+              '0' => { position: 0 },
+              '1' => { position: 0 }
+            }
           }
         )
         post api_v1_user_posts_path(user), params: invalid_params_position, headers:, xhr: true
@@ -177,10 +169,10 @@ RSpec.describe 'Posts API', type: :request do
       it 'nil is invalid' do # position が nil は無効(片方が nil の時点で無効)
         invalid_params_position = base_attributes.deep_merge(
           post: {
-            post_images_attributes: [
-              { art_style_id: art_style.id, position: nil, caption: 'Image 1' },
-              { art_style_id: art_style.id, position: 0, caption: 'Image 2' }
-            ]
+            post_images_attributes: {
+              '0' => { position: nil },
+              '1' => { position: 0 }
+            }
           }
         )
         post api_v1_user_posts_path(user), params: invalid_params_position, headers:, xhr: true
@@ -192,9 +184,9 @@ RSpec.describe 'Posts API', type: :request do
       it 'nil is ok' do
         valid_params_caption = base_attributes.deep_merge(
           post: {
-            post_images_attributes: [
-              { art_style_id: art_style.id, position: 0, caption: nil }
-            ]
+            post_images_attributes: {
+              '0' => { caption: nil }
+            }
           }
         )
         post api_v1_user_posts_path(user), params: valid_params_caption, headers:, xhr: true
@@ -204,9 +196,9 @@ RSpec.describe 'Posts API', type: :request do
       it 'strings greater than 1001 are invalid' do
         invalid_params_caption = base_attributes.deep_merge(
           post: {
-            post_images_attributes: [
-              { art_style_id: art_style.id, position: 0, caption: 'a' * 1001 }
-            ]
+            post_images_attributes: {
+              '0' => { caption: 'a' * 1001 }
+            }
           }
         )
         post api_v1_user_posts_path(user), params: invalid_params_caption, headers:, xhr: true
@@ -218,9 +210,9 @@ RSpec.describe 'Posts API', type: :request do
       it 'nil is ok' do
         valid_params_tip = base_attributes.deep_merge(
           post: {
-            post_images_attributes: [
-              { art_style_id: art_style.id, position: 1, caption: 'Image 1', tips: nil }
-            ]
+            post_images_attributes: {
+              '0' => { tips: nil }
+            }
           }
         )
         post api_v1_user_posts_path(user), params: valid_params_tip, headers:, xhr: true
@@ -232,9 +224,9 @@ RSpec.describe 'Posts API', type: :request do
       it 'copies caption to alt when alt is nil' do # captionがあり、altがnilの場合
         valid_params_alt = base_attributes.deep_merge(
           post: {
-            post_images_attributes: [
-              { art_style_id: art_style.id, position: 1, caption: 'This is the caption', alt: nil }
-            ]
+            post_images_attributes: {
+              '0' => { caption: 'This is the caption', alt: nil }
+            }
           }
         )
 
@@ -249,9 +241,9 @@ RSpec.describe 'Posts API', type: :request do
         valid_params_alt = base_attributes.deep_merge(
           post: {
             # altに個別の値を設定
-            post_images_attributes: [
-              { art_style_id: art_style.id, caption: 'This is the caption', alt: 'This is specific alt text' }
-            ]
+            post_images_attributes: {
+              '0' => { caption: 'This is the caption', alt: 'This is specific alt text' }
+            }
           }
         )
 
@@ -262,12 +254,13 @@ RSpec.describe 'Posts API', type: :request do
         expect(created_post_image.alt).to eq('This is specific alt text') # altが上書きされず、送信した値のままであることを確認
       end
 
-      it 'keeps alt as nil when caption is nil' do # caption が nil
+      it 'alt is blank when caption is nil' do # caption が nil
         valid_params_alt = base_attributes.deep_merge(
+          # caption が nil の場合は strip_whitespace メソッドによって "" に変換される
           post: {
-            post_images_attributes: [
-              { art_style_id: art_style.id, caption: nil, alt: nil }
-            ]
+            post_images_attributes: {
+              '0' => { caption: nil, alt: '' }
+            }
           }
         )
 
@@ -275,7 +268,7 @@ RSpec.describe 'Posts API', type: :request do
         expect(response).to have_http_status(:created)
 
         created_post_image = Post.last.post_images.first
-        expect(created_post_image.alt).to be_nil
+        expect(created_post_image.alt).to be_blank
       end
     end
   end

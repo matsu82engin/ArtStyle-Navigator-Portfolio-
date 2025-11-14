@@ -1,3 +1,8 @@
+# README
+
+This is a learning project for portfolio use.  
+
+
 # artstyle-navigator-front
 
 ## Build Setup
@@ -66,3 +71,6 @@ More information about the usage of this directory in [the documentation](https:
 This directory contains your Vuex store files. Creating a file in this directory automatically activates Vuex.
 
 More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/store).
+
+### Site Images
+The images on this site are taken from [manypixels](https://www.manypixels.co/gallery) and are used under the free manypixels license.

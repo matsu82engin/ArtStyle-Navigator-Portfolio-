@@ -69,12 +69,13 @@
             lazy-validation
           >
             <v-card-text>
-              <!-- 投稿テキストエリア -->
-              <v-textarea
-                label="いま何してる？"
-                rows="3"
-                auto-grow
-              ></v-textarea>
+              <!-- 画像の添付 -->
+              <v-file-input
+                :key="fileInputKey"
+                label="画像を選択"
+                accept="image/png, image/jpeg, image/jpg"
+                @change="onFileChange"
+              ></v-file-input>
 
               <v-text-field
                 v-model="newPost.title"
@@ -162,6 +163,18 @@
             <div v-if="post.post_images && post.post_images.length > 0">
               <!-- 将来的に複数画像になっても対応できるように v-for を使う -->
               <div v-for="image in post.post_images" :key="image.id">
+
+                <v-img
+                  v-if="image.image_url"
+                  :src="image.image_url"
+                  :alt="image.caption"
+                  class="white--text align-end"
+                  gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
+                  max-height="500px"
+                  contain
+                >
+                </v-img>
+
                 <!-- PostImageのcaption -->
                 <v-card-text>
                   説明: {{ image.caption }}
@@ -205,6 +218,7 @@ import { translateErrorMessages } from '@/utils/validationMessages';
 export default {
   name: 'MyPage',
   layout: 'logged-in',
+
   data() {
     const titleMax = 50;
     const captionMax = 1000;
@@ -212,11 +226,13 @@ export default {
       newPost: {
         title: '',
         artStyleId: null,
-        caption: ''
+        caption: '',
+        imageFile: null,
       },
       posts: [], // fetchPost() で取得した投稿一覧のデータが入る
       profileUser: null,
       artStyles: [], // fetchArtStyles() で取得した絵柄一覧が入る
+      fileInputKey: 0,
       selectedArtStyleId: null,
       loading: false,
       isDeleting: false, // 削除処理中かどうかのフラグ
@@ -230,7 +246,6 @@ export default {
       artStyleRules: [
         // 入力必須
         v => !!v || "画像の絵柄選択は必須です",
-        // 選択肢以外の入力除外(ただしこれはバックエンドで制限する？)
       ],
       captionRules: [
         // 1000文字制限
@@ -238,6 +253,7 @@ export default {
       ],
     }
   },
+
   async fetch() {
     const userId = this.$route.params.id;
     try {
@@ -274,6 +290,7 @@ export default {
       throw error;
     }
   },
+
   computed: {
     // 表示用に整形したプロフィールデータ
     profile() {
@@ -297,10 +314,12 @@ export default {
         icon: this.profileUser.icon || '未設定',
       };
     },
+
     isFormValid() {
       // newPostオブジェクトの必須項目がすべて「truthy」（空文字やnullでない）かをチェック
-      return !!this.newPost.title && !!this.newPost.artStyleId;
+      return !!this.newPost.title && !!this.newPost.artStyleId && !!this.newPost.imageFile;
     },
+
     isOwnPage() {
     // 現在のログインユーザーとルートパラメータの :user_id が一致しているか
     const currentUserId = this.$store.state.user.current?.id; // 現在のログインユーザーID
@@ -312,55 +331,44 @@ export default {
     return currentUserId === paramsId; // プロフィールIDのチェックを削除
     }
   },
+
+//  画像に rules を追加するようなことがあれば以下を追加 
+//   watch: {
+//   'newPost.imageFile'(newFile) {
+//     if (!newFile) {
+//       this.$refs.form?.resetValidation?.(); // バリデーションリセット
+//     }
+//   }
+// },
+
   methods: {
-    // async createPost() {
-    //   if (!this.newPost.title || !this.newPost.artStyleId) return
+    resetFileInput() {
+      this.fileInputKey += 1; // keyを変更するとv-file-inputが再描画され完全リセット
+    },
 
-    //   try {
-    //     const response = await this.$axios.post('/api/v1/posts', {
-    //       post: {
-    //         title: this.newPost.title,
-    //         post_images_attributes: [
-    //           {
-    //             art_style_id: this.newPost.artStyleId,
-    //             // 複数画像が送信できるようになったら position は変更
-    //             position: 0,
-    //             caption: this.newPost.caption
-    //           }
-    //         ]
-    //       }
-    //     })
-
-    //     // 投稿成功後、初期化やリロード
-    //     this.newPost.title = ''
-    //     this.newPost.artStyleId = null
-    //     this.newPost.caption = ''
-    //     await this.fetchPosts()
-    //   } catch (error) {
-    //     console.error('投稿に失敗しました:', error)
-    //   }
-    // },
-    // 本来の投稿メソッドではない
     async createPost() {
       if (!this.$refs.form.validate()) {
         return; // バリデーションが失敗したら中断
       }
+
+      // 画像必須チェック（絵柄選択とは別に）
+      if (!this.newPost.imageFile) {
+        this.$store.dispatch('getToast', { msg: ['画像ファイルを選択してください'] });
+        return;
+      }
+
       this.loading = true; // ここでローディング開始
       const startTime = Date.now(); // 開始時間を記録
 
-      // 送信するデータを組み立てる
-      const postData = {
-        post: {
-          title: this.newPost.title,
-          post_images_attributes: [
-            {
-              art_style_id: this.newPost.artStyleId,
-              caption: this.newPost.caption,
-              // 他にも position や tips などがあればここに追加
-            }
-          ]
-        }
-      };
+      const formData = new FormData();
+      formData.append('post[title]', this.newPost.title);
+      formData.append('post[post_images_attributes][0][art_style_id]', this.newPost.artStyleId);
+      formData.append('post[post_images_attributes][0][caption]', this.newPost.caption);
+      // 他にも position や tips などがあればここに追加
+
+      if (this.newPost.imageFile) {
+        formData.append('post[post_images_attributes][0][image]', this.newPost.imageFile);
+      }
 
       // 現在ログインしているユーザーのIDを取得 (Vuexから)
       const userId = this.$store.state.user.current?.id;
@@ -368,9 +376,10 @@ export default {
 
       try {
         // 組み立てたデータを送信
-        await this.$axios.post(`/api/v1/users/${userId}/posts`, postData);
+        await this.$axios.post(`/api/v1/users/${userId}/posts`, formData);
 
         this.$refs.form.reset() 
+        this.newPost.imageFile = null;
         await this.fetchPosts(userId);
       } catch (error) {
         console.error('投稿に失敗しました:', error);
@@ -387,6 +396,40 @@ export default {
           this.loading = false;
         }, remainingTime);
       }
+    },
+
+    onFileChange(file) {
+      // this.newPost.imageFile = file;
+
+      // ファイルチェック
+      if (!file) {
+        // this.newPost.imageFile = null;
+        // return
+        this.newPost.imageFile = null;
+        this.resetFileInput(); // ← これを呼ぶ
+        return;
+      }
+
+      // 拡張子チェック
+      const allowedTypes = ['image/png', 'image/jpg', 'image/jpeg'];
+      if (!allowedTypes.includes(file.type)) {
+        this.$store.dispatch('getToast', { msg: ['対応していないファイル形式です(png, jpg, jpegのみ)']})
+        this.newPost.imageFile = null;
+        this.resetFileInput(); // ← これを呼ぶ
+        return;
+      }
+
+      // サイズチェック
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        this.$store.dispatch('getToast', { msg: ['ファイルサイズは5MB以下にしてください'] });
+        this.newPost.imageFile = null;
+        this.resetFileInput();
+        return;
+      }
+
+      // 問題なければセット
+      this.newPost.imageFile = file;
     },
 
     async deletePost(postId) {
@@ -408,6 +451,7 @@ export default {
         this.isDeleting = false;
       }
     },
+
     // マイページを開いた時に今まで投稿したデータを取得するメソッドが必要
     async fetchPosts(userId) {
       try {
@@ -427,6 +471,7 @@ export default {
         throw error;
       }
     },
+
     async fetchArtStyles() {
       try {
         const response = await this.$axios.get('/api/v1/art_styles')
