@@ -71,10 +71,10 @@
             <v-card-text>
               <!-- 画像の添付 -->
               <v-file-input
+                :key="fileInputKey"
                 label="画像を選択"
-                rows="3"
-                auto-grow
-                @change="onFilechange"
+                accept="image/png, image/jpeg, image/jpg"
+                @change="onFileChange"
               ></v-file-input>
 
               <v-text-field
@@ -218,6 +218,7 @@ import { translateErrorMessages } from '@/utils/validationMessages';
 export default {
   name: 'MyPage',
   layout: 'logged-in',
+
   data() {
     const titleMax = 50;
     const captionMax = 1000;
@@ -225,12 +226,13 @@ export default {
       newPost: {
         title: '',
         artStyleId: null,
-        caption: ''
+        caption: '',
+        imageFile: null,
       },
       posts: [], // fetchPost() で取得した投稿一覧のデータが入る
-      imageFile: null,
       profileUser: null,
       artStyles: [], // fetchArtStyles() で取得した絵柄一覧が入る
+      fileInputKey: 0,
       selectedArtStyleId: null,
       loading: false,
       isDeleting: false, // 削除処理中かどうかのフラグ
@@ -244,7 +246,6 @@ export default {
       artStyleRules: [
         // 入力必須
         v => !!v || "画像の絵柄選択は必須です",
-        // 選択肢以外の入力除外(ただしこれはバックエンドで制限する？)
       ],
       captionRules: [
         // 1000文字制限
@@ -252,6 +253,7 @@ export default {
       ],
     }
   },
+
   async fetch() {
     const userId = this.$route.params.id;
     try {
@@ -288,6 +290,7 @@ export default {
       throw error;
     }
   },
+
   computed: {
     // 表示用に整形したプロフィールデータ
     profile() {
@@ -311,10 +314,12 @@ export default {
         icon: this.profileUser.icon || '未設定',
       };
     },
+
     isFormValid() {
       // newPostオブジェクトの必須項目がすべて「truthy」（空文字やnullでない）かをチェック
-      return !!this.newPost.title && !!this.newPost.artStyleId;
+      return !!this.newPost.title && !!this.newPost.artStyleId && !!this.newPost.imageFile;
     },
+
     isOwnPage() {
     // 現在のログインユーザーとルートパラメータの :user_id が一致しているか
     const currentUserId = this.$store.state.user.current?.id; // 現在のログインユーザーID
@@ -326,11 +331,32 @@ export default {
     return currentUserId === paramsId; // プロフィールIDのチェックを削除
     }
   },
+
+//  画像に rules を追加するようなことがあれば以下を追加 
+//   watch: {
+//   'newPost.imageFile'(newFile) {
+//     if (!newFile) {
+//       this.$refs.form?.resetValidation?.(); // バリデーションリセット
+//     }
+//   }
+// },
+
   methods: {
+    resetFileInput() {
+      this.fileInputKey += 1; // keyを変更するとv-file-inputが再描画され完全リセット
+    },
+
     async createPost() {
       if (!this.$refs.form.validate()) {
         return; // バリデーションが失敗したら中断
       }
+
+      // 画像必須チェック（絵柄選択とは別に）
+      if (!this.newPost.imageFile) {
+        this.$store.dispatch('getToast', { msg: ['画像ファイルを選択してください'] });
+        return;
+      }
+
       this.loading = true; // ここでローディング開始
       const startTime = Date.now(); // 開始時間を記録
 
@@ -372,7 +398,37 @@ export default {
       }
     },
 
-    onFilechange(file) {
+    onFileChange(file) {
+      // this.newPost.imageFile = file;
+
+      // ファイルチェック
+      if (!file) {
+        // this.newPost.imageFile = null;
+        // return
+        this.newPost.imageFile = null;
+        this.resetFileInput(); // ← これを呼ぶ
+        return;
+      }
+
+      // 拡張子チェック
+      const allowedTypes = ['image/png', 'image/jpg', 'image/jpeg'];
+      if (!allowedTypes.includes(file.type)) {
+        this.$store.dispatch('getToast', { msg: ['対応していないファイル形式です(png, jpg, jpegのみ)']})
+        this.newPost.imageFile = null;
+        this.resetFileInput(); // ← これを呼ぶ
+        return;
+      }
+
+      // サイズチェック
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        this.$store.dispatch('getToast', { msg: ['ファイルサイズは5MB以下にしてください'] });
+        this.newPost.imageFile = null;
+        this.resetFileInput();
+        return;
+      }
+
+      // 問題なければセット
       this.newPost.imageFile = file;
     },
 
@@ -395,6 +451,7 @@ export default {
         this.isDeleting = false;
       }
     },
+
     // マイページを開いた時に今まで投稿したデータを取得するメソッドが必要
     async fetchPosts(userId) {
       try {
@@ -414,6 +471,7 @@ export default {
         throw error;
       }
     },
+
     async fetchArtStyles() {
       try {
         const response = await this.$axios.get('/api/v1/art_styles')

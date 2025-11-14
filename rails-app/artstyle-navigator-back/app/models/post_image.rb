@@ -31,11 +31,19 @@ class PostImage < ApplicationRecord
   def image_url
     # imageが添付されているかを確認し、添付されていればURLを生成して返す
     # (image.attached? がないと、画像がない場合にエラーになる)
-    image.attached? ? url_for(image) : nil
+    image.attached? ? url_for(display_image) : nil
+  end
+
+  def display_image
+    return unless image.attached?
+
+    # url_for で自動で processed は呼ばれる
+    # image.variant(resize_to_limit: [800, 800]).processed
+    image.variant(resize_to_limit: [800, 800])
   end
 
   private
-  
+
   def image_attached
     errors.add(:image, 'を添付してください') unless image.attached?
   end
@@ -43,16 +51,10 @@ class PostImage < ApplicationRecord
   # active_storage_validations gem を使うと簡単にバリデーションが書けるが自作してみる
   def validate_image
     return unless image.attached?
-  
-    # MIMEタイプのチェック
-    unless image.content_type.in?(%w(image/png image/jpg image/jpeg))
-      errors.add(:image, 'はPNGまたはJPEG形式でアップロードしてください')
-    end
-  
-    # ファイルサイズのチェック
-    if image.byte_size > 5.megabytes
-      errors.add(:image, 'は5MB以下にしてください')
-    end
+
+    valid_types = %w[image/png image/jpg image/jpeg]
+    errors.add(:image, 'はPNGまたはJPEG形式でアップロードしてください') unless image.content_type.in?(valid_types)
+    errors.add(:image, 'は5MB以下にしてください') if image.byte_size > 5.megabytes
   end
 
   def set_alt_from_caption

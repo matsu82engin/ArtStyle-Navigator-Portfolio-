@@ -140,10 +140,10 @@ RSpec.describe PostImage, type: :model do
 
   context 'with Image validation' do # 画像そのものに対するバリデーション
     it 'is invalid when an unauthorized format file' do # 許可されていない形式のファイルは無効
-      post_image = build(:post_image, image: nil) # image: nil で上書き
+      post_image = build(:post_image)
 
       post_image.image.attach(
-        io: File.open(Rails.root.join('spec/support/test_images/sample.pdf')),
+        io: Rails.root.join('spec/support/test_images/sample.pdf').open,
         filename: 'sample.pdf',
         content_type: 'application/pdf'
       )
@@ -153,24 +153,48 @@ RSpec.describe PostImage, type: :model do
     end
 
     it 'is Invalid when image size is larger than 5MB' do # 画像の容量が 5MB より大きければ無効
-      post_image = build(:post_image, image: nil)
+      post_image = build(:post_image)
 
       # ダミーファイルを作る
       large_file = Tempfile.new(['large_image', '.jpg'])
-      large_file.write('a' * 6.megabytes) # 6MBの疑似データ
-      large_file.rewind
+      begin
+        large_file.write('a' * 6.megabytes) # 6MBの疑似データ
+        large_file.rewind
 
+        post_image.image.attach(io: large_file, filename: 'large_image.jpg', content_type: 'image/jpeg')
+
+        expect(post_image).to be_invalid
+        expect(post_image.errors[:image]).to include('は5MB以下にしてください')
+      ensure
+        large_file.close
+        large_file.unlink
+      end
+    end
+
+    it 'resizes image to within 800x800 pixels' do
+      # ファクトリで post_image を作成
+      post_image = create(:post_image)
+
+      # テスト用の大きい画像をアタッチし直す
       post_image.image.attach(
-        io: large_file,
-        filename: 'large_image.jpg',
+        io: Rails.root.join('spec/support/test_images/resize_sample.jpg').open,
+        filename: 'resize_sample.jpg',
         content_type: 'image/jpeg'
       )
 
-      expect(post_image).to be_invalid
-      expect(post_image.errors[:image]).to include('は5MB以下にしてください')
+      # display_image メソッドを呼び出して、variant オブジェクトを取得
+      # この時点でリサイズ処理がキューに入るか、即時実行されます
+      # variant = post_image.display_image
+      variant = post_image.display_image.processed
 
-      large_file.close
-      large_file.unlink
+      # variant の内容をバイナリデータとしてダウンロードし、MiniMagickで読み込む
+      # Tempfile を使わず、メモリ上で直接読み込めるので高速です
+      image_data = variant.download
+      image = MiniMagick::Image.read(image_data)
+
+      # リサイズ後の画像のサイズを検証
+      expect(image.width).to be <= 800
+      expect(image.height).to be <= 800
     end
   end
 end
