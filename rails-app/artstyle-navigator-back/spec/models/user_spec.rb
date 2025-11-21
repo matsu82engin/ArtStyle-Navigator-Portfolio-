@@ -126,4 +126,27 @@ RSpec.describe User, type: :model do
       end
     end
   end
+
+  describe 'follow feature methods' do # フォロー機能のメソッド
+    let(:user) { create(:user) }
+    let(:other_user) { create(:user) }
+
+    context 'when following or unfollowing a user' do # ユーザーをフォローしたり解除したりする時
+      it 'to follow' do # フォローする
+        # フォローされていないことを確認(following? のテスト)
+        expect(user).not_to be_following(other_user)
+        # フォローする(followe のテスト)
+        user.follow(other_user)
+        # フォローできているか確認
+        expect(user).to be_following(other_user)
+      end
+
+      it 'to unfollow' do # フォローを解除する
+        user.follow(other_user)
+        user.unfollow(other_user)
+        # フォロー解除できているか確認
+        expect(user).not_to be_following(other_user)
+      end
+    end
+  end
 end
