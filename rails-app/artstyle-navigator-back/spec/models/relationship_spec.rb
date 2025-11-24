@@ -4,7 +4,7 @@ RSpec.describe Relationship, type: :model do
   let(:user) { create(:user) }
   let(:other_user) { create(:user) }
   # user が other_user をフォロー
-  let(:relationship) { user.active_relationships.build(followed_id: other_user.id)}
+  let(:relationship) { user.active_relationships.build(followed: other_user) }
   # let(:relationship) { create(:relationship)}
 
   context 'with valid associations' do # 有効なフォロー
@@ -14,8 +14,8 @@ RSpec.describe Relationship, type: :model do
   end
 
   context 'when either follower_id or followed_id is nil' do # follower_id, followed_id どちらかが nil の場合
-    it 'follower_id is nil invalid' do # follower_id が nil は無効
-      relationship.follower_id = nil
+    it 'follower_id is nil invalid' do # follower_id が nil は無効(inverse_of があるのでインスタンスを作成)
+      relationship = build(:relationship, follower: nil)
       expect(relationship).to be_invalid
     end
 

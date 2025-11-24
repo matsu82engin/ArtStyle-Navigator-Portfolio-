@@ -139,6 +139,8 @@ RSpec.describe User, type: :model do
         user.follow(other_user)
         # フォローできているか確認
         expect(user).to be_following(other_user)
+        # other_user のフォロワーの中に user がいることを確認する
+        expect(other_user.followers).to include(user)
       end
 
       it 'to unfollow' do # フォローを解除する
