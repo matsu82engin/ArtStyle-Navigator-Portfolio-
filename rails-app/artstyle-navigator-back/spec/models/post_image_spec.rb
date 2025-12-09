@@ -142,11 +142,15 @@ RSpec.describe PostImage, type: :model do
     it 'is invalid when an unauthorized format file' do # 許可されていない形式のファイルは無効
       post_image = build(:post_image)
 
-      post_image.image.attach(
-        io: Rails.root.join('spec/support/test_images/sample.pdf').open,
-        filename: 'sample.pdf',
-        content_type: 'application/pdf'
-      )
+      path = Rails.root.join('spec/support/test_images/sample.pdf')
+
+      File.open(path) do |file|
+        post_image.image.attach(
+          io: StringIO.new(file.read),
+          filename: 'sample.pdf',
+          content_type: 'application/pdf'
+        )
+      end
 
       expect(post_image).to be_invalid
       expect(post_image.errors[:image]).to include('はPNGまたはJPEG形式でアップロードしてください')
@@ -176,19 +180,18 @@ RSpec.describe PostImage, type: :model do
       post_image = create(:post_image)
 
       # テスト用の大きい画像をアタッチし直す
-      post_image.image.attach(
-        io: Rails.root.join('spec/support/test_images/resize_sample.jpg').open,
-        filename: 'resize_sample.jpg',
-        content_type: 'image/jpeg'
-      )
+      path = Rails.root.join('spec/support/test_images/resize_sample.jpg')
+
+      File.open(path) do |file|
+        post_image.image.attach(io: StringIO.new(file.read), filename: 'resize_sample.jpg', content_type: 'image/jpeg')
+      end
 
       # display_image メソッドを呼び出して、variant オブジェクトを取得
-      # この時点でリサイズ処理がキューに入るか、即時実行されます
       # variant = post_image.display_image
       variant = post_image.display_image.processed
 
       # variant の内容をバイナリデータとしてダウンロードし、MiniMagickで読み込む
-      # Tempfile を使わず、メモリ上で直接読み込めるので高速です
+      # Tempfile を使わず、メモリ上で直接読み込める
       image_data = variant.download
       image = MiniMagick::Image.read(image_data)
 

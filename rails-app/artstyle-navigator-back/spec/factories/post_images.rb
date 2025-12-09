@@ -10,11 +10,15 @@ FactoryBot.define do
     alt { 'MyString' }
 
     after(:build) do |post_image|
-      post_image.image.attach(
-        io: Rails.root.join('spec/support/test_images/sample.jpg').open,
-        filename: 'sample.jpg',
-        content_type: 'image/jpeg'
-      )
+      path = Rails.root.join('spec/support/test_images/sample.jpg')
+
+      File.open(path) do |file|
+        post_image.image.attach(
+          io: StringIO.new(file.read),
+          filename: 'sample.jpg',
+          content_type: 'image/jpeg'
+        )
+      end
     end
   end
 end
