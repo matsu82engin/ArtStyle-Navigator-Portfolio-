@@ -36,12 +36,20 @@
             
             <!-- フォロー情報 -->
             <div class="d-flex justify-center my-4">
-              <div class="mr-4">
-                <strong>100</strong> フォロー中
-              </div>
-              <div>
-                <strong>200</strong> フォロワー
-              </div>
+              <follow-stats
+
+                :user-id="Number($route.params.id)"
+                :following="followingCount"
+                :followers="followersCount"
+              />
+            </div>
+
+            <!-- フォローフォーム -->
+            <div class="d-flex justify-center my-4">
+              <follow-form
+                v-if="$auth.loggedIn && !isOwnPage"
+                :user-id="Number($route.params.id)"
+              />
             </div>
 
             <!-- プロフィール編集ボタン -->
@@ -214,11 +222,9 @@
 
 <script>
 import { translateErrorMessages } from '@/utils/validationMessages';
-
 export default {
   name: 'MyPage',
   layout: 'logged-in',
-
   data() {
     const titleMax = 50;
     const captionMax = 1000;
@@ -238,6 +244,8 @@ export default {
       isDeleting: false, // 削除処理中かどうかのフラグ
       titleMax,
       captionMax,
+      followingCount: 0,
+      followersCount: 0,
       titleRules: [
         // 入力必須
         v => !!v || "投稿タイトルは必須です",
@@ -271,13 +279,25 @@ export default {
       // 投稿一覧取得のPromise。こちらは失敗したらページ全体のエラーとしたいので、catchは付けない
       const postsPromise = this.$axios.get(`/api/v1/users/${userId}/posts`);
 
-      const [postsResponse, profileResponse] = await Promise.all([
+      const followingPromise = this.$axios.get(`/api/v1/users/${userId}/following`);
+      const followersPromise = this.$axios.get(`/api/v1/users/${userId}/followers`);
+
+      const [
+        postsResponse,
+        profileResponse,
+        followingResponse,
+        followersResponse
+      ] = await Promise.all([
         postsPromise,
-        profilePromise
+        profilePromise,
+        followingPromise,
+        followersPromise
       ]);
 
       this.posts = postsResponse.data;
       this.profileUser = profileResponse.data; // プロフィールがない場合は null が入る
+      this.followingCount = followingResponse.data.length;
+      this.followersCount = followersResponse.data.length;
 
       await this.fetchArtStyles();
 

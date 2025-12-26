@@ -25,6 +25,13 @@
         <v-col cols="12" md="8">
           <!-- プロフィール表示部分 -->
           <v-card>
+            <!-- アイコン -->
+            <!-- <v-img
+                v-if="profile.icon"
+                :src="profile.icon"
+                max-width="100"
+            ></v-img>
+            <v-icon v-else icon="mdi-account"></v-icon> -->
             <v-card-title>現在のプロフィール</v-card-title>
             <v-card-text>
               <p>ペンネーム: {{ profile.username }}</p>
@@ -34,13 +41,17 @@
               </p>
               <p>よく使うペン: {{ profile.favoriteArtSupply || '未設定' }}</p>
               <p>自己紹介: {{ profile.bio }}</p>
-              <v-img
-                v-if="profile.icon"
-                :src="profile.icon"
-                max-width="100"
-              ></v-img>
-              <v-icon v-else icon="mdi-account"></v-icon>
             </v-card-text>
+
+            <!-- フォロー情報 -->
+            <v-card-text class="pt-0 text-center">
+              <follow-stats
+                :user-id="Number($route.params.id)"
+                :following="followingCount"
+                :followers="followersCount"
+              />
+            </v-card-text>
+          
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn
@@ -52,6 +63,12 @@
               </v-btn>
             </v-card-actions>
           </v-card>
+          <div class="mt-2">
+            <follow-form 
+              v-if="$auth.loggedIn && !isOwnProfile"
+              :user-id="Number($route.params.id)"
+            />
+          </div>
         </v-col>
       </v-row>
     </div>
@@ -158,6 +175,8 @@ export default {
       // icon: null,
       pennameMax,
       introductionMax,
+      followingCount: 0,
+      followersCount: 0,
       usernameRules: [
         (v) => !!v || "ユーザー名は必須です",
         (v) => (v && v.length <= 20) || "ユーザー名は20文字以内で入力してください",
@@ -185,6 +204,15 @@ export default {
   },
   async fetch() {
     const userId = this.$route.params.id;
+
+    const followingPromise = this.$axios.get(`/api/v1/users/${userId}/following`);
+    const followersPromise = this.$axios.get(`/api/v1/users/${userId}/followers`);
+
+    const [followingResponse, followersResponse] = await Promise.all([followingPromise, followersPromise]);
+
+    this.followingCount = followingResponse.data.length;
+    this.followersCount = followersResponse.data.length;
+
     try {
       await this.$axios.get(`/api/v1/users/${userId}`);
   
@@ -208,6 +236,7 @@ export default {
       throw userError;
     }
   },
+
   computed: {
     // 表示用に整形したプロフィールデータ
     profile() {
@@ -231,6 +260,7 @@ export default {
         // icon: this.rawProfile.icon || '未設定', // APIレスポンスにiconが含まれていると仮定
       };
     },
+
     isOwnProfile() {
     // 現在のログインユーザーとルートパラメータの :user_id が一致しているか
     const currentUserId = this.$store.state.user.current?.id;
@@ -239,6 +269,7 @@ export default {
     return currentUserId === paramsId; // プロフィールIDのチェックを削除
     }
   },
+
   methods: {
     openDialog() {
       // rawProfileを元に編集用データを作成する
@@ -259,6 +290,7 @@ export default {
       }
       this.dialog = true;
     },
+
     closeDialog() {
       this.dialog = false;
       // ダイアログを閉じるときにバリデーションをリセット
@@ -268,10 +300,12 @@ export default {
       }
       // this.$refs.form.reset();
     },
+
     resetDialog(){
       this.$refs.form.reset();
     },
-     async saveProfile() {
+
+    async saveProfile() {
       if (this.$refs.form.validate()) {
         this.loading = true;
         const startTime = Date.now(); // 開始時間を記録
