@@ -4,7 +4,7 @@
     <v-btn
       v-if="loading"
       block
-      disabled
+      :disabled="loading"
     >
       読み込み中 ...
     </v-btn>
@@ -46,9 +46,13 @@ export default {
   },
 
   async mounted() {
-    // if (!this.$store.state.user.current) return
-    if (!this.$auth.loggedIn) return
-    await this.fetchFollowState();
+    // if (!this.$auth.loggedIn) return
+    // await this.fetchFollowState();
+    if (!this.$auth.loggedIn) {
+      this.loading = false
+      return
+    }
+    await this.fetchFollowState()
   },
 
   methods: {
@@ -65,6 +69,9 @@ export default {
     },
 
     async follow() {
+      if (this.loading) return
+      this.loading = true
+
       try {
         await this.$axios.$post(`/api/v1/relationships`, {
           // これは送るパラメータ
@@ -72,7 +79,13 @@ export default {
         })
         this.isFollowing = true
       } catch (error) {
-        this.$my.apiErrorHandler(error.response)
+        // this.$my.apiErrorHandler(error.response)
+        if (error.response) {
+          const msg = ['フォローに失敗しました']
+          return this.$store.dispatch('getToast', { msg })
+        }
+      } finally {
+        this.loading = false
       }
     },
 
@@ -81,7 +94,11 @@ export default {
         await this.$axios.$delete(`/api/v1/relationships/${this.userId}`)
         this.isFollowing = false
       } catch (error) {
-        this.$my.apiErrorHandler(error.response)
+        // this.$my.apiErrorHandler(error.response)
+        if (error.response) {
+          const msg = ['フォロー解除に失敗しました']
+          return this.$store.dispatch('getToast', { msg })
+        }
       }
     },
   }

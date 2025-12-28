@@ -135,7 +135,7 @@ RSpec.describe User, type: :model do
       it 'to follow' do # フォローする
         # フォローされていないことを確認(following? のテスト)
         expect(user).not_to be_following(other_user)
-        # フォローする(followe のテスト)
+        # フォローする(follow のテスト)
         user.follow(other_user)
         # フォローできているか確認
         expect(user).to be_following(other_user)
