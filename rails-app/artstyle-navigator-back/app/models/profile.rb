@@ -1,6 +1,8 @@
 class Profile < ApplicationRecord
   belongs_to :user
   belongs_to :art_style, optional: true
+  
+  has_one_attached :avatar
 
   validates :user, uniqueness: true
   validates :pen_name,

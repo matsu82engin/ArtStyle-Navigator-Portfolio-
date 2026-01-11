@@ -10,7 +10,7 @@ module Api
       def show
         profile = @user.profile
         if profile
-          render json: profile
+          render json: profile_json(profile)
         else
           # プロフィールがない場合は、not_foundを返す
           render json: { error: 'Profile not found' }, status: :not_found
@@ -25,7 +25,7 @@ module Api
         profile = @user.profile || @user.build_profile
 
         if profile.update(profile_params)
-          render json: profile, status: :ok
+          render json: profile_json(profile), status: :ok
         else
           render json: { errors: profile.errors.full_messages }, status: :unprocessable_entity
         end
@@ -58,7 +58,29 @@ module Api
 
       # ストロングパラメータ。送られてきたパラメータを検閲して指定のパラメータのみ許可
       def profile_params
-        params.require(:profile).permit(:pen_name, :art_supply, :introduction)
+        params.require(:profile).permit(:pen_name, :art_supply, :introduction, :avatar)
+      end
+
+      # 表示用JSONを組み立てるメソッド
+      def profile_json(profile)
+        {
+          id: profile.id,
+          user_id: profile.user_id,
+          pen_name: profile.pen_name,
+          art_supply: profile.art_supply,
+          introduction: profile.introduction,
+          avatar_url: avatar_url(profile)
+        }
+      end
+
+      # avatar のURLを生成
+      def avatar_url(profile)
+        return nil unless profile.avatar.attached?
+
+        rails_representation_url(
+          profile.avatar.variant(resize_to_fill: [200, 200]),
+          # only_path: true
+        )
       end
     end
   end

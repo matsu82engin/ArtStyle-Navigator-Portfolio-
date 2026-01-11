@@ -25,13 +25,16 @@
         <v-col cols="12" md="8">
           <!-- プロフィール表示部分 -->
           <v-card>
-            <!-- アイコン -->
-            <!-- <v-img
-                v-if="profile.icon"
-                :src="profile.icon"
-                max-width="100"
-            ></v-img>
-            <v-icon v-else icon="mdi-account"></v-icon> -->
+            <!-- アイコン画像 -->
+            <v-avatar size="120" class="my-4 ml-4">
+              <v-img
+                v-if="rawProfile && rawProfile.avatar_url"
+                :src="profile.avatar_url"
+                alt="User Avatar"
+              />
+              <v-icon v-else size="120">mdi-account-circle</v-icon>
+            </v-avatar>
+
             <v-card-title>現在のプロフィール</v-card-title>
             <v-card-text>
               <p>ペンネーム: {{ profile.username }}</p>
@@ -98,13 +101,14 @@
             v-model="valid"
             lazy-validation
           >
-            <!-- アイコン変更は画像を保存できるようになってから実装する -->
-            <!-- <v-file-input
-              v-model="icon"
-              label="アイコンを選択"
-              accept="image/*"
-              prepend-icon="mdi-camera"
-            ></v-file-input> -->
+            <!-- アイコン画像アップロード -->
+            <v-file-input
+              :key="iconInputKey"
+              label="アイコン画像"
+              accept="image/png, image/jpeg, image/jpg"
+              prepend-icon="mdi-account-circle"
+              @change="onIconChange"
+            />
 
             <!-- ユーザー名変更 -->
             <v-text-field
@@ -172,7 +176,6 @@ export default {
       loading: false,
       updateProfileSuccess: false,
       dialog: false, // ダイアログの表示状態を管理
-      // icon: null,
       pennameMax,
       introductionMax,
       followingCount: 0,
@@ -198,10 +201,12 @@ export default {
         ArtStyle: '',
         favoriteArtSupply: '',
         bio: '',
-        icon: null
+        iconFile: null
       },
+      iconInputKey: 0,
     };
   },
+
   async fetch() {
     const userId = this.$route.params.id;
 
@@ -247,7 +252,7 @@ export default {
           ArtStyle: '未判定',
           favoriteArtSupply: '未設定',
           bio: 'プロフィールを編集して自己紹介を書こう！',
-          icon: null,
+          avatar_url: null,
         };
       }
 
@@ -257,7 +262,7 @@ export default {
         ArtStyle: this.rawProfile.art_style ? this.rawProfile.art_style.name : '未判定',
         favoriteArtSupply: this.rawProfile.art_supply || null,
         bio: this.rawProfile.introduction || 'プロフィールを編集して自己紹介を書こう！',
-        // icon: this.rawProfile.icon || '未設定', // APIレスポンスにiconが含まれていると仮定
+        avatar_url: this.rawProfile.avatar_url || null
       };
     },
 
@@ -312,15 +317,32 @@ export default {
         // 現在ログインしているユーザーのIDを取得 (Vuexから)
         const userId = this.$store.state.user.current?.id;
 
+        const formData = new FormData();
+        formData.append('profile[pen_name]', this.editProfile.username);
+
+        if (this.editProfile.favoriteArtSupply) {
+          formData.append('profile[art_supply]', this.editProfile.favoriteArtSupply);
+        }
+
+        if (this.editProfile.bio) {
+          formData.append('profile[introduction]', this.editProfile.bio);
+        }
+
+        if (this.editProfile.iconFile) {
+          formData.append('profile[avatar]', this.editProfile.iconFile);
+        }
+
         try {
           // API にリクエストを送信
-          const response = await this.$axios.$patch(`api/v1/users/${userId}/profiles`, {
-            profile: {
-              pen_name: this.editProfile.username,
-              art_supply: this.editProfile.favoriteArtSupply,
-              introduction: this.editProfile.bio,
-            }
-          })
+          const response = await this.$axios.$patch(`api/v1/users/${userId}/profiles`, formData);
+          // const response = await this.$axios.$patch(`api/v1/users/${userId}/profiles`, {
+          //   profile: {
+          //     pen_name: this.editProfile.username,
+          //     art_supply: this.editProfile.favoriteArtSupply,
+          //     introduction: this.editProfile.bio,
+          //   }
+          // })
+
           // APIリクエストが成功した場合の処理
           console.log('プロフィール更新成功', response);
           // 更新をしたプロフィール情報をセット
@@ -360,6 +382,37 @@ export default {
         }
       }
     },
+
+    resetIconInput() {
+      this.iconInputKey += 1;
+    },
+
+    onIconChange(file) {
+      if (!file) {
+        this.editProfile.iconFile = null;
+        this.resetIconInput();
+        return;
+      }
+
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+      if (!allowedTypes.includes(file.type)) {
+        this.$store.dispatch('getToast', { msg: ['対応していないファイル形式です(png, jpg, jpegのみ)'] });
+        this.editProfile.iconFile = null;
+        this.resetIconInput();
+        return;
+      }
+
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        this.$store.dispatch('getToast', { msg: ['ファイルサイズは5MB以下にしてください'] });
+        this.editProfile.iconFile = null;
+        this.resetIconInput();
+        return;
+      }
+
+      this.editProfile.iconFile = file;
+    },
+
   },
 };
 </script>
