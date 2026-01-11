@@ -102,3 +102,12 @@ RSpec/ExampleLength:
 # not_to be valid よりも be_invalid を使う。
 RSpec/Rails/NegationBeValid:
   Enabled: false
+
+# File.open の指摘をオフにする
+Rails/RootPathnameMethods:
+  Enabled: false
+
+# db/seeds でのみ puts を書くのを有効にする
+Rails/Output:
+  Exclude:
+    - 'db/seeds.rb'
