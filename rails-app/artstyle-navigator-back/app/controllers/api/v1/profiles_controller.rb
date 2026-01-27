@@ -74,13 +74,17 @@ module Api
       end
 
       # avatar のURLを生成
-      def avatar_url(profile)
-        return nil unless profile.avatar.attached?
+      # def avatar_url(profile)
+      #   return nil unless profile.avatar.attached?
 
-        rails_representation_url(
-          profile.avatar.variant(resize_to_fill: [200, 200]),
-          # only_path: true
-        )
+      #   rails_representation_url(
+      #     profile.avatar.variant(resize_to_fill: [200, 200]),
+      #     # only_path: true
+      #   )
+      # end
+
+      def avatar_url(profile)
+        profile.avatar_url
       end
     end
   end
