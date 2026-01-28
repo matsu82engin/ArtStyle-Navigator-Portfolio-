@@ -9,7 +9,9 @@ Rails.application.routes.draw do
           get :following_state
         end
         
-        resource :profiles, only: [:show, :update, :destroy]
+        resource :profiles, only: [:show, :update, :destroy] do
+          delete :destroy_avatar, on: :member
+        end
         # posts
         resources :posts, only: [:index, :create, :destroy]
       end

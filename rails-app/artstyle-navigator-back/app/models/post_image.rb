@@ -6,15 +6,12 @@ class PostImage < ApplicationRecord
 
   # RailsのURLヘルパーを使えるようにするためのおまじない
   include Rails.application.routes.url_helpers
+  include ImageValidatable
 
   before_validation :set_alt_from_caption
   before_validation :strip_whitespace
 
   # ここからカラムのバリデーション
-  validate :image_attached
-  # validates :image, presence: true
-  validate :validate_image
-
   validates :position,
             presence: true,
             numericality: { only_integer: true, greater_than_or_equal_to: 0 },
@@ -44,17 +41,16 @@ class PostImage < ApplicationRecord
 
   private
 
-  def image_attached
-    errors.add(:image, 'を添付してください') unless image.attached?
+  def attached_image
+    image
   end
 
-  # active_storage_validations gem を使うと簡単にバリデーションが書けるが自作してみる
-  def validate_image
-    return unless image.attached?
+  def attached_image_name
+    :image
+  end
 
-    valid_types = %w[image/png image/jpg image/jpeg]
-    errors.add(:image, 'はPNGまたはJPEG形式でアップロードしてください') unless image.content_type.in?(valid_types)
-    errors.add(:image, 'は5MB以下にしてください') if image.byte_size > 5.megabytes
+  def image_attached
+    errors.add(:image, 'を添付してください') unless image.attached?
   end
 
   def set_alt_from_caption

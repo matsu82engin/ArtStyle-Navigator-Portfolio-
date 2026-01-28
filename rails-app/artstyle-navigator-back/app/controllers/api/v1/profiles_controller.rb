@@ -44,6 +44,17 @@ module Api
         end
       end
 
+      def destroy_avatar
+        profile = @user.profile
+
+        if profile&.avatar&.attached?
+          profile.avatar.purge
+          render json: profile_json(profile), status: :ok
+        else
+          render json: { error: 'avatar not found' }, status: :not_found
+        end
+      end
+
       private
 
       def set_user
@@ -73,14 +84,8 @@ module Api
         }
       end
 
-      # avatar のURLを生成
       def avatar_url(profile)
-        return nil unless profile.avatar.attached?
-
-        rails_representation_url(
-          profile.avatar.variant(resize_to_fill: [200, 200]),
-          # only_path: true
-        )
+        profile.avatar_url
       end
     end
   end

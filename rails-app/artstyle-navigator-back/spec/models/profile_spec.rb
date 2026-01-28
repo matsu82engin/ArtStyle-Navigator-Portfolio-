@@ -80,4 +80,69 @@ RSpec.describe Profile, type: :model do
       expect(profile).to be_valid
     end
   end
+
+  context 'with avatar validation' do # アイコン画像そのものに対するバリデーション
+    it 'is valid avatar' do
+      profile = build(:profile, :with_avatar)
+      expect(profile).to be_valid
+    end
+
+    it 'is invalid when an unauthorized format file' do # 許可されていない形式のファイルは無効
+      profile = build(:profile)
+
+      path = Rails.root.join('spec/support/test_images/sample.pdf')
+
+      File.open(path) do |file|
+        profile.avatar.attach(
+          io: StringIO.new(file.read),
+          filename: 'sample.pdf',
+          content_type: 'application/pdf'
+        )
+      end
+
+      expect(profile).to be_invalid
+      expect(profile.errors[:avatar]).to include('はPNGまたはJPEG形式でアップロードしてください')
+    end
+
+    it 'is Invalid when avatar size is larger than 5MB' do # 画像の容量が 5MB より大きければ無効
+      profile = build(:profile)
+
+      # ダミーファイルを作る
+      large_file = Tempfile.new(['large_image', '.jpg'])
+      begin
+        large_file.write('a' * 6.megabytes) # 6MBの疑似データ
+        large_file.rewind
+
+        profile.avatar.attach(io: large_file, filename: 'large_image.jpg', content_type: 'image/jpeg')
+
+        expect(profile).to be_invalid
+        expect(profile.errors[:avatar]).to include('は5MB以下にしてください')
+      ensure
+        large_file.close
+        large_file.unlink
+      end
+    end
+
+    it 'resizes avatar to within 200x200 pixels' do
+      profile = create(:profile)
+
+      # テスト用の大きい画像をアタッチし直す
+      path = Rails.root.join('spec/support/test_images/resize_sample.jpg')
+
+      File.open(path) do |file|
+        profile.avatar.attach(io: StringIO.new(file.read), filename: 'resize_sample.jpg', content_type: 'image/jpeg')
+      end
+
+      variant = profile.display_avatar.processed
+
+      # variant の内容をバイナリデータとしてダウンロードし、MiniMagickで読み込む
+      # Tempfile を使わず、メモリ上で直接読み込める
+      avatar_data = variant.download
+      avatar = MiniMagick::Image.read(avatar_data)
+
+      # リサイズ後の画像のサイズを検証
+      expect(avatar.width).to be <= 200
+      expect(avatar.height).to be <= 200
+    end
+  end
 end
