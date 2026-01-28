@@ -26,16 +26,41 @@
           <!-- プロフィール表示部分 -->
           <v-card>
             <!-- アイコン画像 -->
-            <v-avatar size="120" class="my-4 ml-4">
+            <!-- <v-avatar size="120" class="my-4 ml-4">
               <v-img
                 v-if="rawProfile && rawProfile.avatar_url"
                 :src="profile.avatar_url"
                 alt="User Avatar"
               />
               <v-icon v-else size="120">mdi-account-circle</v-icon>
-            </v-avatar>
+            </v-avatar> -->
+
+            <!-- アイコン画像 -->
+            <div class="avatar-wrapper my-4 ml-4">
+              <v-avatar size="120">
+                <v-img
+                  v-if="rawProfile && rawProfile.avatar_url"
+                  :src="profile.avatar_url"
+                  alt="User Avatar"
+                />
+                <v-icon v-else size="120">mdi-account-circle</v-icon>
+              </v-avatar>
+
+              <!-- 削除ボタン（アイコンがある時だけ） -->
+              <v-btn
+                v-if="rawProfile && rawProfile.avatar_url"
+                icon
+                small
+                color="error"
+                class="avatar-delete-btn"
+                @click="deleteAvatar"
+              >
+                <v-icon small>mdi-close</v-icon>
+              </v-btn>
+            </div>
 
             <v-card-title>現在のプロフィール</v-card-title>
+
             <v-card-text>
               <p>ペンネーム: {{ profile.username }}</p>
               <p>
@@ -104,6 +129,7 @@
             <!-- アイコン画像アップロード -->
             <v-file-input
               :key="iconInputKey"
+              v-model="editProfile.iconFile"
               label="アイコン画像"
               accept="image/png, image/jpeg, image/jpg"
               prepend-icon="mdi-account-circle"
@@ -284,6 +310,7 @@ export default {
           username: this.rawProfile.pen_name,
           favoriteArtSupply: this.rawProfile.art_supply || null, // 設定されていなければ null
           bio: this.rawProfile.introduction || null, // 設定されていなければ null
+          iconFile: null,
         };
       } else {
         // プロフィールがまだ存在しない場合（新規作成）
@@ -291,6 +318,7 @@ export default {
           username: this.$store.state.user?.current.name, // ログインユーザー名を初期値に
           favoriteArtSupply: null,
           bio: null,
+          iconFile: null,
         };
       }
       this.dialog = true;
@@ -335,13 +363,6 @@ export default {
         try {
           // API にリクエストを送信
           const response = await this.$axios.$patch(`api/v1/users/${userId}/profiles`, formData);
-          // const response = await this.$axios.$patch(`api/v1/users/${userId}/profiles`, {
-          //   profile: {
-          //     pen_name: this.editProfile.username,
-          //     art_supply: this.editProfile.favoriteArtSupply,
-          //     introduction: this.editProfile.bio,
-          //   }
-          // })
 
           // APIリクエストが成功した場合の処理
           console.log('プロフィール更新成功', response);
@@ -413,6 +434,23 @@ export default {
       this.editProfile.iconFile = file;
     },
 
+    async deleteAvatar() {
+      const userId = this.$store.state.user.current?.id;
+
+      try {
+        await this.$axios.delete(`/api/v1/users/${userId}/profiles/destroy_avatar`);
+
+        this.rawProfile.avatar_url = null;
+
+        this.editProfile.iconFile = null;
+        this.resetIconInput();
+
+        this.$store.dispatch('getToast', { msg:['アイコンを削除しました'] });
+      } catch (error) {
+        this.$store.dispatch('getToast', { msg: ['アイコンの削除に失敗しました'] });
+      }
+    }
+
   },
 };
 </script>
@@ -425,4 +463,17 @@ export default {
   align-items: center;
   height: 80vh;
 }
+
+.avatar-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.avatar-delete-btn {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background-color: white;
+}
+
 </style>
