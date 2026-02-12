@@ -26,16 +26,6 @@
           <!-- プロフィール表示部分 -->
           <v-card>
             <!-- アイコン画像 -->
-            <!-- <v-avatar size="120" class="my-4 ml-4">
-              <v-img
-                v-if="rawProfile && rawProfile.avatar_url"
-                :src="profile.avatar_url"
-                alt="User Avatar"
-              />
-              <v-icon v-else size="120">mdi-account-circle</v-icon>
-            </v-avatar> -->
-
-            <!-- アイコン画像 -->
             <div class="avatar-wrapper my-4 ml-4">
               <v-avatar size="120">
                 <v-img

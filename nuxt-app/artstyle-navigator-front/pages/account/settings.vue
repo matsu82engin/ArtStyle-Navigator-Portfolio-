@@ -54,12 +54,20 @@
 
           <div class="d-flex align-center mb-4">
             <v-img
-              :src="profileImage"
+              v-if="rawProfile && rawProfile.avatar_url"
+              :src="rawProfile.avatar_url"
+              alt="User Avatar"
               max-width="50"
               max-height="50"
               class="mr-2"
             ></v-img>
-            <a href="#">change</a>
+            <v-icon
+              v-else
+              size="50"
+              class="mr-2"
+              >
+              mdi-account-circle
+            </v-icon>
           </div>
         </v-card-text>
 
@@ -81,6 +89,7 @@
 
 <script>
 import { translateErrorMessages } from '@/utils/validationMessages.js'
+// import axios from '~/plugins/axios'
 
 export default {
   layout: 'logged-in',
@@ -95,7 +104,7 @@ export default {
         confirmPassword: '',
         currentPassword: '',
       },
-      profileImage: 'https://randomuser.me/api/portraits/women/1.jpg', // サンプルとしてランダムな画像URL
+      rawProfile: null,
       isValid: false,
       loading: false,
       nameMax,
@@ -111,6 +120,7 @@ export default {
       ],
     }
   },
+
   computed: {
     form() {
       const min = '6文字以上'
@@ -122,12 +132,14 @@ export default {
       const updatePasswordRules = [rules]
       return { min, msg, updatePasswordRules }
     },
+
     passwordConfirmationRules() {
       return [
         v => v === this.user.password || 'パスワードが一致しません'
       ]
-    }
+    },
   },
+
   watch: {
     // パスワード入力時にリアルタイムバリデーション実行
     'user.password'(val) {
@@ -137,18 +149,24 @@ export default {
       this.$refs.form?.validate();
     }
   },
+
   mounted() {
     const userId = this.$store.state.user.current?.id;
     console.log(`ユーザーID:${userId}`);
     this.fetchUserAccount(userId);
+    this.fetchUserProfile(userId);
   },
+
   beforeDestroy () {
     this.resetToast()
   },
+
   methods: {
     async fetchUserAccount(userId){
       try {
         const response = await this.$axios.$get(`api/v1/users/${userId}`);
+        // const profileResponse = await this.$axios.get(`/api/v1/users/${userId}/profiles`);
+        // console.log('レスポンス：', response);
         if (response) {
           this.user = {
             name: response.name,
@@ -159,14 +177,29 @@ export default {
         console.error("ユーザー情報の取得に失敗", error);
       }
     },
+
+    async fetchUserProfile(userId) {
+      try {
+        const response = await this.$axios.$get(`/api/v1/users/${userId}/profiles`);
+        this.rawProfile = response;
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          this.rawProfile = null;
+        } else {
+          console.error('プロフィール取得失敗', error);
+        }
+      }
+    },
+
     onPasswordInput() {
-      if (this.user.password === '') { // こちらを用意しておくことで入力をやめたときにPWが必要ないことを再表示できる
+      if (this.user.password === '') { // これを用意しておくことで入力をやめたときにPWが必要ないことを再表示できる
         this.currentHint = 'パスワードは変更する場合のみ入力してください'
       } else {
         this.currentHint = '6文字以上必須。空白不可。半角英数字・ﾊｲﾌﾝ・ｱﾝﾀﾞｰﾊﾞｰが使えます'
         this.showPersistentHint = false
       }
     },
+
     async saveChanges() {
       this.loading = true; // ここでローディング開始
       const startTime = Date.now(); // 開始時間を記録
@@ -214,6 +247,7 @@ export default {
         }, remainingTime);
       }
     },
+
     // Vuexのtoast.msgの値を変更する
     resetToast () {
         return this.$store.dispatch('getToast', { msg: null })

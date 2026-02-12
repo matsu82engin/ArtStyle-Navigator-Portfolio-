@@ -22,16 +22,19 @@
           <v-card-text class="text-center">
             <!-- ユーザーアイコン -->
             <v-avatar size="128" class="mb-4">
-              <!-- <img src="https://placekitten.com/128/128" alt="User Avatar" /> -->
-              <!-- <img v-if="profile.icon" :src="profile.icon" alt="User Avatar" />
-              <v-icon v-else size="128">mdi-account-circle</v-icon> -->
+              <v-img
+                v-if="profileUser && profileUser.avatar_url"
+                :src="profile.avatar_url"
+                alt="User Avatar"
+              />
+              <v-icon v-else size="120">mdi-account-circle</v-icon>
             </v-avatar>
 
             <!-- ユーザー名と特徴 -->
             <h2 class="mb-2">ユーザー名</h2>
             <h2 v-if="profile" class="mb-2">{{ profile.username }}</h2>
 
-            <p class="text-subtitle-1">自己紹介文</p>
+            <p class="text-subtitle-1">自己紹介</p>
             <p v-if="profile" class="text-subtitle-1">{{ profile.bio }}</p> 
             
             <!-- フォロー情報 -->
@@ -314,14 +317,14 @@ export default {
   computed: {
     // 表示用に整形したプロフィールデータ
     profile() {
-      // プロフィールデータ(rawProfile)が存在しない場合
+      // プロフィールデータ(ProfileUser)が存在しない場合
       if (!this.profileUser) {
         return {
           username: '未設定',
           ArtStyle: '未判定',
           favoriteArtSupply: '未設定',
           bio: 'プロフィールを編集して自己紹介を書こう！',
-          icon: null,
+          avatar_url: null,
         };
       }
 
@@ -331,7 +334,7 @@ export default {
         ArtStyle: this.profileUser.art_style ? this.profileUser.art_style.name : '未判定',
         favoriteArtSupply: this.profileUser.art_supply || '未設定',
         bio: this.profileUser.introduction || 'プロフィールを編集して自己紹介を書こう！',
-        icon: this.profileUser.icon || '未設定',
+        avatar_url: this.profileUser.avatar_url,
       };
     },
 
