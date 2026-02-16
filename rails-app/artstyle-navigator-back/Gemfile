@@ -12,7 +12,9 @@ gem 'mini_magick'
 
 # Use mysql as the database for Active Record
 gem 'dotenv-rails'
-gem 'mysql2', '~> 0.5'
+gem 'mysql2', '~> 0.5', groups: [:development, :test]
+# Use postgresql for production
+gem 'pg', '~> 1.4', groups: [:production]
 
 # Use Puma as the app server
 gem 'puma', '~> 5.0'
