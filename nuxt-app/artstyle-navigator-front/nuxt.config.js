@@ -71,7 +71,7 @@ export default {
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
     // baseURL: '/', を変更
-    baseURL: 'http://localhost:3000',
+    baseURL: process.env.API_URL || 'http://localhost:3000',
     credentials: true,
   },
 
