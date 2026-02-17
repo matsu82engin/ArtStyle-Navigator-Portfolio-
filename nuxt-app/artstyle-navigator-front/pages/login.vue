@@ -52,7 +52,7 @@
       </v-card-text>
     </v-card>
 
-    <v-card width="400px" class="mx-auto mt-5">
+    <!-- <v-card width="400px" class="mx-auto mt-5">
       <v-card-title>
         <h1 class="display-1">
           ゲストログイン
@@ -71,7 +71,7 @@
           </v-card-actions>
         </v-form>
       </v-card-text>
-    </v-card>
+    </v-card> -->
 
   </v-container>
 </template>
@@ -85,7 +85,7 @@ export default {
     return {
       // 実装時は中身は削除する
       password: 'password',
-      email: 'sample@example.com',
+      email: '1@example.com',
       // errorMessage: '',
       isValid: false,
       loading: false,
