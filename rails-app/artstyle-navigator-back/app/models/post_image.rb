@@ -28,7 +28,9 @@ class PostImage < ApplicationRecord
   def image_url
     # imageが添付されているかを確認し、添付されていればURLを生成して返す
     # (image.attached? がないと、画像がない場合にエラーになる)
-    image.attached? ? url_for(display_image) : nil
+    return unless image.attached?
+
+    rails_representation_path(display_image, only_path: true)
   end
 
   def display_image
