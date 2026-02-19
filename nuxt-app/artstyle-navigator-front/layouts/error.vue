@@ -84,7 +84,16 @@ export default {
     if (this.error.statusCode === 401) {
       await this.$auth.logout();
       await this.$authentication.resetVuex();
-      this.$cookies.removeAll();
+      const isProd = process.env.NODE_ENV === 'production';
+      const options = {
+        secure: isProd,
+        sameSite: isProd ? 'None' : 'Lax'
+      };
+      this.$cookies.remove('access-token', options);
+      this.$cookies.remove('uid', options);
+      this.$cookies.remove('client', options);
+      this.$cookies.remove('token-type', options);
+      this.$cookies.remove('refresh_token', options);
       localStorage.clear();
     }
   },

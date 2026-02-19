@@ -19,17 +19,22 @@ export default async ({ $auth, $authentication, $axios, store, route, redirect, 
       store.dispatch('getToast', { msg })
       store.dispatch('getRememberPath', route)
 
+      const isProd = process.env.NODE_ENV === 'production';
+      const options = {
+        secure: isProd,
+        sameSite: isProd ? 'None' : 'Lax'
+      };
+
       // 強制ログアウト処理（Vuex, Cookie, localStorage 全初期化）
       await $auth.logout()
       $authentication.resetVuex()
       // localStorage.clear() 個別に消すほうがベストプラクティスとのこと。
       window.localStorage.removeItem('persisted-key');
-      // $cookies.removeAll() 個別に消すほうがベストプラクティスとのこと。
-      $cookies.remove('access-token');
-      $cookies.remove('uid');
-      $cookies.remove('client');
-      $cookies.remove('token-type');
-      $cookies.remove('refresh_token');
+      $cookies.remove('access-token', options);
+      $cookies.remove('uid', options);
+      $cookies.remove('client', options);
+      $cookies.remove('token-type', options);
+      $cookies.remove('refresh_token', options);
       // 再度リダイレクトさせないための回避策
       if (route.path !== '/login') {
         return redirect('/login')

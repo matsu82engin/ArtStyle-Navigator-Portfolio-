@@ -102,14 +102,20 @@ export default {
         .then(() => {
           this.$authentication.logoutAdd();
           console.log('ログアウト成功');
+
+          const isProd = process.env.NODE_ENV === 'production';
+          const options = {
+            secure: isProd,
+            sameSite: isProd ? 'None' : 'Lax'
+          };
           
           // ログアウト成功時の処理
           // Cookie からトークンなどを削除
-          this.$cookies.remove('access-token');
-          this.$cookies.remove('uid');
-          this.$cookies.remove('client');
-          this.$cookies.remove('token-type');
-          this.$cookies.remove('refresh_token');
+          this.$cookies.remove('access-token', options);
+          this.$cookies.remove('uid', options);
+          this.$cookies.remove('client', options);
+          this.$cookies.remove('token-type', options);
+          this.$cookies.remove('refresh_token', options);
           window.localStorage.removeItem('persisted-key');
           this.$router.push('/');
         })
