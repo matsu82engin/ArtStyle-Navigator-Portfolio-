@@ -90,10 +90,6 @@ ActiveRecord::Base.transaction do
       end
 
       post.save!
-
-      # 投稿を事前にリサイズ
-      print '.' # 進捗表示
-      post_image.display_image.processed
     end
   end
 
