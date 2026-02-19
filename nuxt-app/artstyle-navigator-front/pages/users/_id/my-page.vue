@@ -138,9 +138,9 @@
             <!-- ここには元の <v-card> の中身（v-card-titleからv-card-actionsまで）をそのまま入れる -->
             <v-card-title class="d-flex align-center">
               <!-- アバターと名前 -->
-              <v-avatar size="40" class="mr-3">
+              <!-- <v-avatar size="40" class="mr-3">
                 <img src="#" alt="User Avatar" />
-              </v-avatar>
+              </v-avatar> -->
               <span class="font-weight-medium">ユーザー名</span>
 
               <v-spacer></v-spacer>

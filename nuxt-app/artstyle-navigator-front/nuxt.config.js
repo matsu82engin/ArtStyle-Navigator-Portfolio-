@@ -7,7 +7,12 @@ export default {
   env: {
     development: process.env.NODE_ENV === 'development',
   },
+
   ssr: false,
+  target: 'static',
+  generate: {
+    fallback: true
+  },
 
   // プリロードに関するエラー対策の設定。本番環境ではエラーは出ない可能性があるのでいらないかもしれない
   render: {
