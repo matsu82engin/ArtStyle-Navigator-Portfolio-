@@ -3,6 +3,9 @@
 require_relative '../lib/seed_utils/mime_type_helper'
 
 ActiveRecord::Base.transaction do
+  puts '--- データをリセット中 ---'
+  Post.destroy_all 
+
   puts '--- ユーザー作成中 ---'
 
   users = []
@@ -87,6 +90,10 @@ ActiveRecord::Base.transaction do
       end
 
       post.save!
+
+      # 投稿を事前にリサイズ
+      print '.' # 進捗表示
+      post_image.display_image.processed
     end
   end
 
