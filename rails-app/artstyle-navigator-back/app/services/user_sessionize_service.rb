@@ -11,7 +11,13 @@ module UserSessionizeService
 
   # セッションcookieを削除する
   def delete_session
-    cookies.delete(session_key)
+    # cookies.delete(session_key)
+    cookies[session_key] = {
+      value: nil,
+      expires: Time.zone.at(0),
+      secure: Rails.env.production?,
+      same_site: Rails.env.production? ? :none : :lax
+    }
   end
 
   private
