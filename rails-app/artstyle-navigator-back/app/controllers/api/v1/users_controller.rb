@@ -18,15 +18,16 @@ class Api::V1::UsersController < ApplicationController
   # GET /api/v1/users/:id/following
   def following
     # フォローしている一覧データをレスポンス
-    users = @user.following
-    render json: users, status: :ok
+    users = @user.following.includes(:profile)
+    render json: users.map { |user| user_with_profile_json(user) }, status: :ok
   end
 
   # GET /api/v1/users/:id/followers
   def followers
     # フォローされている一覧データをレスポンス
     users = @user.followers
-    render json: users, status: :ok
+    users = @user.followers.includes(:profile)
+    render json: users.map { |user| user_with_profile_json(user) }, status: :ok
   end
 
   # GET /api/v1/users/:id/following_state
@@ -42,5 +43,15 @@ class Api::V1::UsersController < ApplicationController
   def set_user
     # params[:id] でユーザーを探す。404 発生時は => application_contoroller の rescue_from
     @user = User.find(params[:id])
+  end
+
+  def user_with_profile_json(user)
+    profile = user.profile
+    {
+      id: user.id,
+      pen_name: profile&.pen_name,
+      introduction: profile&.introduction,
+      avatar_url: profile&.avatar_url
+    }
   end
 end

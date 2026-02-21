@@ -107,13 +107,13 @@ devise_token_auth を使っていなければヘッダーに認証情報を入�
 ◇フロントエンド
 - HTML/CSS
 - JavaScript
-- Nuxt.js(2.15.8)(SPAモード)
+- Nuxt.js(2.17.2)(SPAモード)
 - Vuetify (UIフレームワーク)
 - ESLint/Prettier(コード解析ツール)
 
 ◇バックエンド
 - Ruby(3.1.3)
-- Ruby on Rails(6.1.4)
+- Ruby on Rails(6.1.7)
 - MySQL(8.0.31)
 - Rubocop (コード解析ツール)
 - Rspec (テスト)
