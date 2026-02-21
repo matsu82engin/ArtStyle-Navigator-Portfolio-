@@ -52,6 +52,7 @@
               <follow-form
                 v-if="$auth.loggedIn && !isOwnPage"
                 :user-id="Number($route.params.id)"
+                @follow-changed="fetchFollowCounts"
               />
             </div>
 
@@ -502,7 +503,20 @@ export default {
       } catch (error) {
         console.error('絵柄の取得に失敗しました:', error);
       }
-    }
+    },
+
+    async fetchFollowCounts() {
+      const userId = Number(this.$route.params.id)
+
+      const [followingRes, followersRes] = await Promise.all([
+        this.$axios.$get(`/api/v1/users/${userId}/following`),
+        this.$axios.$get(`/api/v1/users/${userId}/followers`)
+      ])
+
+      this.followingCount = followingRes.length
+      this.followersCount = followersRes.length
+    },
+
   },
 }
 </script>
