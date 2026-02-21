@@ -78,6 +78,7 @@ export default {
           followed_id: this.userId
         })
         this.isFollowing = true
+        this.$emit('follow-changed')
       } catch (error) {
         // this.$my.apiErrorHandler(error.response)
         if (error.response) {
@@ -93,6 +94,7 @@ export default {
       try {
         await this.$axios.$delete(`/api/v1/relationships/${this.userId}`)
         this.isFollowing = false
+        this.$emit('follow-changed')
       } catch (error) {
         // this.$my.apiErrorHandler(error.response)
         if (error.response) {

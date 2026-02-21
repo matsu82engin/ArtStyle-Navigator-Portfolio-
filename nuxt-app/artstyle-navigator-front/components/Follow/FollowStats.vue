@@ -6,7 +6,7 @@
       text-center
     >
       <nuxt-link
-        :to="$my.projectLinkTo(userId, 'users-following')"
+        :to="$my.projectLinkTo(userId, 'users-id-following')"
       >
         <strong>
           {{ following }}
@@ -21,7 +21,7 @@
       text-center
     >
       <nuxt-link
-        :to="$my.projectLinkTo(userId, 'users-followers')"
+        :to="$my.projectLinkTo(userId, 'users-id-followers')"
       >
         <strong>
           {{ followers }}
