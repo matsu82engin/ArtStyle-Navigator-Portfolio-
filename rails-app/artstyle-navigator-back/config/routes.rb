@@ -36,4 +36,7 @@ Rails.application.routes.draw do
       end
     end
   end
+
+  # ヘルスチェック用（追加）
+  get '/health', to: proc { [200, {}, [{ status: 'ok' }.to_json]] }
 end
