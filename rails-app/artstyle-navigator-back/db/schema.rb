@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_11_16_072818) do
+ActiveRecord::Schema.define(version: 2026_03_03_085925) do
 
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
@@ -47,6 +47,25 @@ ActiveRecord::Schema.define(version: 2025_11_16_072818) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["name"], name: "index_art_styles_on_name", unique: true
+  end
+
+  create_table "choice_art_styles", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "choice_id", null: false
+    t.bigint "art_style_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["art_style_id"], name: "index_choice_art_styles_on_art_style_id"
+    t.index ["choice_id", "art_style_id"], name: "index_choice_art_styles_on_choice_id_and_art_style_id", unique: true
+    t.index ["choice_id"], name: "index_choice_art_styles_on_choice_id"
+  end
+
+  create_table "choices", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "question_id", null: false
+    t.string "text", null: false
+    t.string "label", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["question_id"], name: "index_choices_on_question_id"
   end
 
   create_table "post_images", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -86,6 +105,14 @@ ActiveRecord::Schema.define(version: 2025_11_16_072818) do
     t.index ["user_id"], name: "index_profiles_on_user_id", unique: true
   end
 
+  create_table "questions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "text", null: false
+    t.integer "position", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["position"], name: "index_questions_on_position", unique: true
+  end
+
   create_table "relationships", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "follower_id", null: false
     t.bigint "followed_id", null: false
@@ -94,6 +121,16 @@ ActiveRecord::Schema.define(version: 2025_11_16_072818) do
     t.index ["followed_id"], name: "index_relationships_on_followed_id"
     t.index ["follower_id", "followed_id"], name: "index_relationships_on_follower_id_and_followed_id", unique: true
     t.index ["follower_id"], name: "index_relationships_on_follower_id"
+  end
+
+  create_table "user_answers", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "choice_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["choice_id"], name: "index_user_answers_on_choice_id"
+    t.index ["user_id", "choice_id"], name: "index_user_answers_on_user_id_and_choice_id", unique: true
+    t.index ["user_id"], name: "index_user_answers_on_user_id"
   end
 
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -124,6 +161,9 @@ ActiveRecord::Schema.define(version: 2025_11_16_072818) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "choice_art_styles", "art_styles"
+  add_foreign_key "choice_art_styles", "choices"
+  add_foreign_key "choices", "questions"
   add_foreign_key "post_images", "art_styles"
   add_foreign_key "post_images", "posts"
   add_foreign_key "posts", "users"
@@ -131,4 +171,6 @@ ActiveRecord::Schema.define(version: 2025_11_16_072818) do
   add_foreign_key "profiles", "users"
   add_foreign_key "relationships", "users", column: "followed_id"
   add_foreign_key "relationships", "users", column: "follower_id"
+  add_foreign_key "user_answers", "choices"
+  add_foreign_key "user_answers", "users"
 end
