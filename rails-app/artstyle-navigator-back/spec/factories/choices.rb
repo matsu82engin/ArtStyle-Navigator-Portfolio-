@@ -1,7 +1,7 @@
-FactoryBot.define do
-  factory :choice do
-    question { nil }
-    text { "MyString" }
-    label { "MyString" }
-  end
-end
+# FactoryBot.define do
+#   factory :choice do
+#     association :question
+#     sequence(:text) { |n| "選択肢#{n}" }
+#     label { "A" }
+#   end
+# end
