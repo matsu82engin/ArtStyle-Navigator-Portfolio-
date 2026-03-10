@@ -1,6 +1,6 @@
 <template>
   <div>
-    HomeManyArtStyle.vue
+    <!-- HomeManyArtStyle.vue -->
   </div>
 </template>
 

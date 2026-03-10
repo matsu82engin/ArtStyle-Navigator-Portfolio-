@@ -1,6 +1,6 @@
 <template>
   <div>
-    HomeFindMyArtStyleButton.vue
+    <!-- HomeFindMyArtStyleButton.vue -->
   </div>
 </template>
 
