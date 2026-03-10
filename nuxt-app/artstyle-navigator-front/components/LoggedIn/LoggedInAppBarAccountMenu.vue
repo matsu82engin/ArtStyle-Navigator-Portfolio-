@@ -10,7 +10,7 @@
         icon
         v-on="on"
       >
-        <v-icon>
+        <v-icon size="40">
           mdi-account-circle
         </v-icon>
       </v-btn>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    HomeAnotherArtStyle.vue
+    <!-- HomeAnotherArtStyle.vue -->
   </div>
 </template>
 

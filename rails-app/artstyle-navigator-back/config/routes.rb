@@ -25,6 +25,12 @@ Rails.application.routes.draw do
       # art_styles
       resources :art_styles, only: [:index]
 
+      # 問題
+      resources :questions, only: [:index]
+
+      # ユーザーの回答
+      resources :user_answers, only: [:create]
+
       # devise_token_auth から２つのコントローラを継承してカスタムコントローラを作成
       mount_devise_token_auth_for 'User', at: 'auth', controllers: {
         registrations: "api/v1/registrations",
