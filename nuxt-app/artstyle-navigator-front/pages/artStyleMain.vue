@@ -96,6 +96,7 @@
         </v-container>
       </v-img>
     </v-parallax>
+    <DiagnosisStartButton x-large />
 
     <!-- 全てのプロジェクトを表示 -->
     <v-container>

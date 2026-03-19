@@ -1,3 +1,5 @@
+
+
 const homePath = 'artStyleMain'
 
 export const state = () => ({
