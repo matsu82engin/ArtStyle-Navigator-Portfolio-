@@ -54,12 +54,8 @@ export const mutations = {
 export const actions = {
   // 質問一覧をAPIから取得
   async fetchQuestions({ commit }) {
-    try {
       const response = await this.$axios.get('/api/v1/questions')
       commit('setQuestions', response.data)
-    } catch (e) {
-      throw new Error('質問の取得に失敗しました')
-    }
   },
   // 回答を選択して次の問題へ
   selectAnswer({ commit, state }, choiceId) {
@@ -67,18 +63,26 @@ export const actions = {
     commit('setCurrentIndex', state.currentIndex + 1)
   },
   // 全回答をAPIに送信して結果を取得
-  async submitAnswers({ commit, state }) {
-    try {
-      const response = await this.$axios.post('/api/v1/user_answers', {
-        user_answer: {
-          choice_ids: state.answers
-        }
-      })
-      commit('setResult', response.data.art_style)
-      commit('setTiedStyles', response.data.tied_styles)
-    } catch (e) {
-      throw new Error(['結果の送信に失敗しました'])
-    }
+  // async submitAnswers({ commit, state }) {
+  //     const response = await this.$axios.post('/api/v1/user_answers', {
+  //       user_answer: {
+  //         choice_ids: state.answers
+  //       }
+  //     })
+  //     commit('setResult', response.data.art_style)
+  //     commit('setTiedStyles', response.data.tied_styles)
+  // },
+
+  async submitAndFinish({ commit, state }, choiceId) {
+    const response = await this.$axios.post('/api/v1/user_answers', {
+      user_answer: {
+        choice_ids: [...state.answers, choiceId]
+      }
+    })
+    commit('addAnswer', choiceId)
+    commit('setCurrentIndex', state.currentIndex + 1)
+    commit('setResult', response.data.art_style)
+    commit('setTiedStyles', response.data.tied_styles)
   },
   // 再診断時のリセット
   resetQuiz({ commit }) {

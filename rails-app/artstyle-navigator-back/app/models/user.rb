@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  has_one :profile, dependent: :destroy
+  has_one  :profile, dependent: :destroy
   has_many :posts, dependent: :destroy
   has_many :user_answers
   has_many :active_relationships, class_name: 'Relationship',

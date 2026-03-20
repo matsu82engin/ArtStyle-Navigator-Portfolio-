@@ -84,13 +84,22 @@ export default {
 
   methods: {
     async selectAnswer(choiceId) {
-      // 回答を記録して次の問題へ
-      await this.$store.dispatch('quiz/selectAnswer', choiceId)
+      const isLastQuestion = this.$store.state.quiz.currentIndex === this.$store.state.quiz.questions.length - 1
 
       // 全問回答したら結果を送信
-      if (this.isFinished) {
-        await this.$store.dispatch('quiz/submitAnswers')
-        this.$router.push('/diagnosis/result')
+      if (isLastQuestion) {
+        try {
+          // throw new Error('Debug Error');
+          await this.$store.dispatch('quiz/submitAndFinish', choiceId)
+          this.$router.push('/diagnosis/result')
+        } catch (error) {
+          this.$store.dispatch('getToast', {
+            msg: ['送信に失敗しました。もう一度お試しください'],
+          })
+        }
+      } else {
+        // 回答を記録して次の問題へ
+        await this.$store.dispatch('quiz/selectAnswer', choiceId)
       }
     }
   }

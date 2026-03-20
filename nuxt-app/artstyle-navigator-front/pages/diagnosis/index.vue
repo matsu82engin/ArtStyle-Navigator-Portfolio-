@@ -31,10 +31,16 @@ export default {
     async startDiagnosis() {
       // 再診断の場合に備えてリセット
       this.$store.dispatch('quiz/resetQuiz')
-      // 質問データを取得
-      await this.$store.dispatch('quiz/fetchQuestions')
-      // 質問ページへ遷移
-      this.$router.push('/diagnosis/quiz')
+      try {
+        // 質問データを取得
+        await this.$store.dispatch('quiz/fetchQuestions')
+        // 質問ページへ遷移
+        this.$router.push('/diagnosis/quiz')
+      } catch (error) {
+        this.$store.dispatch('getToast', {
+          msg: ['質問の読み込みに失敗しました。もう一度お試しください']
+        })
+      }
     }
   }
 }
