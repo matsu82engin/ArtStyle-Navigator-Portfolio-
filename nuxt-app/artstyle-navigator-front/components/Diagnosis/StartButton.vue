@@ -19,9 +19,7 @@ export default {
     }
   },
   methods: {
-    async startDiagnosis() {
-      this.$store.dispatch('quiz/resetQuiz')
-      await this.$store.dispatch('quiz/fetchQuestions')
+    startDiagnosis() {
       this.$router.push('/diagnosis')
     }
   }

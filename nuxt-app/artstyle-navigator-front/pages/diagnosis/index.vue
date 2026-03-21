@@ -32,6 +32,20 @@ export default {
       // 再診断の場合に備えてリセット
       this.$store.dispatch('quiz/resetQuiz')
       try {
+        const userId = this.$store.state.user.current?.id
+        const profile = await this.$axios.get(`/api/v1/users/${userId}/profiles`)
+          .catch(e => null)
+
+        if (!profile) {
+          this.$store.dispatch('getToast', {
+            msg: ['診断前にプロフィールを作成してください。ペンネームだけでOKです!','そのままでも送信できます!'],
+            color: 'info',
+            timeout: 6000
+          })
+          this.$router.push(`/users/${userId}/my-profile`)
+          return
+        }
+
         // 質問データを取得
         await this.$store.dispatch('quiz/fetchQuestions')
         // 質問ページへ遷移

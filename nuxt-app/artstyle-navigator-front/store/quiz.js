@@ -63,16 +63,6 @@ export const actions = {
     commit('setCurrentIndex', state.currentIndex + 1)
   },
   // 全回答をAPIに送信して結果を取得
-  // async submitAnswers({ commit, state }) {
-  //     const response = await this.$axios.post('/api/v1/user_answers', {
-  //       user_answer: {
-  //         choice_ids: state.answers
-  //       }
-  //     })
-  //     commit('setResult', response.data.art_style)
-  //     commit('setTiedStyles', response.data.tied_styles)
-  // },
-
   async submitAndFinish({ commit, state }, choiceId) {
     const response = await this.$axios.post('/api/v1/user_answers', {
       user_answer: {

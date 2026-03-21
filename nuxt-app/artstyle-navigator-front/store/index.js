@@ -1,12 +1,10 @@
-
-
 const homePath = 'artStyleMain'
 
 export const state = () => ({
   user: {
     current: null,
     profile: {
-      pen_name: null
+      pen_name: null,
     },
   },
   authentication: {
