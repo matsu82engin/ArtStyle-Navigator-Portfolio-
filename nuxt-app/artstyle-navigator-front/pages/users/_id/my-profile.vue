@@ -58,7 +58,7 @@
                 <span v-if="profile.ArtStyle !== '未判定'">{{ profile.ArtStyle }}</span>
                 <span v-else>
                   未判定
-                  <diagnosis-start-button :x-large="false" class="ml-2" />
+                  <diagnosis-start-button v-if="isOwnProfile" :x-large="false" class="ml-2" />
                 </span>
               </p>
               <p>よく使うペン: {{ profile.favoriteArtSupply || '未設定' }}</p>
