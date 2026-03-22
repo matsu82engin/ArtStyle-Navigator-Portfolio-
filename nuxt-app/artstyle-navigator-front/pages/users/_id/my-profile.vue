@@ -54,8 +54,12 @@
             <v-card-text>
               <p>ペンネーム: {{ profile.username }}</p>
               <p>
-                自分の絵柄: {{ profile.ArtStyle }}
-                <!-- ここでもし未判定なら絵柄判定をするページへの誘導を作る -->
+                自分の絵柄:
+                <span v-if="profile.ArtStyle !== '未判定'">{{ profile.ArtStyle }}</span>
+                <span v-else>
+                  未判定
+                  <diagnosis-start-button v-if="isOwnProfile" :x-large="false" class="ml-2" />
+                </span>
               </p>
               <p>よく使うペン: {{ profile.favoriteArtSupply || '未設定' }}</p>
               <p>自己紹介: {{ profile.bio }}</p>
@@ -275,7 +279,7 @@ export default {
       // プロフィールデータが存在する場合
       return {
         username: this.rawProfile.pen_name,
-        ArtStyle: this.rawProfile.art_style ? this.rawProfile.art_style.name : '未判定',
+        ArtStyle: this.rawProfile.art_style_name || '未判定',
         favoriteArtSupply: this.rawProfile.art_supply || null,
         bio: this.rawProfile.introduction || 'プロフィールを編集して自己紹介を書こう！',
         avatar_url: this.rawProfile.avatar_url || null

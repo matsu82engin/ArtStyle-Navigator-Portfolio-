@@ -80,7 +80,8 @@ module Api
           pen_name: profile.pen_name,
           art_supply: profile.art_supply,
           introduction: profile.introduction,
-          avatar_url: avatar_url(profile)
+          avatar_url: avatar_url(profile),
+          art_style_name: profile.art_style&.name
         }
       end
 
