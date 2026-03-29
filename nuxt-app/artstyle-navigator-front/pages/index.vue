@@ -1,7 +1,6 @@
 <template>
   <v-app>
     <home-app-bar
-      :menus="menus"
       :img-height="imgHeight"
     />
     <v-img
@@ -32,83 +31,52 @@
       </v-row>
     </v-img>
 
-    <v-sheet>
+    <v-sheet id="diagnosis">
       <v-container
-        fluid 
+        fluid
         :style="{ maxWidth: '1280px' }"
-        :menus="menus"
       >
-        <v-row 
-          v-for="(menu, i) in menus" 
-          :key="`menu-${i}`"
-        >
-          <v-col
-            :id="menu.title" 
-            cols="12"
-          >
-            <v-card flat>
-              <v-card-title class="justify-center display-1">
-                {{ (`${menu.content}`) }}
-              </v-card-title>
-              <v-card-text class="text-center">
-                {{ menu.subtitle }}
-              </v-card-text>
-            </v-card>
-          </v-col>
-
-          <v-col cols="12">
-             <div :is="`home-${menu.title}`" />  <!-- ここがコンポーネント -->
+        <v-row justify="center" class="my-8">
+          <v-col cols="12" class="text-center">
+            <h2 class="display-1 mb-6">さぁ、自分のなりたい絵柄を探しにいこう！</h2>
+            <diagnosis-start-button x-large />
           </v-col>
         </v-row>
       </v-container>
     </v-sheet>
+
+    <v-sheet id="about">
+      <v-container
+        fluid
+        :style="{ maxWidth: '1280px' }"
+      >
+        <v-row justify="center" class="my-8">
+          <v-col cols="12" class="text-center">
+            <h2 class="display-1 mb-4">このアプリについて</h2>
+            <p class="subtitle-1 mb-6">このサイトは貴方の描きたい絵柄を見つけるアプリケーションです</p>
+            <v-btn
+              color="primary"
+              outlined
+              large
+              to="/about"
+            >
+              詳しく見る
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-sheet>
+
     <app-footer /> <!-- footer コンポーネント -->
   </v-app>
 </template>
 
 <script>
-import HomeAbout from '~/components/Home/HomeAbout'
-import HomeAnotherArtStyle from '~/components/Home/HomeAnotherArtStyle'
-import HomeFindMyArtStyleButton from '~/components/Home/HomeFindMyArtStyleButton'
-import HomeManyArtStyle from '~/components/Home/HomeManyArtStyle'
-
 export default {
-  components: {
-    HomeAbout,
-    HomeAnotherArtStyle,
-    HomeFindMyArtStyleButton,
-    HomeManyArtStyle,
-  },
   middleware: ['logged-in-redirect'],
   data () {
     return {
       imgHeight: 500,
-      menus: [
-        {
-          title: 'about', 
-          value: 'About',
-          content: 'このアプリについて',
-          subtitle: 'このサイトは貴方の描きたい絵柄を見つけるアプリケーションです'
-        },
-        {
-          title: 'another-art-style',
-          value: 'SomeStyle',
-          content: 'いろいろな絵柄',
-          subtitle: '貴方の好きな絵柄は？'
-        },
-        {
-          title: 'find-my-art-style-button',
-          value: 'YourStyle',
-          content: 'さぁ、自分のなりたい絵柄を探しにいこう！',
-          subtitle: 'Push Button!!'
-        },
-        {
-          title: 'many-art-style',
-          value: 'Tips',
-          content: 'みんなの絵柄',
-          subtitle: '他の人の絵柄の書き方・コツを紹介'
-        }
-      ],
     }
   }
 }

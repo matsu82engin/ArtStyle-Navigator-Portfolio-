@@ -8,7 +8,7 @@ class Api::V1::UserAnswersController < ApplicationController
     answers = answer_params[:choice_ids].map do |choice_id|
       UserAnswer.find_or_create_by!(
         user: current_api_v1_user,
-        choice_id: choice_id
+        choice_id:
       )
     end
 
@@ -16,9 +16,9 @@ class Api::V1::UserAnswersController < ApplicationController
     choice_ids = answers.map(&:choice_id)
 
     scores = ChoiceArtStyle
-               .where(choice_id: choice_ids)
-               .group(:art_style_id)
-               .count
+             .where(choice_id: choice_ids)
+             .group(:art_style_id)
+             .count
 
     # 同点チェック
     max_score = scores.values.max
@@ -40,7 +40,7 @@ class Api::V1::UserAnswersController < ApplicationController
     # フロントに返す
     render json: {
       art_style: result_style.name,
-      tied_styles: tied_styles
+      tied_styles:
     }, status: :ok
   end
 

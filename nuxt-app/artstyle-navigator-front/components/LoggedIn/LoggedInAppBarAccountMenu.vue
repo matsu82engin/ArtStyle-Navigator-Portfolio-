@@ -91,7 +91,6 @@ export default {
         { name: 'マイページ', icon: 'mdi-account', link: userId ? { name: 'users-id-my-page', params: { id: userId } } : {} },
         { name: 'プロフィール', icon: 'mdi-card-account-details', link: userId ? { name: 'users-id-my-profile', params: { id: userId } } : {} },
         { name: 'アカウント設定', icon: 'mdi-account-cog', link: '/account/settings' },
-        { name: 'パスワード変更', icon: 'mdi-lock-outline', link: '/account/password' },
         { name: 'ログアウト', icon: 'mdi-logout-variant', divider: true }
       ];
     }

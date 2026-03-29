@@ -25,7 +25,6 @@ class Api::V1::UsersController < ApplicationController
   # GET /api/v1/users/:id/followers
   def followers
     # フォローされている一覧データをレスポンス
-    users = @user.followers
     users = @user.followers.includes(:profile)
     render json: users.map { |user| user_with_profile_json(user) }, status: :ok
   end

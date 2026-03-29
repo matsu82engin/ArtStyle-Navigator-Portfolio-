@@ -28,7 +28,8 @@ export const state = () => ({
     redirectPaths: [
       'index',  // ('/')
       'signup', // (新規登録画面)
-      'login'   // (ログイン画面)
+      'login',  // (ログイン画面)
+      'about' // (アプリ解説)
     ]
   },
   project: {
