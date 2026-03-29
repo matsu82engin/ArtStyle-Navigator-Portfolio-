@@ -164,11 +164,7 @@ ActiveRecord::Base.transaction do
   # 投稿作成
   puts '--- 投稿作成中 ---'
 
-  image_paths = [
-    Rails.root.join('spec/support/test_images/sample.jpg'),
-    Rails.root.join('spec/support/test_images/sample2.jpg'),
-    Rails.root.join('spec/support/test_images/resize_sample.jpg')
-  ]
+  image_paths = Dir[Rails.root.join('db/images/*')].map { |p| Pathname.new(p) }
 
   # 画像存在チェック
   unless image_paths.all? { |p| File.exist?(p) }

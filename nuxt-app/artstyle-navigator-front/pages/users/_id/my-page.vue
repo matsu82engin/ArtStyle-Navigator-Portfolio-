@@ -30,9 +30,11 @@
               <v-icon v-else size="120">mdi-account-circle</v-icon>
             </v-avatar>
 
-            <!-- ユーザー名と特徴 -->
-            <h2 class="mb-2">ユーザー名</h2>
-            <h2 v-if="profile" class="mb-2">{{ profile.username }}</h2>
+            <!-- ユーザー名 -->
+            <h2 v-if="profile" class="mb-2">
+              <v-icon>mdi-fountain-pen</v-icon>
+              ペンネーム：{{ profile.username }}
+            </h2>
 
             <p class="text-subtitle-1">自己紹介</p>
             <p v-if="profile" class="text-subtitle-1">{{ profile.bio }}</p> 
@@ -136,13 +138,21 @@
             :key="post.id"
             class="mt-4"
           >
-            <!-- ここには元の <v-card> の中身（v-card-titleからv-card-actionsまで）をそのまま入れる -->
-            <v-card-title class="d-flex align-center">
+            <v-card-title>
               <!-- アバターと名前 -->
-              <!-- <v-avatar size="40" class="mr-3">
-                <img src="#" alt="User Avatar" />
-              </v-avatar> -->
-              <span class="font-weight-medium">ユーザー名</span>
+              <div class="d-flex align-center">
+                <v-avatar size="36" class="mr-2">
+                  <v-img
+                    v-if="profileUser && profileUser.avatar_url"
+                    :src="profile.avatar_url"
+                    alt="User Avatar"
+                  />
+                  <v-icon v-else size="36">mdi-account-circle</v-icon>
+                </v-avatar>
+                <span v-if="profile" class="font-weight-medium">
+                  {{ profile.username }}
+                </span>
+              </div>
 
               <v-spacer></v-spacer>
 

@@ -3,28 +3,24 @@
     <v-img
       :src="homeImg"
       :aspect-ratio="16/9"
-      gradient="to top right, rgba(100,115,201,.33), rgba(25,32,72,.7)"
+      gradient="to top right, rgba(100,115,201,.1), rgba(25,32,72,.3)"
     >
       <v-container fill-height>
         <v-row justify="center" align="center">
           <v-col cols="12" sm="8" md="6" class="text-center">
+            <div style="background: rgba(0,0,0,0.25); border-radius: 16px; padding: 32px;">
+              <h1
+                class="text-h3 font-weight-bold white--text mb-4"
+              >
+                あなたの好みの<br>絵柄を診断しよう
+              </h1>
 
-            <h1
-              class="text-h3 font-weight-bold white--text mb-4"
-              style="text-shadow: 1px 1px 6px rgba(0,0,0,0.9)"
-            >
-              あなたの好みの<br>絵柄を診断しよう
-            </h1>
+              <p class="text-body-1 white--text mb-8">
+                7つの質問に答えるだけで、あなたの好みがわかります。
+              </p>
 
-            <p
-              class="text-body-1 white--text mb-8"
-              style="text-shadow: 1px 1px 4px rgba(0,0,0,0.9)"
-            >
-              7つの質問に答えるだけで、あなたの好みがわかります。
-            </p>
-
-            <diagnosis-start-button x-large />
-
+              <diagnosis-start-button x-large />
+            </div>
           </v-col>
         </v-row>
       </v-container>

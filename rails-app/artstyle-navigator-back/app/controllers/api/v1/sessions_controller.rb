@@ -99,7 +99,7 @@ module Api
           value: refresh_token,
           expires: refresh_token_expiration,
           secure: Rails.env.production?,
-          same_site: Rails.env.production? ? :none : :lax,
+          same_site: Rails.env.production? ? :none : :lax
         }
       end
 
