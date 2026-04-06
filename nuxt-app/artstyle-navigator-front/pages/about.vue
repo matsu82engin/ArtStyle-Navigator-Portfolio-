@@ -26,8 +26,8 @@
             <p class="grey--text mt-2">3つの主な機能を提供しています</p>
           </v-col>
           <v-col
-            v-for="feature in features"
-            :key="feature.title"
+            v-for="(feature, i) in features"
+            :key="`feature-${i}`"
             cols="12"
             md="4"
           >
@@ -54,7 +54,7 @@
             <v-timeline dense>
               <v-timeline-item
                 v-for="(step, i) in steps"
-                :key="i"
+                :key="`step-${i}`" 
                 color="primary"
                 small
               >
