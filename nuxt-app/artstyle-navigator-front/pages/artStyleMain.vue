@@ -78,6 +78,54 @@
             </v-col>
           </v-row>
 
+          <!-- フォロー中ユーザーの投稿 -->
+          <v-container class="mt-8">
+            <v-row justify="center">
+              <v-col cols="12" sm="10" md="8">
+
+                <h2 class="text-h5 font-weight-bold mb-4">みんなの投稿</h2>
+                <v-divider class="mb-6" />
+
+                <!-- ローディング -->
+                <div v-if="followingLoading" class="text-center py-8">
+                  <v-progress-circular indeterminate color="primary" />
+                </div>
+
+                <!-- 投稿なし -->
+                <div v-else-if="followingPosts.length === 0" class="text-center grey--text py-8">
+                  <p>フォロー中のユーザーの投稿はありません</p>
+                </div>
+
+                <!-- 投稿一覧 -->
+                <v-row v-else>
+                  <v-col
+                    v-for="post in followingPosts"
+                    :key="post.id"
+                    cols="6"
+                    sm="4"
+                    md="3"
+                  >
+                    <v-card
+                      hover
+                      :to="{ name: 'users-id-my-page', params: { id: post.user_id } }"
+                    >
+                      <v-img
+                        v-if="post.post_images && post.post_images.length > 0"
+                        :src="post.post_images[0].image_url"
+                        :alt="post.title"
+                        aspect-ratio="1"
+                      />
+                      <v-card-subtitle class="text-truncate">
+                        {{ post.title }}
+                      </v-card-subtitle>
+                    </v-card>
+                  </v-col>
+                </v-row>
+
+              </v-col>
+            </v-row>
+          </v-container>
+
         </v-col>
       </v-row>
     </v-container>
@@ -96,7 +144,9 @@ export default {
     return {
       homeImg,
       posts: [],
-      loading: false
+      loading: false,
+      followingPosts: [],
+      followingLoading: false 
     }
   },
 
@@ -107,7 +157,10 @@ export default {
   },
 
   async mounted() {
-    await this.fetchMyPosts()
+    await Promise.all([
+      this.fetchMyPosts(),
+      this.fetchFollowingPosts()
+    ])
   },
 
   methods: {
@@ -126,7 +179,24 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+
+    async fetchFollowingPosts() {
+      this.followingLoading = true
+      try {
+        const response = await this.$axios.get(
+          `/api/v1/users/${this.currentUserId}/following_posts`
+        )
+        this.followingPosts = response.data
+      } catch(e) {
+        this.$store.dispatch('getToast', {
+          msg: ['フォロー中ユーザーの投稿の取得に失敗しました'],
+        })
+      } finally {
+        this.followingLoading = false
+      }
     }
+
   }
 }
 </script>

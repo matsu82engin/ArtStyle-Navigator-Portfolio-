@@ -7,6 +7,7 @@ Rails.application.routes.draw do
           get :following
           get :followers
           get :following_state
+          get :following_posts
         end
         
         resource :profiles, only: [:show, :update, :destroy] do

@@ -1,6 +1,6 @@
 class Api::V1::UsersController < ApplicationController
   before_action :authenticate_api_v1_user!, except: [:index]
-  before_action :set_user, only: [:show, :following, :followers, :following_state]
+  before_action :set_user, only: [:show, :following, :followers, :following_state, :following_posts]
 
   # GET /api/v1/users
   def index
@@ -37,6 +37,16 @@ class Api::V1::UsersController < ApplicationController
     }
   end
 
+  def following_posts
+    following_user_ids = @user.following.pluck(:id)
+
+    posts = Post.where(user_id: following_user_ids)
+                .includes(post_images: { image_attachment: :blob })
+                .order(created_at: :desc)
+
+    render json: posts.map { |post| following_post_json(post) }, status: :ok
+  end
+
   private
 
   def set_user
@@ -51,6 +61,21 @@ class Api::V1::UsersController < ApplicationController
       pen_name: profile&.pen_name,
       introduction: profile&.introduction,
       avatar_url: profile&.avatar_url
+    }
+  end
+
+  def following_post_json(post)
+    {
+      id: post.id,
+      title: post.title,
+      user_id: post.user_id,
+      post_images: post.post_images.map do |image|
+        {
+          id: image.id,
+          image_url: image.image_url,
+          caption: image.caption
+        }
+      end
     }
   end
 end
