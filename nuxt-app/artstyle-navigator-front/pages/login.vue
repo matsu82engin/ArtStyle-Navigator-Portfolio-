@@ -29,12 +29,12 @@
             @click:append="show = !show"
           />
           <v-card-actions>
-            <nuxt-link
+            <!-- <nuxt-link
 	            to="#"
               class="body-2 text-decoration-none"
             >
             パスワードを忘れた方はこちら
-            </nuxt-link>
+            </nuxt-link> -->
           </v-card-actions>
           <v-card-text class="px-0">
             <v-btn

@@ -17,6 +17,9 @@ Rails.application.routes.draw do
         resources :posts, only: [:index, :create, :destroy]
       end
 
+      # 全ユーザーの投稿
+      resources :all_posts, only: [:index]
+
       # フォロー関係
       resources :relationships, only: [:create, :destroy]
 

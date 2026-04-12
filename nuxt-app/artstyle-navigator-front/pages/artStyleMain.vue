@@ -130,6 +130,26 @@
       </v-row>
     </v-container>
 
+    <!-- 全ての投稿を見るページへのリンク -->
+    <v-container class="mt-10 mb-10">
+      <v-row justify="center">
+        <v-col cols="12" sm="8" md="6" class="text-center">
+          <p class="text-body-1 grey--text mb-4">もっと多くの絵柄を見たいならコチラ</p>
+          <v-btn
+            color="deep-purple"
+            dark
+            large
+            rounded
+            elevation="4"
+            :to="{ name: 'posts' }"
+          >
+            <v-icon left>mdi-palette</v-icon>
+            みんなの投稿を見る
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-container>
+
   </div>
 </template>
 
