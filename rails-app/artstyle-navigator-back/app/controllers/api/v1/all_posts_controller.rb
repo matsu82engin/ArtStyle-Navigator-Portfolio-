@@ -3,8 +3,13 @@ class Api::V1::AllPostsController < ApplicationController
 
   def index
     posts = Post
-      .includes(post_images: :art_style)
-      .order(created_at: :desc)
+            .includes(
+              post_images: [
+                :art_style,
+                { image_attachment: :blob }
+              ]
+            )
+            .order(created_at: :desc)
 
     if params[:art_style_id].present?
       posts = posts.joins(:post_images)
