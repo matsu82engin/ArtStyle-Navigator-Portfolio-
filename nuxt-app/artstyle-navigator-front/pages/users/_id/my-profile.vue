@@ -53,14 +53,32 @@
 
             <v-card-text>
               <p>ペンネーム: {{ profile.username }}</p>
-              <p>
-                自分の絵柄:
-                <span v-if="profile.ArtStyle !== '未判定'">{{ profile.ArtStyle }}</span>
-                <span v-else>
-                  未判定
-                  <diagnosis-start-button v-if="isOwnProfile" :x-large="false" class="ml-2" />
-                </span>
-              </p>
+              <div class="art-style-box">
+                <div class="art-style-label">
+                  絵柄
+                </div>
+
+                <v-divider class="my-3" />
+
+                <div
+                  v-if="profile.ArtStyle !== '未判定'"
+                  class="art-style-name"
+                >
+                  {{ profile.ArtStyle }}
+                </div>
+
+                <div v-else>
+                  <span class="art-style-undetermined">
+                    未判定
+                  </span>
+
+                  <diagnosis-start-button
+                    v-if="isOwnProfile"
+                    :x-large="false"
+                    class="ml-2"
+                  />
+                </div>
+              </div>
               <p>よく使うペン: {{ profile.favoriteArtSupply || '未設定' }}</p>
               <p>自己紹介: {{ profile.bio }}</p>
             </v-card-text>
@@ -468,6 +486,25 @@ export default {
   top: -6px;
   right: -8px;
   background-color: white;
+}
+
+.art-style-box {
+  padding: 16px;
+  margin: 16px 0;
+  text-align: center;
+  border-radius: 12px;
+  background-color: #f5f5f5;
+}
+
+.art-style-label {
+  font-size: 15px;
+  color: #777;
+}
+
+.art-style-name {
+  margin-top: 4px;
+  font-size: 24px;
+  font-weight: bold;
 }
 
 </style>
