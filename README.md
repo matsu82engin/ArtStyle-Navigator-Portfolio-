@@ -110,11 +110,6 @@ devise_token_auth は config.change_headers_on_each_request = true によりリ�
 
 学習過程で生じた設計ミスですが、後から仕様を理解し直し、優先順位をつけて段階的に改善するプロセスとして捉えています。
 
-## ■今後の改善点
-- Docker で環境構築<br>
-***CentOS7.9で作っていたのでパッケージがEOLになっています。** <br>
-このままではセキュリティ的に危険なので、Docker を使う際に CentOS7からバージョンを変更予定です。
-
 
 ## ■機能一覧
 ○ログイン機能
@@ -169,4 +164,4 @@ devise_token_auth は config.change_headers_on_each_request = true によりリ�
 
 ◇開発環境
 - Visual Studio Code
-- Docker(予定)
+- Docker

@@ -4,7 +4,11 @@ node_modules/
 # GitHub Actions の一時的除外
 .github/
 
+# DB のデータ
+db_data/
+
 #その他
 id_rsa
 .lsp
 deps.edn
+.env
