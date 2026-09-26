@@ -1,0 +1,36 @@
+# git関連
+.git
+.gitignore
+
+# 秘密情報（絶対に含めない）
+.env
+.env.*
+config/master.key
+
+# bundler
+.bundle
+vendor/bundle
+
+# Rails
+log/*
+tmp/*
+storage/*
+public/assets
+public/packs
+public/packs-test
+!log/.keep
+!tmp/.keep
+!storage/.keep
+
+# テスト・カバレッジ
+coverage
+
+# Node
+node_modules
+
+# Editor
+.vscode
+.idea
+
+# macOS
+.DS_Store
