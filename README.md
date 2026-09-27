@@ -110,6 +110,74 @@ devise_token_auth は config.change_headers_on_each_request = true によりリ�
 
 学習過程で生じた設計ミスですが、後から仕様を理解し直し、優先順位をつけて段階的に改善するプロセスとして捉えています。
 
+## 開発環境について
+
+以前は Vagrant + VirtualBoxで開発していましたが、Dockerへ移行しました。
+
+### 移行理由：
+
+- **起動速度**：VMはOS全体を仮想化するため起動が遅いが、Dockerはホストのカーネルを共有するため数秒〜数十秒で起動する
+- **リソース効率**：VM専用のメモリ・ディスク確保が不要になり、より軽量
+- **構成のコード化**：Dockerfile / docker-compose.yml により、環境構成がバージョン管理・共有可能になる
+- **実務での採用率**：コンテナ技術の実務での採用率を踏まえ、実践的なスキルとして習得
+
+### 移行の過程で直面した技術的な課題(一例)：
+- Debian bullseyeのEOLに伴うapt-getのリポジトリエラーへの対応
+- Node.jsコンテナにおける volumes マウントと node_modules / dist の競合問題への対応
+- SPA(フロントエンド)とAPI(バックエンド)間のCORS設定、コンテナ間通信における名前解決の違いへの対応
+
+## ローカルでの開発環境構築(開発者向け)
+
+> 動作の確認だけであれば、上記の本番環境URLをご覧いただくのが簡単です。
+
+### 前提
+
+- Docker Desktop がインストールされていること
+
+### セットアップ手順
+
+1. リポジトリをclone
+
+   git clone <リポジトリURL>
+
+2. `rails-app/artstyle-navigator-back/.env` を作成し、以下を設定
+
+```ruby
+   DATABASE_DEV_USER=
+   DATABASE_DEV_PASSWORD=
+   DATABASE_DEV_HOST=db
+   DATABASE_DEV_NAME=
+   MYSQL_ROOT_PASSWORD=
+   RAILS_ENV=development
+```
+3. `rails-app/artstyle-navigator-back/config/master.key` を配置
+
+   このファイルは `.gitignore` により意図的にリポジトリに含まれていません。<br>
+   動作確認には別途鍵の共有が必要です。
+
+4. リポジトリ直下に `.env` を作成し、以下を設定
+
+  ```ruby
+   DATABASE_DEV_USER=
+   DATABASE_DEV_PASSWORD=
+   DATABASE_DEV_HOST=db
+   DATABASE_DEV_NAME=
+   MYSQL_ROOT_PASSWORD=
+  ```
+
+5. コンテナを起動
+
+   `docker compose up`
+
+6. (初回のみ)別ターミナルでマイグレーションとシード投入
+```bash
+   docker compose exec backend bin/rails db:migrate RAILS_ENV=development
+   docker compose exec backend bin/rails db:seed RAILS_ENV=development
+```
+7. ブラウザでアクセス
+
+   http://localhost:8000
+
 
 ## ■機能一覧
 ○ログイン機能
