@@ -126,6 +126,8 @@ devise_token_auth は config.change_headers_on_each_request = true によりリ�
 - Node.jsコンテナにおける volumes マウントと node_modules / dist の競合問題への対応
 - SPA(フロントエンド)とAPI(バックエンド)間のCORS設定、コンテナ間通信における名前解決の違いへの対応
 
+Qiita 技術記事：[CentOS 7 の VM 環境から Docker へ移行：Rails 6 + MySQL 8.0 のバックエンドを Docker 化する（レガシー環境）](https://qiita.com/matsuura_eng/items/c05ad531294caad360fc)
+
 ## ローカルでの開発環境構築(開発者向け)
 
 > 動作の確認だけであれば、上記の本番環境URLをご覧いただくのが簡単です。
