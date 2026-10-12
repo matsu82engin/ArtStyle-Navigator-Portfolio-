@@ -12,27 +12,5 @@ module TokenGenerateService
 
       nil
     end
-
-    # リフレッシュトークンのインスタンス生成
-    def decode_refresh_token(token)
-      UserAuth::RefreshToken.new(token:)
-    end
-
-    # リフレッシュトークンのuserを返す
-    def from_refresh_token(token)
-      decode_refresh_token(token).entity_for_user
-    end
-  end
-
-  ## インスタンスメソッド
-
-  # リフレッシュトークンのインスタンス生成
-  def encode_refresh_token
-    UserAuth::RefreshToken.new(user_id: id)
-  end
-
-  # リフレッシュトークンを返す
-  def to_refresh_token
-    encode_refresh_token.token
   end
 end

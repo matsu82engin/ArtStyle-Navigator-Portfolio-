@@ -7,11 +7,6 @@ export const state = () => ({
       pen_name: null,
     },
   },
-  authentication: {
-    token: null,
-    expires: 0,
-    payload: {}
-  },
   styles: {
     homeAppBarHeight: 56
   },
@@ -59,15 +54,6 @@ export const mutations = {
   setCurrentUser (state, payload) {
     state.user.current = payload
   },
-  setAuthToken (state, payload) {
-    state.authentication.token = payload
-  },
-  setAuthExpires (state, payload) {
-    state.authentication.expires = payload
-  },
-  setAuthPayload (state, payload) {
-    state.authentication.payload = payload
-  },
   setProjectList (state, payload) {
     state.project.list = payload
   },
@@ -98,17 +84,6 @@ export const actions = {
     } else {
       commit('setProfileUser', null);
     }
-  },
-  getAuthToken({ commit }, token) {
-    commit('setAuthToken', token)
-  },
-  getAuthExpires ({ commit }, expires) {
-    expires = expires || 0
-    commit('setAuthExpires', expires)
-  },
-  getAuthPayload ({ commit }, jwtPayload) {
-    jwtPayload = jwtPayload || {}
-    commit('setAuthPayload', jwtPayload)
   },
   getProjectList({ commit }, projects) {
     projects = projects || []

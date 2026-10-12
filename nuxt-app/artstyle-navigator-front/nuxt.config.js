@@ -70,10 +70,6 @@ export default {
     // 'nuxt-client-init-module',
   ],
 
-  router: {
-    middleware :['refresh-access-token'],
-  },
-
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
@@ -128,7 +124,6 @@ export default {
         endpoints: {
           login: { url: '/api/v1/auth/sign_in', method: 'post' },
           logout: { url: '/api/v1/auth/sign_out', method: 'delete' },
-          refresh: { url: '/api/v1/sessions/refresh', method: 'post' },
           // user エンドポイントを設定する
           // user: {url: '/api/v1/auth/validate_token', method: 'get', propertyName: false},
           user: false

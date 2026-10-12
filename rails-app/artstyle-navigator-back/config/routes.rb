@@ -40,10 +40,6 @@ Rails.application.routes.draw do
         registrations: "api/v1/registrations",
         sessions: "api/v1/sessions"
       }
-      
-      devise_scope :api_v1_user do
-        post 'sessions/refresh', to: 'sessions#refresh'
-      end
     end
   end
 

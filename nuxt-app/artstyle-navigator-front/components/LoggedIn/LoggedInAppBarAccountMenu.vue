@@ -114,7 +114,6 @@ export default {
           this.$cookies.remove('uid', options);
           this.$cookies.remove('client', options);
           this.$cookies.remove('token-type', options);
-          this.$cookies.remove('refresh_token', options);
           window.localStorage.removeItem('persisted-key');
           this.$router.push('/');
         })
