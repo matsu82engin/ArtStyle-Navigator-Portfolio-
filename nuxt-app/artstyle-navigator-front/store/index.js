@@ -36,7 +36,8 @@ export const state = () => ({
     msg: null,
     color: 'error',
     timeout: 4000
-  }
+  },
+  pendingToast: null,
 })
 
 export const getters = {
@@ -65,7 +66,10 @@ export const mutations = {
   },
   setRemeberPath (state, payload) {
     state.loggedIn.rememberPath = payload
-  }
+  },
+  setPendingToast (state, payload) {
+    state.pendingToast = payload
+  },
 }
 
 export const actions = {
@@ -101,6 +105,9 @@ export const actions = {
     color = color || 'error'
     timeout = timeout || 4000
     commit('setToast', { msg, color, timeout })
+  },
+  getPendingToast ({ commit }, toast) {
+    commit('setPendingToast', toast)
   },
   // ログイン前ユーザーがアクセスしたルートを記憶する
   getRememberPath({ state, commit }, { name, params }) {

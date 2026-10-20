@@ -2,7 +2,6 @@ class Authentication {
   constructor (ctx) {
     this.store = ctx.store
     this.$axios = ctx.$axios
-    this.$auth = ctx.$auth
   }
 
   get user () {
@@ -29,6 +28,6 @@ class Authentication {
   }
 }
 
-export default ({ store, $axios, $auth }, inject) => {
-  inject('authentication', new Authentication({ store, $axios, $auth }))
+export default ({ store, $axios }, inject) => {
+  inject('authentication', new Authentication({ store, $axios }))
 }
