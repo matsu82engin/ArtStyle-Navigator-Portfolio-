@@ -43,6 +43,8 @@
 </template>
 
 <script>
+import { clearAuthCookies } from '@/utils/authCookies.js'
+
 export default {
   props: {
     error: {
@@ -82,18 +84,16 @@ export default {
     console.log('Error object:', this.error)
     // 認証エラーの場合はVuexを初期化する(セッションはサーバで削除済み)
     if (this.error.statusCode === 401) {
-      await this.$auth.logout();
-      await this.$authentication.resetVuex();
-      const isProd = process.env.NODE_ENV === 'production';
-      const options = {
-        secure: isProd,
-        sameSite: isProd ? 'None' : 'Lax'
-      };
-      this.$cookies.remove('access-token', options);
-      this.$cookies.remove('uid', options);
-      this.$cookies.remove('client', options);
-      this.$cookies.remove('token-type', options);
-      localStorage.clear();
+      try {
+        await this.$auth.logout();
+      } catch (error) {
+        console.error('ログアウトエラー：', error);
+      } finally {
+        this.$auth.reset();
+        this.$authentication.logoutAdd();
+        clearAuthCookies();
+        localStorage.clear();
+      }
     }
   },
   methods: {

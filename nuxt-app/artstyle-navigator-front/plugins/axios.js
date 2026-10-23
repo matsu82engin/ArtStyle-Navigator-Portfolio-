@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie'
+import { clearAuthCookies } from '@/utils/authCookies'
 
 export default function({ $axios, isDev, app, store }) {
   let isHandlingUnauthorized = false
@@ -69,13 +70,9 @@ export default function({ $axios, isDev, app, store }) {
     store.dispatch('getRememberPath', currentRoute)
     store.dispatch('getPendingToast', { msg: ['セッションの有効期限が切れました。もう一度ログインしてください'] })
 
-    app.$authentication.logoutAdd()
-    app.$auth.reset()
-
-    // 認証用 Cookie を削除
-    const isProd = process.env.NODE_ENV === 'production'
-    const options = { secure: isProd, sameSite: isProd ? 'None' : 'Lax' }
-    ;['access-token', 'client', 'uid', 'token-type'].forEach(key => Cookies.remove(key, options))
+    app.$authentication.logoutAdd();
+    app.$auth.reset();
+    clearAuthCookies();
 
     app.router.push('/login').catch(() => {}).finally(() => {
       isHandlingUnauthorized = false
