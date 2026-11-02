@@ -106,7 +106,7 @@ devise_token_auth は config.change_headers_on_each_request = true によりリ�
 - 「バッチリクエスト問題」（同時リクエスト時に、古いトークンで401になる問題）について、<br> 
   複数タブ・連続リクエストを開発環境と本番環境で手動確認し、gem 既定の batch_request_buffer_throttle（5秒）のままで問題が出ないことを確認した
 
-【現在の構成と、HttpOnly Cookie を採用しなかった理由】
+### 【現在の構成と、HttpOnly Cookie を採用しなかった理由】
 認証情報は Cookie に保存し、リクエスト時に JavaScript がヘッダーに載せて API に送る方式です。<br>
 この Cookie は JavaScript から読めるため、XSS が起きた場合は盗まれる可能性があります。
 
