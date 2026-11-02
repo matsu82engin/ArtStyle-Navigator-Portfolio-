@@ -7,11 +7,6 @@ export const state = () => ({
       pen_name: null,
     },
   },
-  authentication: {
-    token: null,
-    expires: 0,
-    payload: {}
-  },
   styles: {
     homeAppBarHeight: 56
   },
@@ -41,7 +36,8 @@ export const state = () => ({
     msg: null,
     color: 'error',
     timeout: 4000
-  }
+  },
+  pendingToast: null,
 })
 
 export const getters = {
@@ -59,15 +55,6 @@ export const mutations = {
   setCurrentUser (state, payload) {
     state.user.current = payload
   },
-  setAuthToken (state, payload) {
-    state.authentication.token = payload
-  },
-  setAuthExpires (state, payload) {
-    state.authentication.expires = payload
-  },
-  setAuthPayload (state, payload) {
-    state.authentication.payload = payload
-  },
   setProjectList (state, payload) {
     state.project.list = payload
   },
@@ -79,7 +66,10 @@ export const mutations = {
   },
   setRemeberPath (state, payload) {
     state.loggedIn.rememberPath = payload
-  }
+  },
+  setPendingToast (state, payload) {
+    state.pendingToast = payload
+  },
 }
 
 export const actions = {
@@ -99,17 +89,6 @@ export const actions = {
       commit('setProfileUser', null);
     }
   },
-  getAuthToken({ commit }, token) {
-    commit('setAuthToken', token)
-  },
-  getAuthExpires ({ commit }, expires) {
-    expires = expires || 0
-    commit('setAuthExpires', expires)
-  },
-  getAuthPayload ({ commit }, jwtPayload) {
-    jwtPayload = jwtPayload || {}
-    commit('setAuthPayload', jwtPayload)
-  },
   getProjectList({ commit }, projects) {
     projects = projects || []
     commit('setProjectList', projects)
@@ -126,6 +105,9 @@ export const actions = {
     color = color || 'error'
     timeout = timeout || 4000
     commit('setToast', { msg, color, timeout })
+  },
+  getPendingToast ({ commit }, toast) {
+    commit('setPendingToast', toast)
   },
   // ログイン前ユーザーがアクセスしたルートを記憶する
   getRememberPath({ state, commit }, { name, params }) {

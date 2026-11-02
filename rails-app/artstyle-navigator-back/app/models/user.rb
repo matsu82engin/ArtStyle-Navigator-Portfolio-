@@ -19,7 +19,7 @@ class User < ApplicationRecord
   devise  :database_authenticatable, :registerable,
           :recoverable, :rememberable, :validatable
 
-  # token (refresh_token)生成モジュール
+  # access-token のインスタンスからユーザー情報を取得するモジュール
   include TokenGenerateService
   include DeviseTokenAuth::Concerns::User
   before_save { self.email = email.downcase }
@@ -28,16 +28,6 @@ class User < ApplicationRecord
   validates :email, uniqueness: true, length: { maximum: 255 }
   # パスワード確認のキーがない場合に更新できてしまうことへの対策
   validates :password_confirmation, presence: true, if: -> { password.present? }
-
-  # リフレッシュトークンのJWT IDを保存
-  def remember(jti)
-    update!(refresh_jti: jti)
-  end
-
-  # リフレッシュトークンのJWT IDを削除
-  def forget
-    update!(refresh_jti: nil)
-  end
 
   # 認可のヘルパーメソッド
   # リソース所有者かどうか

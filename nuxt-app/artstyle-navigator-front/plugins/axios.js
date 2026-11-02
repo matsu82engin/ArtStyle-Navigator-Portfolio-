@@ -1,6 +1,9 @@
 import Cookies from 'js-cookie'
+import { clearAuthCookies } from '@/utils/authCookies'
 
-export default function({ $axios, isDev }) {
+export default function({ $axios, isDev, app, store }) {
+  let isHandlingUnauthorized = false
+
   $axios.onRequest(config => {
     config.timeout = 80000;
     config.headers.common['X-Requested-With'] = 'XMLHttpRequest'
@@ -48,5 +51,31 @@ export default function({ $axios, isDev }) {
       console.error('エラーが発生しました:', error);
       console.error('エラーレスポンス:', error.response);
     }
+
+    const status = error.response && error.response.status
+    const url = (error.config && error.config.url) || ''
+    const isAuthRequest = url.includes('/auth/sign_in') || url.includes('/auth/sign_out')
+
+    if (status === 401 && !isAuthRequest && !isHandlingUnauthorized) {
+      handleUnauthorized()
+    }
   });
+
+  function handleUnauthorized() {
+    const currentRoute = app.router.currentRoute
+    if (currentRoute.path === '/login') return
+
+    isHandlingUnauthorized = true
+
+    store.dispatch('getRememberPath', currentRoute)
+    store.dispatch('getPendingToast', { msg: ['セッションの有効期限が切れました。もう一度ログインしてください'] })
+
+    app.$authentication.logoutAdd();
+    app.$auth.reset();
+    clearAuthCookies();
+
+    app.router.push('/login').catch(() => {}).finally(() => {
+      isHandlingUnauthorized = false
+    })
+  }
 }

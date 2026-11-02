@@ -83,6 +83,8 @@
 </template>
 
 <script>
+import { clearAuthCookies } from '@/utils/authCookies.js'
+
 export default {
   computed: {
     menus() {
@@ -95,33 +97,47 @@ export default {
       ];
     }
   },
-  methods: {
-    logoutUser(){
-      this.$auth.logout()
-        .then(() => {
-          this.$authentication.logoutAdd();
-          console.log('ログアウト成功');
 
-          const isProd = process.env.NODE_ENV === 'production';
-          const options = {
-            secure: isProd,
-            sameSite: isProd ? 'None' : 'Lax'
-          };
+  methods: {
+    // logoutUser(){
+    //   this.$auth.logout()
+    //     .then(() => {
+    //       this.$authentication.logoutAdd();
+    //       console.log('ログアウト成功');
+
+    //       const isProd = process.env.NODE_ENV === 'production';
+    //       const options = {
+    //         secure: isProd,
+    //         sameSite: isProd ? 'None' : 'Lax'
+    //       };
           
-          // ログアウト成功時の処理
-          // Cookie からトークンなどを削除
-          this.$cookies.remove('access-token', options);
-          this.$cookies.remove('uid', options);
-          this.$cookies.remove('client', options);
-          this.$cookies.remove('token-type', options);
-          this.$cookies.remove('refresh_token', options);
-          window.localStorage.removeItem('persisted-key');
-          this.$router.push('/');
-        })
-        .catch((error) => {
-          // ネットワークによるログアウト失敗時の処理
-          console.error('ログアウトエラー:', error);
-        })
+    //       // ログアウト成功時の処理
+    //       // Cookie からトークンなどを削除
+    //       this.$cookies.remove('access-token', options);
+    //       this.$cookies.remove('uid', options);
+    //       this.$cookies.remove('client', options);
+    //       this.$cookies.remove('token-type', options);
+    //       window.localStorage.removeItem('persisted-key');
+    //       this.$router.push('/');
+    //     })
+    //     .catch((error) => {
+    //       // ネットワークによるログアウト失敗時の処理
+    //       console.error('ログアウトエラー:', error);
+    //     })
+    // },
+    async logoutUser() {
+      try {
+        await this.$auth.logout();
+        console.log('ログアウト成功！');
+      } catch (error) {
+        console.error('ログアウトエラー：', error);
+      } finally {
+        this.$auth.reset(); // logoutが途中で失敗してauthモジュールの状態が「ログイン済み」のまま残るのを防ぐための、念のための呼び出し
+        this.$authentication.logoutAdd(); // Vuex の認証情報削除
+        window.localStorage.removeItem('persisted-key'); // localStorage の認証情報削除
+        clearAuthCookies(); // Cookies の認証情報削除
+        this.$router.push('/');
+      }
     },
   }
 }

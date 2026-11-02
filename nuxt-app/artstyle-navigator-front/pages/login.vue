@@ -104,6 +104,7 @@ export default {
       ],
     }
   },
+
   computed: {
     toggle() {
         const icon = this.show ? 'mdi-eye' : 'mdi-eye-off'
@@ -111,6 +112,15 @@ export default {
         return { icon, type }
       }
   },
+
+  mounted () {
+    const pending = this.$store.state.pendingToast
+    if (pending) {
+      this.$store.dispatch('getToast', pending)
+      this.$store.dispatch('getPendingToast', null)
+    }
+  },
+
   beforeDestroy () {
     // Vueインスタンスが破棄される直前にVuexのtoast.msgを削除する(無期限toastに対応)
     this.resetToast()
