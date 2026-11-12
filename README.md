@@ -120,6 +120,8 @@ devise_token_auth の cookie_enabled を使い、サーバーが発行する Htt
 - XSS の入口をフロントのコードで確認（v-html / innerHTML などは使っておらず、表示は Vue の自動エスケープに任せている）
 - API 側で X-Requested-With を検証し、単純なクロスサイトのリクエストを拒否している（CSRF 対策の一部）
 
+Qiita 技術記事：[Bearer トークン認証と Cookie 認証、どっちを使えばいいの？](https://qiita.com/matsuura_eng/items/8415b4b2da9b63783ffd)
+
 【現時点の制約と今後の課題】
 - HttpOnly Cookie への移行には、独自ドメインでフロントと API を同一サイトにする、またはリバースプロキシで同一オリジンにする、といった構成の変更が前提になる
 - CSP（Content Security Policy）は未導入
