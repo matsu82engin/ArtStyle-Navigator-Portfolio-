@@ -1,10 +1,9 @@
-FROM ruby:3.1.3
+FROM ruby:3.3.14-bookworm
 
 ENV APP_ROOT=/app
 WORKDIR $APP_ROOT
 
-RUN sed -i '/bullseye-security/d' /etc/apt/sources.list && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     default-libmysqlclient-dev \
